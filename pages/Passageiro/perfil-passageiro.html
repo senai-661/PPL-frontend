@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - Passageiro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../CSS/style.css">
+    <link rel="stylesheet" href="../../CSS/perfil-passageiro.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg" style="background-color: #5a34a1; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white" href="../../index.html" style="font-weight: 700; font-size: 1.5rem;">
+                <i class="fas fa-wheelchair"></i> Transportando Inclusão
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="../../index.html" style="font-weight: 500;">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="dashboard-passageiro.html" style="font-weight: 500;">Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="font-weight: 500;">
+                            <i class="fas fa-user-circle"></i> Meu Perfil
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="perfil-passageiro.html">Meu Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid profile-container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 sidebar">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <img id="profileImage" src="https://via.placeholder.com/150" alt="Foto do Perfil" class="profile-pic">
+                        <h3 id="profileName">João Silva</h3>
+                        <p class="profile-member-since">Membro desde Jan 2024</p>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="profileCity">São Paulo, SP</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-star"></i>
+                            <span id="profileRating">4.8 <small>(24 avaliações)</small></span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-car"></i>
+                            <span id="profileTrips">47 Viagens</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-edit-profile" onclick="scrollToEdit()">
+                        <i class="fas fa-edit"></i> Editar Perfil
+                    </button>
+                </div>
+
+                <div class="menu-card">
+                    <h5>Menu</h5>
+                    <ul class="menu-list">
+                        <li><a href="#editSection" onclick="scrollToEdit()"><i class="fas fa-user-edit"></i> Dados Pessoais</a></li>
+                        <li><a href="#addressSection"><i class="fas fa-map-pin"></i> Endereços</a></li>
+                        <li><a href="#paymentSection"><i class="fas fa-credit-card"></i> Formas de Pagamento</a></li>
+                        <li><a href="#preferencesSection"><i class="fas fa-cog"></i> Preferências</a></li>
+                        <li><a href="#historySection"><i class="fas fa-history"></i> Histórico de Viagens</a></li>
+                        <li><a href="#documentSection"><i class="fas fa-file-alt"></i> Documentos</a></li>
+                    </ul>
+                </div>
+
+                <div class="stats-card">
+                    <h5>Estatísticas</h5>
+                    <div class="stat-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Conta Verificada</span>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Documento Validado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-lg-9">
+                <!-- Edit Profile Section -->
+                <div id="editSection" class="content-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-user-edit"></i> Dados Pessoais</h4>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('personal')">
+                            <i class="fas fa-pen"></i> Editar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Nome Completo</label>
+                                <input type="text" class="form-control" id="fullName" value="João Silva" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Email</label>
+                                <input type="email" class="form-control" id="email" value="joao.silva@email.com" disabled>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Telefone</label>
+                                <input type="tel" class="form-control" id="phone" value="(11) 98765-4321" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>CPF</label>
+                                <input type="text" class="form-control" id="cpf" value="123.456.789-10" disabled>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Data de Nascimento</label>
+                                <input type="date" class="form-control" id="birthDate" value="1990-05-15" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Gênero</label>
+                                <select class="form-control" id="gender" disabled>
+                                    <option selected>Masculino</option>
+                                    <option>Feminino</option>
+                                    <option>Outro</option>
+                                    <option>Prefiro não informar</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="personalEditButtons" class="edit-buttons" style="display: none;">
+                            <button class="btn btn-success" onclick="saveChanges('personal')">
+                                <i class="fas fa-check"></i> Salvar Alterações
+                            </button>
+                            <button class="btn btn-secondary" onclick="cancelEdit('personal')">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Section -->
+                <div id="addressSection" class="content-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-map-pin"></i> Endereços Salvos</h4>
+                        <button class="btn btn-sm btn-success" onclick="addAddress()">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="address-item">
+                            <div class="address-header">
+                                <h5>Casa</h5>
+                                <div class="address-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editAddress(1)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAddress(1)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="address-text">Rua das Flores, 123, Apto 456 - São Paulo, SP, 01234-567</p>
+                        </div>
+                        <div class="address-item">
+                            <div class="address-header">
+                                <h5>Trabalho</h5>
+                                <div class="address-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editAddress(2)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAddress(2)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="address-text">Av. Paulista, 1000 - São Paulo, SP, 01311-100</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div id="paymentSection" class="content-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-credit-card"></i> Formas de Pagamento</h4>
+                        <button class="btn btn-sm btn-success" onclick="addPayment()">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="payment-item">
+                            <div class="payment-header">
+                                <i class="fas fa-credit-card"></i>
+                                <span class="payment-info">
+                                    <strong>Cartão de Crédito</strong>
+                                    <small>**** **** **** 4321</small>
+                                </span>
+                                <span class="badge bg-success">Principal</span>
+                            </div>
+                            <div class="payment-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editPayment(1)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deletePayment(1)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="payment-item">
+                            <div class="payment-header">
+                                <i class="fas fa-wallet"></i>
+                                <span class="payment-info">
+                                    <strong>Carteira Digital</strong>
+                                    <small>Saldo: R$ 125,50</small>
+                                </span>
+                            </div>
+                            <div class="payment-actions">
+                                <button class="btn btn-sm btn-primary" onclick="addCredit()">
+                                    <i class="fas fa-plus"></i> Adicionar Crédito
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="removePayment(2)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences Section -->
+                <div id="preferencesSection" class="content-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-cog"></i> Preferências</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h5>Notificações por Email</h5>
+                                <small>Receba atualizações sobre suas viagens</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="emailNotif" checked>
+                                <label class="form-check-label" for="emailNotif"></label>
+                            </div>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h5>Notificações por SMS</h5>
+                                <small>Receba confirmações de viagem via SMS</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="smsNotif" checked>
+                                <label class="form-check-label" for="smsNotif"></label>
+                            </div>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h5>Compartilhar Localização</h5>
+                                <small>Permita que motoristas vejam sua localização</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="shareLocation" checked>
+                                <label class="form-check-label" for="shareLocation"></label>
+                            </div>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h5>Modo Escuro</h5>
+                                <small>Ative o tema escuro da aplicação</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="darkMode">
+                                <label class="form-check-label" for="darkMode"></label>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary mt-3" onclick="savePreferences()">
+                            <i class="fas fa-save"></i> Salvar Preferências
+                        </button>
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                <div id="historySection" class="content-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-history"></i> Histórico de Viagens</h4>
+                        <input type="search" class="form-control search-input" placeholder="Buscar viagem...">
+                    </div>
+                    <div class="card-body">
+                        <div class="trip-item">
+                            <div class="trip-info">
+                                <h5>São Paulo → Guarulhos</h5>
+                                <small class="text-muted">05/02/2025 às 10:30</small>
+                                <p class="trip-driver">Motorista: <strong>Carlos Santos</strong> <i class="fas fa-star" style="color: #ffc107;"></i> 4.9</p>
+                            </div>
+                            <div class="trip-price">R$ 45,50</div>
+                            <div class="trip-actions">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-receipt"></i> Recibo
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-star"></i> Avaliar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="trip-item">
+                            <div class="trip-info">
+                                <h5>Centro → Zona Sul</h5>
+                                <small class="text-muted">03/02/2025 às 14:15</small>
+                                <p class="trip-driver">Motorista: <strong>Ana Silva</strong> <i class="fas fa-star" style="color: #ffc107;"></i> 5.0</p>
+                            </div>
+                            <div class="trip-price">R$ 32,80</div>
+                            <div class="trip-actions">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-receipt"></i> Recibo
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-star"></i> Avaliar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="trip-item">
+                            <div class="trip-info">
+                                <h5>Aeroporto → Centro</h5>
+                                <small class="text-muted">01/02/2025 às 08:45</small>
+                                <p class="trip-driver">Motorista: <strong>Pedro Costa</strong> <i class="fas fa-star" style="color: #ffc107;"></i> 4.7</p>
+                            </div>
+                            <div class="trip-price">R$ 58,00</div>
+                            <div class="trip-actions">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-receipt"></i> Recibo
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-star"></i> Avaliar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Section -->
+                <div id="documentSection" class="content-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-file-alt"></i> Documentos</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="document-item">
+                            <div class="document-info">
+                                <i class="fas fa-id-card"></i>
+                                <div>
+                                    <h5>Identidade</h5>
+                                    <small>RG: 12.345.678-9 | Válido até 2032</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-success">Verificado</span>
+                        </div>
+                        <div class="document-item">
+                            <div class="document-info">
+                                <i class="fas fa-passport"></i>
+                                <div>
+                                    <h5>CPF</h5>
+                                    <small>123.456.789-10 | Ativo</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-success">Verificado</span>
+                        </div>
+                        <div class="document-item">
+                            <div class="document-info">
+                                <i class="fas fa-file-pdf"></i>
+                                <div>
+                                    <h5>Comprovante de Endereço</h5>
+                                    <small>Conta de luz - Uploader em 15/01/2025</small>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-lock"></i> Segurança</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="security-item">
+                            <h5>Alterar Senha</h5>
+                            <p class="text-muted">Recomendamos alterar sua senha regularmente para manter sua conta segura.</p>
+                            <button class="btn btn-primary" onclick="changePassword()">
+                                <i class="fas fa-key"></i> Alterar Senha
+                            </button>
+                        </div>
+                        <div class="security-item">
+                            <h5>Autenticação de Dois Fatores</h5>
+                            <p class="text-muted">Adicione uma camada extra de segurança à sua conta.</p>
+                            <button class="btn btn-success" onclick="enable2FA()">
+                                <i class="fas fa-shield-alt"></i> Ativar 2FA
+                            </button>
+                        </div>
+                        <div class="security-item">
+                            <h5>Sessões Ativas</h5>
+                            <p class="text-muted">Gerenciar todas as suas sessões ativas</p>
+                            <button class="btn btn-outline-danger" onclick="manageSessions()">
+                                <i class="fas fa-cog"></i> Gerenciar Sessões
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Account Section -->
+                <div class="content-card border-danger">
+                    <div class="card-header bg-light border-danger">
+                        <h4 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Zona de Risco</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Deletar Conta</h5>
+                        <p class="text-muted">Uma vez deletada, não há volta. Todos os seus dados e histórico de viagens serão removidos permanentemente.</p>
+                        <button class="btn btn-danger" onclick="confirmDelete()">
+                            <i class="fas fa-trash"></i> Deletar Conta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h5>Sobre</h5>
+                    <ul>
+                        <li><a href="#about">Sobre nós</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#careers">Carreiras</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>Suporte</h5>
+                    <ul>
+                        <li><a href="#help">Central de Ajuda</a></li>
+                        <li><a href="#contact">Contato</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>Legal</h5>
+                    <ul>
+                        <li><a href="#terms">Termos de Serviço</a></li>
+                        <li><a href="#privacy">Privacidade</a></li>
+                        <li><a href="#cookies">Cookies</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>Siga-nos</h5>
+                    <div class="social-links">
+                        <a href="#facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#linkedin"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Transportando Inclusão. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle Edit Mode
+        function toggleEdit(section) {
+            const buttons = document.getElementById(section + 'EditButtons');
+            const inputs = document.querySelectorAll(`#${section}Section input, #${section}Section select`);
+            
+            if (buttons.style.display === 'none') {
+                buttons.style.display = 'flex';
+                inputs.forEach(input => input.disabled = false);
+                inputs[0].focus();
+            } else {
+                cancelEdit(section);
+            }
+        }
+
+        function cancelEdit(section) {
+            const buttons = document.getElementById(section + 'EditButtons');
+            const inputs = document.querySelectorAll(`#${section}Section input, #${section}Section select`);
+            
+            buttons.style.display = 'none';
+            inputs.forEach(input => input.disabled = true);
+        }
+
+        function saveChanges(section) {
+            const message = document.createElement('div');
+            message.className = 'alert alert-success alert-dismissible fade show';
+            message.innerHTML = `
+                <i class="fas fa-check-circle"></i> Alterações salvas com sucesso!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.insertBefore(message, document.body.firstChild);
+            
+            setTimeout(() => {
+                message.remove();
+                cancelEdit(section);
+            }, 3000);
+        }
+
+        // Address Functions
+        function addAddress() {
+            alert('Funcionalidade de adicionar endereço em desenvolvimento');
+        }
+
+        function editAddress(id) {
+            alert('Editar endereço #' + id);
+        }
+
+        function deleteAddress(id) {
+            if (confirm('Tem certeza que deseja deletar este endereço?')) {
+                alert('Endereço #' + id + ' deletado com sucesso');
+            }
+        }
+
+        // Payment Functions
+        function addPayment() {
+            alert('Funcionalidade de adicionar forma de pagamento em desenvolvimento');
+        }
+
+        function editPayment(id) {
+            alert('Editar forma de pagamento #' + id);
+        }
+
+        function deletePayment(id) {
+            if (confirm('Tem certeza que deseja deletar esta forma de pagamento?')) {
+                alert('Forma de pagamento #' + id + ' deletada com sucesso');
+            }
+        }
+
+        function addCredit() {
+            alert('Funcionalidade de adicionar crédito em desenvolvimento');
+        }
+
+        // Preferences Functions
+        function savePreferences() {
+            const message = document.createElement('div');
+            message.className = 'alert alert-success alert-dismissible fade show';
+            message.innerHTML = `
+                <i class="fas fa-check-circle"></i> Preferências salvas com sucesso!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.insertBefore(message, document.body.firstChild);
+        }
+
+        // Security Functions
+        function changePassword() {
+            alert('Funcionalidade de alterar senha em desenvolvimento');
+        }
+
+        function enable2FA() {
+            alert('Funcionalidade de autenticação de dois fatores em desenvolvimento');
+        }
+
+        function manageSessions() {
+            alert('Funcionalidade de gerenciar sessões em desenvolvimento');
+        }
+
+        function confirmDelete() {
+            if (confirm('Esta ação é irreversível. Tem certeza que deseja deletar sua conta permanentemente?')) {
+                alert('Sua conta será deletada em 30 dias. Durante este período, você pode cancelar esta ação.');
+            }
+        }
+
+        // Scroll to Edit
+        function scrollToEdit() {
+            document.getElementById('editSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Logout Function
+        function logout() {
+            if (confirm('Tem certeza que deseja fazer logout?')) {
+                window.location.href = '../../index.html';
+            }
+        }
+
+        // Remove Payment
+        function removePayment(id) {
+            if (confirm('Tem certeza que deseja remover esta forma de pagamento?')) {
+                alert('Forma de pagamento #' + id + ' removida com sucesso');
+            }
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && document.querySelector(href)) {
+                    e.preventDefault();
+                    document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

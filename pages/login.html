@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/login.css">
+    <link rel="stylesheet" href="../CSS/cadastro-motorista.css">
+    <title>Login - Openline</title>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background-color: #5a34a1; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+            <div class="container">
+                <a class="navbar-brand" href="../index.html" style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-car me-2"></i>Openline
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-weight: 500;">
+                                <i class="fas fa-building me-2"></i>Empresa
+                            </a>
+                            <ul class="dropdown-menu" style="background-color: #5a34a1; border: none;" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item text-white" href="./sobre-nos.html" style="background-color: #5a34a1;"><i class="fas fa-book me-2"></i>Nossa história</a></li>
+                                <li><hr class="dropdown-divider" style="border-color: rgba(255, 255, 255, 0.2);"></li>
+                                <li><a class="dropdown-item text-white" href="./carreiras.html" style="background-color: #5a34a1;"><i class="fas fa-briefcase me-2"></i>Carreiras</a></li>
+                                <li><a class="dropdown-item text-white" href="./diversidade.html" style="background-color: #5a34a1;"><i class="fas fa-heart me-2"></i>Diversidade</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="./seguranca.html" style="font-weight: 500;"><i class="fas fa-shield-alt me-2"></i>Segurança</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="./ajuda.html" style="font-weight: 500;"><i class="fas fa-headset me-2"></i>Ajuda</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex gap-3 align-items-center">
+                        <a class="text-white" href="./login.html" style="font-weight: 600; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-sign-in-alt me-2"></i>Entrar</a>
+                        <a href="./Passageiro/cadastro-passageiro.html" style="background-color: white; color: #5a34a1; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 25px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#e0d7ff'" onmouseout="this.style.backgroundColor='white'"><i class="fas fa-user-plus me-2"></i>Cadastrar</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="cadastro-container">
+            <div class="cadastro-card">
+                <div class="cadastro-header">
+                    <i class="fas fa-sign-in-alt cadastro-header-icon"></i>
+                    <h2>Bem-vindo de volta!</h2>
+                    <p>Acesse sua conta Openline</p>
+                </div>
+
+                <div class="cadastro-form">
+                    <div class="error-message" id="errorMessage">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="errorText"></span>
+                    </div>
+
+                    <div class="success-message" id="successMessage">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="successText"></span>
+                    </div>
+
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <!-- Email/Telefone -->
+                        <div class="form-group">
+                            <label for="email">
+                                <i class="fas fa-envelope"></i>Email ou Telefone
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="email" 
+                                placeholder="Digite seu email ou telefone"
+                                required
+                            >
+                        </div>
+
+                        <!-- Senha -->
+                        <div class="form-group">
+                            <label for="password">
+                                <i class="fas fa-lock"></i>Senha
+                            </label>
+                            <div class="password-wrapper">
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="password" 
+                                    placeholder="Digite sua senha"
+                                    required
+                                >
+                                <button 
+                                    type="button" 
+                                    class="toggle-password"
+                                    onclick="togglePassword()"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Remember e Forgot -->
+                        <div class="remember-forgot">
+                            <div class="form-check">
+                                <input 
+                                    type="checkbox" 
+                                    class="form-check-input" 
+                                    id="rememberMe"
+                                >
+                                <label class="form-check-label" for="rememberMe">
+                                    Lembrar de mim
+                                </label>
+                            </div>
+                            <a href="#" class="forgot-password">Esqueceu a senha?</a>
+                        </div>
+
+                        <!-- Button Login -->
+                        <button type="submit" class="btn-login">
+                            <span id="btnText">Entrar</span>
+                        </button>
+                    </form>
+
+                    <!-- Divider -->
+                    <div class="divider">
+                        <span>OU</span>
+                    </div>
+
+                    <!-- Social Login -->
+                    <div class="social-login">
+                        <button class="btn-social" onclick="loginWithGoogle()">
+                            <i class="fab fa-google"></i>
+                            <span>Google</span>
+                        </button>
+                        <button class="btn-social" onclick="loginWithFacebook()">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook</span>
+                        </button>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="login-footer">
+                        Não tem uma conta?
+                        <a href="/pages/Passageiro/cadastro-passageiro.html">
+                            <i class="fas fa-user-plus me-1"></i>Cadastre-se como passageiro
+                        </a>
+                        <br>
+                        ou
+                        <a href="/pages/Motorista/cadastro-dirigir.html">
+                            <i class="fas fa-steering-wheel me-1"></i>Cadastre-se como motorista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-white py-5 mt-5 footer-dark">
+            <h3 class="my-4 fw-normal">Openline</h3>
+            <a class="text-white" href="./ajuda.html">Visite a Central de Ajuda</a>
+
+            <div class="row mt-5">
+                <div class="col-md-3">
+                    <h5 class="mb-4">Empresa</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"> <a class="text-light small" href="./sobre-nos.html">Sobre Nós</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./carreiras.html">Carreiras</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./empresas.html">Para Empresas</a> </li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-4">Produtos</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"> <a class="text-light small" href="./corrida.html">Corrida</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./dirigir.html">Direção</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./entrega.html">Entrega</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./comida.html">Comida</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./empresas.html">Openline para Empresas</a> </li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-4">Cidadania Global</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"> <a class="text-light small" href="./seguranca.html">Segurança</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./diversidade.html">Diversidade e Inclusão</a> </li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-4">Viagem</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"> <a class="text-light small" href="./aeroportos.html">Aeroportos</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="./cidades.html">Cidades</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="">Suporte</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="">Feedback</a> </li>
+                        <li class="mb-3"> <a class="text-light small" href="">Parceiros</a> </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row mb-5 mt-3">
+                <div class="col-md-3">
+                    <div class="d-flex gap-4 py-2">
+                        <a href="" target="_blank"><i class="fa-brands fa-facebook text-white"></i></a>
+                        <a href="" target="_blank"><i class="fa-brands fa-instagram text-white"></i></a>
+                        <a href="" target="_blank"><i class="fa-brands fa-youtube text-white"></i></a>
+                        <a href="" target="_blank"><i class="fa-brands fa-whatsapp text-white"></i></a>
+                        <a href="" target="_blank"><i class="fa-brands fa-linkedin text-white"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="d-flex gap-4 py-2">
+                        <div>
+                            <i class="fa-solid fa-globe me-1"></i>
+                            <span>Português</span>
+                        </div>
+                        <div>
+                            <i class="fa-solid fa-location-dot me-1"></i>
+                            <span>Brasil</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <small class="mt-5">© 2026 Openline Technologies Inc.</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle Password Visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.toggle-password i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.classList.remove('fa-eye');
+                toggleBtn.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.classList.remove('fa-eye-slash');
+                toggleBtn.classList.add('fa-eye');
+            }
+        }
+
+        // Show Message
+        function showMessage(type, message) {
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+            const errorText = document.getElementById('errorText');
+            const successText = document.getElementById('successText');
+
+            if (type === 'error') {
+                errorText.textContent = message;
+                errorMsg.classList.add('show');
+                successMsg.classList.remove('show');
+                setTimeout(() => {
+                    errorMsg.classList.remove('show');
+                }, 5000);
+            } else if (type === 'success') {
+                successText.textContent = message;
+                successMsg.classList.add('show');
+                errorMsg.classList.remove('show');
+                setTimeout(() => {
+                    successMsg.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Handle Login
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btnLogin = document.querySelector('.btn-login');
+            const btnText = document.getElementById('btnText');
+
+            // Validations
+            if (!email) {
+                showMessage('error', 'Por favor, digite seu email ou telefone');
+                return;
+            }
+
+            if (!password) {
+                showMessage('error', 'Por favor, digite sua senha');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('error', 'A senha deve ter no mínimo 6 caracteres');
+                return;
+            }
+
+            // Simulate Loading
+            btnLogin.classList.add('loading');
+            btnText.innerHTML = '<span class="spinner"></span>';
+
+            // Simulate API Call
+            setTimeout(() => {
+                btnLogin.classList.remove('loading');
+                btnText.textContent = 'Entrar';
+
+                // For demo purposes, accept any valid credentials
+                showMessage('success', 'Login realizado com sucesso! Redirecionando...');
+
+                // Simulate redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 2000);
+            }, 1500);
+        }
+
+        // Social Login
+        function loginWithGoogle() {
+            showMessage('success', 'Integrando com Google... (Em desenvolvimento)');
+        }
+
+        function loginWithFacebook() {
+            showMessage('success', 'Integrando com Facebook... (Em desenvolvimento)');
+        }
+
+        // Enter key submit
+        document.getElementById('loginForm').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin(e);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,11 +1,285 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corrida para todos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="CSS/index.css">
+    <title>Openline - Transportando Inclusão</title>
 </head>
 <body>
-    <h1>Olá, Mundo!</h1>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background-color: #5a34a1; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+            <div class="container">
+                <a class="navbar-brand" href="index.html" style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-car me-2"></i>Openline
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-weight: 500;">
+                                <i class="fas fa-building me-2"></i>Empresa
+                            </a>
+                            <ul class="dropdown-menu" style="background-color: #5a34a1; border: none;" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item text-white" href="pages/sobre-nos.html" style="background-color: #5a34a1;"><i class="fas fa-book me-2"></i>Nossa história</a></li>
+                                <li><hr class="dropdown-divider" style="border-color: rgba(255, 255, 255, 0.2);"></li>
+                                <li><a class="dropdown-item text-white" href="pages/carreiras.html" style="background-color: #5a34a1;"><i class="fas fa-briefcase me-2"></i>Carreiras</a></li>
+                                <li><a class="dropdown-item text-white" href="pages/diversidade.html" style="background-color: #5a34a1;"><i class="fas fa-heart me-2"></i>Diversidade</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="pages/seguranca.html" style="font-weight: 500;"><i class="fas fa-shield-alt me-2"></i>Segurança</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="pages/ajuda.html" style="font-weight: 500;"><i class="fas fa-headset me-2"></i>Ajuda</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex gap-3 align-items-center">
+                        <a class="text-white" href="pages/login.html" style="font-weight: 600; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-sign-in-alt me-2"></i>Entrar</a>
+                        <a href="pages/Passageiro/cadastro-passageiro.html" style="background-color: white; color: #5a34a1; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 25px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#e0d7ff'" onmouseout="this.style.backgroundColor='white'"><i class="fas fa-user-plus me-2"></i>Cadastrar</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <img src="assets/ChatGPT Image 4 de fev. de 2026, 13_59_50.png" alt="Transportando Inclusão" class="hero-background-image">
+            <div class="hero-overlay"></div>
+            <div class="container hero-content">
+                <h1><i class="fas fa-wheelchair me-3"></i>Transportando Inclusão</h1>
+                <p>Transporte acessível, inclusivo e seguro para todos. Porque deslocamento é direito, não privilégio.</p>
+                <div class="hero-buttons">
+                    <a href="pages/Passageiro/cadastro-passageiro.html" class="btn btn-light btn-lg" style="color: #5a34a1; font-weight: 600;">
+                        <i class="fas fa-user-check me-2"></i>Seja passageiro
+                    </a>
+                    <a href="pages/Motorista/cadastro-dirigir.html" class="btn btn-light btn-lg" style="color: #5a34a1; font-weight: 600;">
+                        <i class="fas fa-user-check me-2"></i>Quero Dirigir
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="services-section">
+            <div class="container">
+                <h2 style="text-align: center; color: #5a34a1; font-weight: 700; margin-bottom: 50px;">
+                    <i class="fas fa-star me-2"></i>Nossos Serviços
+                </h2>
+                <div class="services-grid">
+                    <!-- Corrida -->
+                    <div class="service-card">
+                        <div class="service-icon" style="background: linear-gradient(135deg, #5a34a1 0%, #4a2681 100%); color: white;">
+                            <i class="fas fa-car-side"></i>
+                        </div>
+                        <h3 style="color: #5a34a1;">Corrida</h3>
+                        <p>Transporte de passageiros seguro e acessível com motoristas treinados e veículos adaptados.</p>
+                        <a href="pages/corrida.html" style="color: #5a34a1; font-weight: 600; text-decoration: none;">Saiba mais <i class="fas fa-arrow-right ms-2"></i></a>
+                    </div>
+
+                    <!-- Entrega -->
+                    <div class="service-card">
+                        <div class="service-icon" style="background: linear-gradient(135deg, #5a34a1 0%, #4a2681 100%); color: white;">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <h3 style="color: #5a34a1;">Entrega</h3>
+                        <p>Serviço de entrega rápido e confiável para sua encomenda chegar com segurança.</p>
+                        <a href="pages/entrega.html" style="color: #5a34a1; font-weight: 600; text-decoration: none;">Saiba mais <i class="fas fa-arrow-right ms-2"></i></a>
+                    </div>
+
+                    <!-- Comida -->
+                    <div class="service-card">
+                        <div class="service-icon" style="background: linear-gradient(135deg, #5a34a1 0%, #4a2681 100%); color: white;">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <h3 style="color: #5a34a1;">Comida</h3>
+                        <p>Peça seu prato favorito e receba em casa com todo cuidado e qualidade.</p>
+                        <a href="pages/comida.html" style="color: #5a34a1; font-weight: 600; text-decoration: none;">Saiba mais <i class="fas fa-arrow-right ms-2"></i></a>
+                    </div>
+
+                    <!-- Aeroportos -->
+                    <div class="service-card">
+                        <div class="service-icon" style="background: linear-gradient(135deg, #5a34a1 0%, #4a2681 100%); color: white;">
+                            <i class="fas fa-plane"></i>
+                        </div>
+                        <h3 style="color: #5a34a1;">Aeroportos</h3>
+                        <p>Transporte premium para aeroporto com confiança e pontualidade garantidas.</p>
+                        <a href="pages/aeroportos.html" style="color: #5a34a1; font-weight: 600; text-decoration: none;">Saiba mais <i class="fas fa-arrow-right ms-2"></i></a>
+                    </div>
+
+                    <!-- Van de Acessibilidade -->
+                    <div class="service-card">
+                        <div class="service-icon" style="background: linear-gradient(135deg, #5a34a1 0%, #4a2681 100%); color: white;">
+                            <i class="fas fa-van-shuttle"></i>
+                        </div>
+                        <h3 style="color: #5a34a1;">Openline Van</h3>
+                        <p>Van completamente acessível com rampas e espaço para cadeiras de rodas. Dirigindo com propósito.</p>
+                        <a href="pages/openline-van.html" style="color: #5a34a1; font-weight: 600; text-decoration: none;">Saiba mais <i class="fas fa-arrow-right ms-2"></i></a>
+                    </div>
+
+                    <!-- Cidades -->
+                    <div class="service-card">
+                        <div class="service-icon" style="background: linear-gradient(135deg, #5a34a1 0%, #4a2681 100%); color: white;">
+                            <i class="fas fa-map-location-dot"></i>
+                        </div>
+                        <h3 style="color: #5a34a1;">Cidades</h3>
+                        <p>Expandindo inclusão: conheça as cidades onde a Openline já opera.</p>
+                        <a href="pages/cidades.html" style="color: #5a34a1; font-weight: 600; text-decoration: none;">Saiba mais <i class="fas fa-arrow-right ms-2"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose Us Section -->
+        <section class="why-us-section">
+            <div class="container">
+                <h2 style="text-align: center; color: #5a34a1; font-weight: 700; margin-bottom: 50px;">
+                    <i class="fas fa-heart me-2"></i>Por Que Escolher Openline?
+                </h2>
+                <div class="why-grid">
+                    <div class="why-card">
+                        <div style="font-size: 3rem; color: #5a34a1; margin-bottom: 15px;">
+                            <i class="fas fa-accessible-icon"></i>
+                        </div>
+                        <h4 style="color: #5a34a1; font-weight: 700;">100% Acessível</h4>
+                        <p>Todos os nossos veículos são equipados com rampas, espaço para cadeiras de rodas e sistema de segurança avançado.</p>
+                    </div>
+
+                    <div class="why-card">
+                        <div style="font-size: 3rem; color: #5a34a1; margin-bottom: 15px;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h4 style="color: #5a34a1; font-weight: 700;">Motoristas Treinados</h4>
+                        <p>Equipe especializada em atendimento a pessoas com deficiência e neurodivergentes. Empatia em cada trajeto.</p>
+                    </div>
+
+                    <div class="why-card">
+                        <div style="font-size: 3rem; color: #5a34a1; margin-bottom: 15px;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4 style="color: #5a34a1; font-weight: 700;">Segurança Garantida</h4>
+                        <p>Rastreamento GPS em tempo real, câmeras de segurança e atendimento 24/7 para sua tranquilidade.</p>
+                    </div>
+
+                    <div class="why-card">
+                        <div style="font-size: 3rem; color: #5a34a1; margin-bottom: 15px;">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <h4 style="color: #5a34a1; font-weight: 700;">Preços Justos</h4>
+                        <p>Tarifas acessíveis sem comprometer a qualidade do serviço. Inclusão financeira também é inclusão.</p>
+                    </div>
+
+                    <div class="why-card">
+                        <div style="font-size: 3rem; color: #5a34a1; margin-bottom: 15px;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4 style="color: #5a34a1; font-weight: 700;">Comunidade Inclusiva</h4>
+                        <p>Faça parte de uma comunidade que valoriza a diversidade e a dignidade de cada pessoa.</p>
+                    </div>
+
+                    <div class="why-card">
+                        <div style="font-size: 3rem; color: #5a34a1; margin-bottom: 15px;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h4 style="color: #5a34a1; font-weight: 700;">Avaliações Verificadas</h4>
+                        <p>Transparência total com avaliações reais de passageiros. Seu feedback ajuda a melhorar.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section" style="background: linear-gradient(135deg, #5a34a1 0%, #4a2681 100%); color: white; padding: 80px 20px; text-align: center;">
+            <div class="container">
+                <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #ffffff;">
+                    Pronto para uma experiência diferente?
+                </h2>
+                <p style="font-size: 1.1rem; margin-bottom: 40px; color: #ffffff; opacity: 1;">
+                    Baixe o app ou acesse a plataforma e comece sua jornada com a Openline
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="pages/Passageiro/cadastro-passageiro.html" class="btn btn-light btn-lg" style="color: #5a34a1; font-weight: 600;">
+                        <i class="fas fa-download me-2"></i>Baixar App
+                    </a>
+                    <a href="pages/Motorista/cadastro-dirigir.html" class="btn btn-outline-light btn-lg" style="font-weight: 600;">
+                        <i class="fas fa-arrow-right me-2"></i>Começar Agora
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-white py-5" style="background-color: black;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 style="font-weight: 700; margin-bottom: 20px;">
+                        <i class="fas fa-car me-2"></i>Openline
+                    </h5>
+                    <p style="font-size: 0.9rem; line-height: 1.8;">
+                        Transportando inclusão. Conectando pessoas a oportunidades, serviços, trabalho, estudo e lazer.
+                    </p>
+                    <div style="margin-top: 15px;">
+                        <a href="#" style="color: #5a34a1; text-decoration: none; margin-right: 15px;"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" style="color: #5a34a1; text-decoration: none; margin-right: 15px;"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" style="color: #5a34a1; text-decoration: none; margin-right: 15px;"><i class="fab fa-youtube fa-lg"></i></a>
+                        <a href="#" style="color: #5a34a1; text-decoration: none; margin-right: 15px;"><i class="fab fa-linkedin fa-lg"></i></a>
+                        <a href="#" style="color: #5a34a1; text-decoration: none;"><i class="fab fa-whatsapp fa-lg"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-md-2 mb-4">
+                    <h6 style="font-weight: 700; margin-bottom: 20px;">Navegação</h6>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><a href="index.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Início</a></li>
+                        <li><a href="pages/sobre-nos.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Sobre</a></li>
+                        <li><a href="pages/carreiras.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Carreiras</a></li>
+                        <li><a href="pages/seguranca.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Segurança</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-2 mb-4">
+                    <h6 style="font-weight: 700; margin-bottom: 20px;">Serviços</h6>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><a href="pages/corrida.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Corrida</a></li>
+                        <li><a href="pages/entrega.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Entrega</a></li>
+                        <li><a href="pages/comida.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Comida</a></li>
+                        <li><a href="pages/aeroportos.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Aeroportos</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <h6 style="font-weight: 700; margin-bottom: 20px;">Legal</h6>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><a href="pages/diretrizes.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Diretrizes da Comunidade</a></li>
+                        <li><a href="pages/recursos-seguranca.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Recursos de Segurança</a></li>
+                        <li><a href="pages/ajuda.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Centro de Ajuda</a></li>
+                        <li><a href="pages/imprensa.html" style="color: #aaa; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 8px;">Imprensa</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr style="border-color: #333; margin: 30px 0;">
+
+            <div style="text-align: center;">
+                <p style="color: #aaa; font-size: 0.85rem; margin: 0;">
+                    © 2026 Openline. Todos os direitos reservados. | 
+                    <a href="#" style="color: #5a34a1; text-decoration: none;">Privacidade</a> | 
+                    <a href="#" style="color: #5a34a1; text-decoration: none;">Termos</a> | 
+                    <a href="#" style="color: #5a34a1; text-decoration: none;">Acessibilidade</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

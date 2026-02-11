@@ -1,0 +1,308 @@
+/* ===== PÁGINAS DE SERVIÇOS - ESTILOS GENÉRICOS ===== */
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 120px 20px;
+    text-align: center;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero-section p {
+    font-size: 1.3rem;
+    opacity: 0.95;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Content Section */
+.content-section {
+    padding: 60px 20px;
+}
+
+.content-section.light {
+    background-color: var(--bg-light);
+}
+
+.content-section h2 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+/* Feature Grid */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+    border-top: 5px solid var(--primary);
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(90, 52, 161, 0.15);
+}
+
+.feature-card i {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
+    font-size: 1.3rem;
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+/* Service-specific cards */
+.service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.service-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+    border-top: 5px solid var(--primary);
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(90, 52, 161, 0.15);
+}
+
+.service-card i {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.service-card h4 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.service-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.service-info {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border-top: 1px solid #f0f0f0;
+    padding-top: 15px;
+}
+
+/* Airport Cards */
+.airport-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.airport-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f7fc 100%);
+    padding: 35px 25px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(90, 52, 161, 0.12);
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.airport-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.airport-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(90, 52, 161, 0.25);
+    border-color: rgba(90, 52, 161, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #f5f0ff 100%);
+}
+
+.airport-card:hover::before {
+    transform: scaleX(1);
+}
+
+.airport-card i {
+    font-size: 3.2rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+
+.airport-card:hover i {
+    animation-play-state: paused;
+    transform: scale(1.15) rotateZ(5deg);
+}
+
+.airport-card:nth-child(2) i { animation-delay: 0.1s; }
+.airport-card:nth-child(3) i { animation-delay: 0.2s; }
+.airport-card:nth-child(4) i { animation-delay: 0.3s; }
+.airport-card:nth-child(5) i { animation-delay: 0.4s; }
+.airport-card:nth-child(6) i { animation-delay: 0.5s; }
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.airport-card h4 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    min-height: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.airport-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.airport-info {
+    background: linear-gradient(135deg, rgba(90, 52, 161, 0.08) 0%, rgba(90, 52, 161, 0.03) 100%);
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 2;
+    border-left: 5px solid var(--primary);
+    text-align: left;
+    backdrop-filter: blur(5px);
+}
+
+.airport-info strong {
+    color: var(--primary);
+    font-weight: 700;
+    display: inline-block;
+    min-width: 120px;
+}
+
+/* CTA Section */
+.final-cta {
+    padding: 60px 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    text-align: center;
+}
+
+.final-cta h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.final-cta button {
+    background-color: white;
+    color: var(--primary);
+    border: none;
+    padding: 14px 40px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.final-cta button:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+
+    .hero-section p {
+        font-size: 1.1rem;
+    }
+
+    .feature-grid,
+    .service-grid,
+    .airport-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .airport-card {
+        padding: 30px 20px;
+    }
+
+    .airport-card h4 {
+        font-size: 1.1rem;
+        min-height: auto;
+    }
+
+    .airport-card i {
+        font-size: 2.5rem;
+    }
+
+    .airport-info {
+        padding: 15px;
+        font-size: 0.85rem;
+    }
+}

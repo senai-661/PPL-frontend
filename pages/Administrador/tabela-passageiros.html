@@ -52,10 +52,10 @@
                                 <tr>
                                     <th>id_passageiro</th>
                                     <th>cpf</th>
-                                    <th>nome_passageiro</th>
-                                    <th>sobrenome_passageiro</th>
-                                    <th>data_nascimento</th>
-                                    <th>endereco</th>
+                                    <th>nome passageiro</th>
+                                    <th>sobrenome passageiro</th>
+                                    <th>data nascimento</th>
+                                    <th>endereço</th>
                                     <th>email</th>
                                     <th>celular</th>
                                     <th>Ação</th>
@@ -85,13 +85,16 @@
                 dom: 'Bfrtip',
                 buttons: ['copy', 'excel', 'csv', 'pdf', 'print'],
                 responsive: true,
-                // Definir colunas correspondentes ao schema do banco
+               ajax: {
+                    url: 'http://localhost:1285/api/passageiros',
+                    dataSrc: ''
+                },
                 columns: [
-                    { data: 'id_passageiro' },
+                    { data: 'idPassageiro' },
                     { data: 'cpf' },
-                    { data: 'nome_passageiro' },
-                    { data: 'sobrenome_passageiro' },
-                    { data: 'data_nascimento' },
+                    { data: 'nomePassageiro' },
+                    { data: 'sobrenomePassageiro' },
+                    { data: 'dataNascimento' },
                     { data: 'endereco' },
                     { data: 'email' },
                     { data: 'celular' },

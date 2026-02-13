@@ -57,7 +57,7 @@
                                     <th>sobrenome</th>
                                     <th>data de nascimento</th>
                                     <th>celular</th>
-                                    <th>endereco</th>
+                                    <th>endereço</th>
                                     <th>antecedentes criminais</th>
                                     <th>Ação</th>
                                 </tr>
@@ -87,16 +87,20 @@
                 dom: 'Bfrtip',
                 buttons: ['copy', 'excel', 'csv', 'pdf', 'print'],
                 responsive: true,
+                ajax: {
+                    url: 'http://localhost:1285/api/motoristas',
+                    dataSrc: ''
+                },
                 columns: [
-                    { data: 'id_motorista' },
+                    { data: 'idMotorista' },
                     { data: 'cpf' },
                     { data: 'cnh' },
-                    { data: 'nome_motorista' },
-                    { data: 'sobrenome_motorista' },
-                    { data: 'data_nascimento' },
+                    { data: 'nomeMotorista' },
+                    { data: 'sobrenomeMotorista' },
+                    { data: 'dataNascimento' },
                     { data: 'celular' },
                     { data: 'endereco' },
-                    { data: 'antecedentes_criminais' },
+                    { data: 'antecedentesCriminais' },
                     { data: null }
                 ],
                 columnDefs: [
@@ -104,7 +108,6 @@
                         return '<button class="btn btn-sm btn-primary">Perfil</button> <button class="btn btn-sm btn-danger">Bloquear</button>';
                     }}
                 ]
-                // Para popular por AJAX: ajax: { url: '/api/motoristas', dataSrc: '' }
             });
         });
     </script>

@@ -60,11 +60,40 @@
     padding: 1.5rem;
     min-height: calc(100vh - 56px);
     background: transparent;
+    overflow-x: auto;
 }
 
 .admin-card {
     border-radius: 10px;
-    overflow: hidden;
+    overflow-x: auto;
+}
+
+/* DataTables: rolagem horizontal para tabelas largas */
+.display {
+    width: 100% !important;
+    min-width: 1200px;
+    table-layout: auto;
+    background: #fff;
+}
+
+.dataTables_wrapper {
+    overflow-x: auto;
+}
+
+/* Ajuste de cabeçalho e células para não quebrar texto */
+.display th, .display td {
+    white-space: nowrap;
+    padding: 0.55rem 1rem;
+    font-size: 0.98rem;
+}
+
+@media (max-width: 1200px) {
+    .admin-main, .admin-card {
+        padding: 0.5rem;
+    }
+    .display {
+        min-width: 900px;
+    }
 }
 
 /* DataTables tweaks */

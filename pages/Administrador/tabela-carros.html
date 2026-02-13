@@ -82,12 +82,16 @@
                 dom: 'Bfrtip',
                 buttons: ['copy', 'excel', 'csv', 'pdf', 'print'],
                 responsive: true,
+                 ajax: {
+                    url: 'http://localhost:1285/api/veiculos',
+                    dataSrc: ''
+                },
                 columns: [
-                    { data: 'id_veiculo' },
-                    { data: 'id_motorista' },
+                    { data: 'idVeiculo' },
+                    { data: 'idMotorista' },
                     { data: 'placa' },
-                    { data: 'tipo_veiculo' },
-                    { data: 'modelo_veiculo' },
+                    { data: 'tipoVeiculo' },
+                    { data: 'modeloVeiculo' },
                     { data: null }
                 ],
                 columnDefs: [

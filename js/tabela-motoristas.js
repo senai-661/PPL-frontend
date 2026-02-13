@@ -33,17 +33,15 @@ async function montarTabelaMotoristas() {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-            <td>${motorista.id_motorista}</td>
+            <td>${motorista.idMotorista}</td>
             <td>${motorista.cnh}</td>
-            <td>${motorista.nome_motorista} </td>
-            <td>${motorista.sobrenome_motorista}</td>
-            <td>${motorista.data_nascimento}</td>
+            <td>${motorista.nomeMotorista} </td>
+            <td>${motorista.sobrenomeMotorista}</td>
+            <td>${motorista.dataNascimento}</td>
             <td>${motorista.celular}</td>
             <td>${motorista.endereco}</td>
-            <td>${motorista.antecedentes_criminais}</td>
+            <td>${motorista.antecedentesCriminais}</td>
             <td>
-                <img src='/assets/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.png' alt='remover' class='btn-delete'/>
-                <img src='/assets/edit_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.png' alt='editar' class='btn-edit'/>
             </td>
         `;
 

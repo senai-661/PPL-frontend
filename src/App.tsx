@@ -1,9 +1,9 @@
-﻿import { BrowserRouter, Routes, Route } from 'react-router';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodapé/Rodape';
 import { Home } from './Components/Inicio/Inicio';
 
-// Importações temporárias das páginas antigas (serão migradas gradualmente)
+// Importacoes temporarias das paginas antigas (serao migradas gradualmente)
 import { About } from './pages/Sobre';
 import { Services } from './pages/Servicos';
 import { Accessibility } from './pages/Acessibilidade';
@@ -24,6 +24,7 @@ import { Login } from './pages/Login';
 import { Van } from './pages/OpenlineVan';
 import { SafetyResources } from './pages/RecursosSeguranca';
 import { Safety } from './pages/Seguranca';
+import { AdminLayout } from './pages/Administrador/AdminLayout';
 import { AdminDashboard } from './pages/Administrador/PainelAdministrador';
 import { CarsTable } from './pages/Administrador/TabelaCarros';
 import { DriversTable } from './pages/Administrador/TabelaMotoristas';
@@ -41,64 +42,76 @@ import { TripDashboard } from './pages/Viagem/PainelViagem';
 import { TripList } from './pages/Viagem/ListaViagens';
 import { NewTrip } from './pages/Viagem/NovaViagem';
 
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/administrador');
+
+  return (
+    <div className="app-shell min-h-screen flex flex-col">
+      {!isAdminRoute && <Header />}
+      <main className="app-main flex-1">
+        <Routes>
+          {/* General Pages */}
+          <Route path="/" element={<Home />} />
+          <Route path="/sobre" element={<About />} />
+          <Route path="/servicos" element={<Services />} />
+          <Route path="/acessibilidade" element={<Accessibility />} />
+          <Route path="/contato" element={<Contact />} />
+          <Route path="/aeroportos" element={<Airports />} />
+          <Route path="/ajuda" element={<Help />} />
+          <Route path="/carreiras" element={<Careers />} />
+          <Route path="/cidades" element={<Cities />} />
+          <Route path="/comida" element={<Food />} />
+          <Route path="/corrida" element={<Ride />} />
+          <Route path="/diretrizes" element={<Guidelines />} />
+          <Route path="/dirigir" element={<Drive />} />
+          <Route path="/diversidade" element={<Diversity />} />
+          <Route path="/empresas" element={<Business />} />
+          <Route path="/entrega" element={<Delivery />} />
+          <Route path="/imprensa" element={<Press />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/openline-van" element={<Van />} />
+          <Route path="/recursos-seguranca" element={<SafetyResources />} />
+          <Route path="/seguranca" element={<Safety />} />
+          <Route path="/sobre-nos" element={<About />} />
+
+          {/* Admin Pages */}
+          <Route path="/administrador" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="painel" element={<AdminDashboard />} />
+            <Route path="tabela-carros" element={<CarsTable />} />
+            <Route path="tabela-motoristas" element={<DriversTable />} />
+            <Route path="tabela-passageiros" element={<PassengersTable />} />
+          </Route>
+
+          {/* Driver Pages */}
+          <Route path="/motorista/cadastro-carro" element={<CarRegistration />} />
+          <Route path="/motorista/cadastro-dirigir" element={<DriveRegistration />} />
+          <Route path="/motorista/cadastro" element={<DriverRegistration />} />
+          <Route path="/motorista/painel" element={<DriverDashboard />} />
+          <Route path="/motorista/perfil" element={<DriverProfile />} />
+
+          {/* Passenger Pages */}
+          <Route path="/passageiro/cadastro" element={<PassengerRegistration />} />
+          <Route path="/passageiro/painel" element={<PassengerDashboard />} />
+          <Route path="/passageiro/perfil" element={<PassengerProfile />} />
+
+          {/* Trip Pages */}
+          <Route path="/viagem/avaliacao" element={<TripRating />} />
+          <Route path="/viagem/painel" element={<TripDashboard />} />
+          <Route path="/viagem/lista" element={<TripList />} />
+          <Route path="/viagem/nova" element={<NewTrip />} />
+        </Routes>
+      </main>
+      {!isAdminRoute && <Footer />}
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="app-shell min-h-screen flex flex-col">
-        <Header />
-        <main className="app-main flex-1">
-          <Routes>
-            {/* General Pages */}
-            <Route path="/" element={<Home />} />
-            <Route path="/sobre" element={<About />} />
-            <Route path="/servicos" element={<Services />} />
-            <Route path="/acessibilidade" element={<Accessibility />} />
-            <Route path="/contato" element={<Contact />} />
-            <Route path="/aeroportos" element={<Airports />} />
-            <Route path="/ajuda" element={<Help />} />
-            <Route path="/carreiras" element={<Careers />} />
-            <Route path="/cidades" element={<Cities />} />
-            <Route path="/comida" element={<Food />} />
-            <Route path="/corrida" element={<Ride />} />
-            <Route path="/diretrizes" element={<Guidelines />} />
-            <Route path="/dirigir" element={<Drive />} />
-            <Route path="/diversidade" element={<Diversity />} />
-            <Route path="/empresas" element={<Business />} />
-            <Route path="/entrega" element={<Delivery />} />
-            <Route path="/imprensa" element={<Press />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/openline-van" element={<Van />} />
-            <Route path="/recursos-seguranca" element={<SafetyResources />} />
-            <Route path="/seguranca" element={<Safety />} />
-            <Route path="/sobre-nos" element={<About />} />
-
-            {/* Admin Pages */}
-            <Route path="/administrador/painel" element={<AdminDashboard />} />
-            <Route path="/administrador/tabela-carros" element={<CarsTable />} />
-            <Route path="/administrador/tabela-motoristas" element={<DriversTable />} />
-            <Route path="/administrador/tabela-passageiros" element={<PassengersTable />} />
-
-            {/* Driver Pages */}
-            <Route path="/motorista/cadastro-carro" element={<CarRegistration />} />
-            <Route path="/motorista/cadastro-dirigir" element={<DriveRegistration />} />
-            <Route path="/motorista/cadastro" element={<DriverRegistration />} />
-            <Route path="/motorista/painel" element={<DriverDashboard />} />
-            <Route path="/motorista/perfil" element={<DriverProfile />} />
-
-            {/* Passenger Pages */}
-            <Route path="/passageiro/cadastro" element={<PassengerRegistration />} />
-            <Route path="/passageiro/painel" element={<PassengerDashboard />} />
-            <Route path="/passageiro/perfil" element={<PassengerProfile />} />
-
-            {/* Trip Pages */}
-            <Route path="/viagem/avaliacao" element={<TripRating />} />
-            <Route path="/viagem/painel" element={<TripDashboard />} />
-            <Route path="/viagem/lista" element={<TripList />} />
-            <Route path="/viagem/nova" element={<NewTrip />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <AppContent />
     </BrowserRouter>
   );
 }

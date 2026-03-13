@@ -1,5 +1,5 @@
 import { AlertCircle, Car, DollarSign, MapPin, Users } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function AdminDashboard() {
   const stats = [

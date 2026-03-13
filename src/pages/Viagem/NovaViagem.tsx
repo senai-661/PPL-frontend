@@ -1,6 +1,6 @@
 import { MapPin, Calendar, Users, CreditCard } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 export function NewTrip() {
   const navigate = useNavigate();

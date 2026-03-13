@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Accessibility as AccessibilityIcon } from 'lucide-react';
 import { useState } from 'react';
 import './Cabecalho.css';

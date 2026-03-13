@@ -1,5 +1,5 @@
 import { Plane, Clock, Shield, DollarSign } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { ImageWithFallback } from '../app/components/figma/ImagemComFallback';
 
 export function Airports() {

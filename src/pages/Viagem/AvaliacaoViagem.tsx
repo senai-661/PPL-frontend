@@ -1,6 +1,6 @@
 import { Star, ThumbsUp, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 export function TripRating() {
   const navigate = useNavigate();

@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import { Lock, LogIn, Mail, UserRound } from 'lucide-react';
+import { SERVER_CFG } from '../appConfig';
 
 type UserType = 'passenger' | 'driver' | 'admin';
 
@@ -20,9 +21,34 @@ export function Login() {
   const [userType, setUserType] = useState<UserType>('passenger');
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const [error, setError] = useState<string | null>(null);
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate(dashboardByUserType[userType]);
+    setError(null);
+    let url = '';
+    if (userType === 'passenger') url = SERVER_CFG.SERVER_URL + '/api/passageiro/login';
+    else if (userType === 'driver') url = SERVER_CFG.SERVER_URL + '/api/motorista/login';
+    else url = SERVER_CFG.SERVER_URL + '/api/admin/login';
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          senha: formData.password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.mensagem || 'Falha no login');
+      // Salva token e dados do usuário
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userType', userType);
+      localStorage.setItem('user', JSON.stringify(data.usuario || data.admin || {}));
+      navigate(dashboardByUserType[userType]);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao fazer login');
+    }
   };
 
   return (
@@ -89,6 +115,9 @@ export function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            {error && (
+              <div className="rounded bg-red-100 text-red-700 px-3 py-2 text-sm mb-2 border border-red-200">{error}</div>
+            )}
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
                 E-mail

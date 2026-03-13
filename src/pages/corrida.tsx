@@ -1,5 +1,5 @@
 import { Car, MapPin, CreditCard, Star } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Ride() {
   return (

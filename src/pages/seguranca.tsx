@@ -1,5 +1,5 @@
 import { Shield, Lock, Eye, UserCheck } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Safety() {
   return (

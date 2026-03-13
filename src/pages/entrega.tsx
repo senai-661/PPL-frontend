@@ -1,5 +1,5 @@
 import { Package, Truck, Clock } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Delivery() {
   return (

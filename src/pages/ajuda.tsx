@@ -1,6 +1,6 @@
 import { Search, MessageCircle, Book, Phone } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Help() {
   const [searchTerm, setSearchTerm] = useState('');

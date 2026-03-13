@@ -1,5 +1,5 @@
 import { Car, Users, Briefcase, Calendar, Shield, Headphones } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Services() {
   return (

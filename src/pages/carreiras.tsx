@@ -1,5 +1,5 @@
 import { Briefcase, Heart, Users, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Careers() {
   const positions = [

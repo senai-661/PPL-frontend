@@ -1,5 +1,5 @@
 import { Car, ShieldCheck, User, Users } from 'lucide-react';
-import { NavLink, Outlet, useLocation } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 const footerLinks = [
   { to: '/administrador/tabela-motoristas', label: 'Motoristas', icon: User },

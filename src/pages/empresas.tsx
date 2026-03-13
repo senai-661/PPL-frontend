@@ -1,5 +1,5 @@
 import { Briefcase, Users, BarChart, CreditCard } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Business() {
   return (

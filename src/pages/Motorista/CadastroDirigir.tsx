@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router';
+﻿import { Link } from 'react-router-dom';
 import { Car, FileCheck, GraduationCap, CheckCircle } from 'lucide-react';
 
 export function DriveRegistration() {

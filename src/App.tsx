@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+// ...existing code...
 import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodapé/Rodape';
 import { Home } from './Components/Inicio/Inicio';
@@ -26,9 +27,9 @@ import { SafetyResources } from './pages/RecursosSeguranca';
 import { Safety } from './pages/Seguranca';
 import { AdminLayout } from './pages/Administrador/AdminLayout';
 import { AdminDashboard } from './pages/Administrador/PainelAdministrador';
-import { CarsTable } from './pages/Administrador/TabelaCarros';
-import { DriversTable } from './pages/Administrador/TabelaMotoristas';
-import { PassengersTable } from './pages/Administrador/TabelaPassageiros';
+import CarsTable from './pages/Administrador/TabelaCarros';
+import DriversTable from './pages/Administrador/TabelaMotoristas';
+import PassengersTable from './pages/Administrador/TabelaPassageiros';
 import { DriverRegistration } from './pages/Motorista/CadastroMotorista';
 import { CarRegistration } from './pages/Motorista/CadastroCarro';
 import { DriveRegistration } from './pages/Motorista/CadastroDirigir';

@@ -1,6 +1,6 @@
 import { Calendar, MapPin, DollarSign, Star, Search } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function TripList() {
   const [filter, setFilter] = useState('all'); // all, completed, cancelled

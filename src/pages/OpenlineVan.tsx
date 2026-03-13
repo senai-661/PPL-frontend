@@ -1,5 +1,5 @@
 import { Users, Calendar, Shield, DollarSign } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Van() {
   return (

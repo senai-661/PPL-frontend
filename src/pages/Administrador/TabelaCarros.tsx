@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { AlertCircle, Car, Loader2, RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Car, Loader2, RefreshCw, Search } from 'lucide-react';
 import CarroRequest from '../../fetch/CarroRequest';
 import { VeiculoDTO } from '../../interface/VeiculoDTO';
 
@@ -7,6 +7,7 @@ const TabelaCarros: React.FC = () => {
   const [carros, setCarros] = useState<VeiculoDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchCarros = useCallback(async () => {
     setLoading(true);
@@ -23,6 +24,17 @@ const TabelaCarros: React.FC = () => {
   useEffect(() => {
     fetchCarros();
   }, [fetchCarros]);
+
+  const filteredCarros = useMemo(() => {
+    const termo = searchQuery.trim().toLowerCase();
+    if (!termo) return carros;
+
+    return carros.filter((c) => {
+      const nomeModelo = (c.modeloVeiculo ?? '').toLowerCase();
+      const tipo = (c.tipoVeiculo ?? '').toLowerCase();
+      return nomeModelo.includes(termo) || tipo.includes(termo);
+    });
+  }, [carros, searchQuery]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -41,16 +53,28 @@ const TabelaCarros: React.FC = () => {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex flex-col gap-3 border-b border-gray-200 px-4 sm:px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-gray-600">Lista completa de carros vinculados na plataforma.</p>
-          <button
-            type="button"
-            onClick={fetchCarros}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
-          >
-            <RefreshCw className="size-4" />
-            Atualizar
-          </button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <div className="relative w-full sm:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Pesquisar por nome/modelo..."
+                className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm text-gray-800 outline-none transition focus:border-[#1f5d9f] focus:ring-2 focus:ring-[#1f5d9f]/20"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={fetchCarros}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+            >
+              <RefreshCw className="size-4" />
+              Atualizar
+            </button>
+          </div>
         </div>
 
         {loading && (
@@ -82,14 +106,16 @@ const TabelaCarros: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {carros.length === 0 && (
+                {filteredCarros.length === 0 && (
                   <tr>
                     <td className="px-4 py-10 text-center text-gray-500" colSpan={5}>
-                      Nenhum carro encontrado.
+                      {searchQuery.trim()
+                        ? `Nenhum carro encontrado para "${searchQuery.trim()}".`
+                        : 'Nenhum carro encontrado.'}
                     </td>
                   </tr>
                 )}
-                {carros.map((c) => (
+                {filteredCarros.map((c) => (
                   <tr key={c.idVeiculo} className="border-t border-gray-100 hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 text-gray-800">{c.idVeiculo ?? '-'}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">{c.placa || '-'}</td>

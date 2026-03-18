@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { AlertCircle, Loader2, RefreshCw, UserRound } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Loader2, RefreshCw, Search, UserRound } from 'lucide-react';
 import MotoristaRequest from '../../fetch/MotoristaRequest';
 import { MotoristaDTO } from '../../interface/MotoristaDTO';
 
@@ -7,6 +7,7 @@ const TabelaMotoristas: React.FC = () => {
   const [motoristas, setMotoristas] = useState<MotoristaDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchMotoristas = useCallback(async () => {
     setLoading(true);
@@ -23,6 +24,18 @@ const TabelaMotoristas: React.FC = () => {
   useEffect(() => {
     fetchMotoristas();
   }, [fetchMotoristas]);
+
+  const filteredMotoristas = useMemo(() => {
+    const termo = searchQuery.trim().toLowerCase();
+    if (!termo) return motoristas;
+
+    return motoristas.filter((m) => {
+      const nome = ((m as any).nomeMotorista ?? m.nome ?? '').toString().toLowerCase();
+      const sobrenome = ((m as any).sobrenomeMotorista ?? m.sobrenome ?? '').toString().toLowerCase();
+      const nomeCompleto = `${nome} ${sobrenome}`.trim();
+      return nomeCompleto.includes(termo);
+    });
+  }, [motoristas, searchQuery]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -41,16 +54,28 @@ const TabelaMotoristas: React.FC = () => {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex flex-col gap-3 border-b border-gray-200 px-4 sm:px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-gray-600">Dados principais para aprovacao e acompanhamento dos motoristas.</p>
-          <button
-            type="button"
-            onClick={fetchMotoristas}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
-          >
-            <RefreshCw className="size-4" />
-            Atualizar
-          </button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <div className="relative w-full sm:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Pesquisar por nome..."
+                className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm text-gray-800 outline-none transition focus:border-[#5a34a1] focus:ring-2 focus:ring-[#5a34a1]/20"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={fetchMotoristas}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+            >
+              <RefreshCw className="size-4" />
+              Atualizar
+            </button>
+          </div>
         </div>
 
         {loading && (
@@ -83,14 +108,16 @@ const TabelaMotoristas: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {motoristas.length === 0 && (
+                {filteredMotoristas.length === 0 && (
                   <tr>
                     <td className="px-4 py-10 text-center text-gray-500" colSpan={6}>
-                      Nenhum motorista encontrado.
+                      {searchQuery.trim()
+                        ? `Nenhum motorista encontrado para "${searchQuery.trim()}".`
+                        : 'Nenhum motorista encontrado.'}
                     </td>
                   </tr>
                 )}
-                {motoristas.map((m) => {
+                {filteredMotoristas.map((m) => {
                   const nome = (m as any).nomeMotorista ?? m.nome;
                   const sobrenome = (m as any).sobrenomeMotorista ?? m.sobrenome;
                   return (

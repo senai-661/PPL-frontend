@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 // ...existing code...
 import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodapé/Rodape';
@@ -43,6 +44,35 @@ import { TripDashboard } from './pages/Viagem/PainelViagem';
 import { TripList } from './pages/Viagem/ListaViagens';
 import { NewTrip } from './pages/Viagem/NovaViagem';
 
+type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
+
+const dashboardByUserType: Record<AuthenticatedUserType, string> = {
+  passenger: '/passageiro/painel',
+  driver: '/motorista/painel',
+  admin: '/administrador/painel',
+};
+
+function ProtectedRoute({
+  allowedUserType,
+  children,
+}: {
+  allowedUserType: AuthenticatedUserType;
+  children: ReactNode;
+}) {
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('userType') as AuthenticatedUserType | null;
+
+  if (!token || !userType) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (userType !== allowedUserType) {
+    return <Navigate to={dashboardByUserType[userType] ?? '/login'} replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/administrador');
@@ -77,7 +107,14 @@ function AppContent() {
           <Route path="/sobre-nos" element={<About />} />
 
           {/* Admin Pages */}
-          <Route path="/administrador" element={<AdminLayout />}>
+          <Route
+            path="/administrador"
+            element={(
+              <ProtectedRoute allowedUserType="admin">
+                <AdminLayout />
+              </ProtectedRoute>
+            )}
+          >
             <Route index element={<AdminDashboard />} />
             <Route path="painel" element={<AdminDashboard />} />
             <Route path="tabela-carros" element={<CarsTable />} />
@@ -89,13 +126,41 @@ function AppContent() {
           <Route path="/motorista/cadastro-carro" element={<CarRegistration />} />
           <Route path="/motorista/cadastro-dirigir" element={<DriveRegistration />} />
           <Route path="/motorista/cadastro" element={<DriverRegistration />} />
-          <Route path="/motorista/painel" element={<DriverDashboard />} />
-          <Route path="/motorista/perfil" element={<DriverProfile />} />
+          <Route
+            path="/motorista/painel"
+            element={(
+              <ProtectedRoute allowedUserType="driver">
+                <DriverDashboard />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/motorista/perfil"
+            element={(
+              <ProtectedRoute allowedUserType="driver">
+                <DriverProfile />
+              </ProtectedRoute>
+            )}
+          />
 
           {/* Passenger Pages */}
           <Route path="/passageiro/cadastro" element={<PassengerRegistration />} />
-          <Route path="/passageiro/painel" element={<PassengerDashboard />} />
-          <Route path="/passageiro/perfil" element={<PassengerProfile />} />
+          <Route
+            path="/passageiro/painel"
+            element={(
+              <ProtectedRoute allowedUserType="passenger">
+                <PassengerDashboard />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/passageiro/perfil"
+            element={(
+              <ProtectedRoute allowedUserType="passenger">
+                <PassengerProfile />
+              </ProtectedRoute>
+            )}
+          />
 
           {/* Trip Pages */}
           <Route path="/viagem/avaliacao" element={<TripRating />} />

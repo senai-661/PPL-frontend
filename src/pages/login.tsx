@@ -24,6 +24,12 @@ const mapApiUserTypeToFrontend = (apiUserType?: ApiUserType): UserType | null =>
   return null;
 };
 
+const mapFrontendUserTypeToApi = (frontendUserType: UserType): ApiUserType => {
+  if (frontendUserType === 'passenger') return 'passageiro';
+  if (frontendUserType === 'driver') return 'motorista';
+  return 'admin';
+};
+
 export function Login() {
   const navigate = useNavigate();
   const [userType, setUserType] = useState<UserType>('passenger');
@@ -42,6 +48,7 @@ export function Login() {
         body: JSON.stringify({
           email: formData.email,
           senha: formData.password,
+          tipo: mapFrontendUserTypeToApi(userType),
         }),
       });
       const responseText = await res.text();
@@ -61,13 +68,16 @@ export function Login() {
 
       if (!res.ok) throw new Error(data?.mensagem || 'Falha no login');
       if (!data?.token) throw new Error('Resposta de login sem token.');
-      // Salva token e dados do usuário
+
       const userTypeFromApi = mapApiUserTypeToFrontend(data?.usuario?.tipo as ApiUserType);
-      const authenticatedUserType = userTypeFromApi ?? userType;
+      if (!userTypeFromApi) {
+        throw new Error('Resposta de login sem perfil de usuario valido.');
+      }
+
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userType', authenticatedUserType);
+      localStorage.setItem('userType', userTypeFromApi);
       localStorage.setItem('user', JSON.stringify(data.usuario || data.admin || {}));
-      navigate(dashboardByUserType[authenticatedUserType]);
+      navigate(dashboardByUserType[userTypeFromApi]);
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login');
     }

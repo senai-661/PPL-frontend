@@ -8,4 +8,5 @@ export interface RegisterDTO {
 export interface LoginDTO {
   email: string;
   senha: string;
+  tipo?: 'passageiro' | 'motorista' | 'admin' | 'passenger' | 'driver';
 }

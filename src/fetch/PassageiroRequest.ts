@@ -1,77 +1,72 @@
 import { SERVER_CFG } from '../appConfig';
 import { PassageiroDTO } from '../interface/PassageiroDTO';
 
-/**
- * Classe com a coleção de funções que farão as requisições à API
- * Esta classe representa apenas as requisições da entidade Passageiro
- */
 class PassageiroRequests {
 
-    private serverURL: string;          // Variável para o endereço do servidor
-    private routeListaPassageiros: string;   // Variável para a rota de listagem de Passageiros
-    private routeCadastraPassageiro: string; // Variável para a rota de cadastro de Passageiro
-    private routeAtualizaPassageiro: string; // Variável para a rota de atualização de Passageiro
-    private routeRemovePassageiro: string;   // Variável para a rota de remoção do Passageiro
+    private serverURL: string;
+    private routeListaPassageiros: string;
+    private routeCadastraPassageiro: string;
+    private routeAtualizaPassageiro: string;
+    private routeRemovePassageiro: string;
 
-    /**
-     * O construtor é chamado automaticamente quando criamos uma nova instância da classe.
-     * Ele define os valores iniciais das variáveis com base nas configurações da API.
-     */
     constructor() {
-        this.serverURL = SERVER_CFG.SERVER_URL;     // Endereço do servidor web
-        this.routeListaPassageiros = SERVER_CFG.ENDPOINT_LISTAR_PASSAGEIRO;    // Rota configurada na API
-        this.routeCadastraPassageiro = SERVER_CFG.ENDPOINT_CADASTRAR_PASSAGEIRO;    // Rota configurada na API
-        this.routeAtualizaPassageiro = SERVER_CFG.ENDPOINT_ATUALIZAR_PASSAGEIRO; // Rota configurada na API
-        this.routeRemovePassageiro = SERVER_CFG.ENDPOINT_REMOVER_PASSAGEIRO;    // Rota configurada na API
+        this.serverURL = SERVER_CFG.SERVER_URL;
+        this.routeListaPassageiros = SERVER_CFG.ENDPOINT_LISTAR_PASSAGEIRO;
+        this.routeCadastraPassageiro = SERVER_CFG.ENDPOINT_CADASTRAR_PASSAGEIRO;
+        this.routeAtualizaPassageiro = SERVER_CFG.ENDPOINT_ATUALIZAR_PASSAGEIRO;
+        this.routeRemovePassageiro = SERVER_CFG.ENDPOINT_REMOVER_PASSAGEIRO;
     }
 
-    /**
-     * Método que faz uma requisição à API para buscar a lista de Passageiros cadastrados
-     * @returns Retorna um JSON com a lista de Passageiros ou null em caso de erro
-     */
+    private getAuthHeader() {
+        const token = localStorage.getItem('token');
+        return { 'Authorization': `Bearer ${token}` };
+    }
+
+    // O backend retorna: { id, nome, sobrenome, cpf, dataNascimento, celular, email, necessidades, tipoViagem, preferenciaClima }
+    // Aqui mapeamos para o formato que o DTO e os componentes esperam
+    private mapPassageiro(p: any): PassageiroDTO {
+        return {
+            idPassageiro: p.id,
+            nomePassageiro: p.nome,
+            sobrenomePassageiro: p.sobrenome,
+            cpf: p.cpf,
+            dataNascimento: p.dataNascimento,
+            celular: p.celular,
+            email: p.email,
+            necessidades: p.necessidades ?? [],
+            tipoViagem: p.tipoViagem ?? 'Convencional',
+            preferenciaClima: p.preferenciaClima ?? 'Não Importa',
+            senha: '',
+        };
+    }
+
     async listarPassageiros(): Promise<PassageiroDTO[] | null> {
-        const token = localStorage.getItem('token'); // recupera o token do localStorage
         try {
-            // faz a requisição no servidor
             const respostaAPI = await fetch(`${this.serverURL}${this.routeListaPassageiros}`, {
-                headers: {
-                    'ladygagasenha': `${token}`
-                }
+                headers: this.getAuthHeader()
             });
 
-            // Verifica se a resposta foi bem-sucedida (status HTTP 200-299)
             if (respostaAPI.ok) {
-                // converte a reposta para um JSON
-                const listaDePassageiros: PassageiroDTO[] = await respostaAPI.json();
-                // retorna a resposta
-                return listaDePassageiros;
+                const lista: any[] = await respostaAPI.json();
+                return lista.map(this.mapPassageiro);
             } else {
                 throw new Error("Não foi possível listar os Passageiros");
             }
         } catch (error) {
-            // exibe detalhes do erro no console
             console.error(`Erro ao fazer a consulta de Passageiros: ${error}`);
-            // retorna um valor nulo
             return null;
         }
     }
 
     async consultarPassageiro(idPassageiro: number): Promise<PassageiroDTO | null> {
-        const token = localStorage.getItem('token');
-
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeListaPassageiros}?idPassageiro=${idPassageiro}`, {
-                headers: {
-                    'ladygagasenha': `${token}`
-                }
+                headers: this.getAuthHeader()
             });
 
-            // Verifica se a resposta foi bem-sucedida (status HTTP 200-299)
             if (respostaAPI.ok) {
-                // converte a reposta para um JSON
-                const passageiro: PassageiroDTO = await respostaAPI.json();
-                // retorna a resposta
-                return passageiro;
+                const passageiro: any = await respostaAPI.json();
+                return this.mapPassageiro(passageiro);
             } else {
                 throw new Error("Não foi possível consultar o Passageiro");
             }
@@ -81,27 +76,18 @@ class PassageiroRequests {
         }
     }
 
-    /**
-     * Envia os dados do formulário Passageiro para a API
-     * @param formPassageiro Objeto com os valores do formulário
-     * @returns **true** se cadastro com sucesso, **false** se falha
-     */
     async enviaFormularioPassageiro(formPassageiro: string): Promise<boolean> {
-        const token = localStorage.getItem('token'); // recupera o token do localStorage
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeCadastraPassageiro}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'ladygagasenha': `${token}`
+                    ...this.getAuthHeader()
                 },
                 body: formPassageiro
             });
 
-            if(!respostaAPI.ok) {
-                throw new Error('Erro ao fazer requisição com o servidor.');
-            }
-
+            if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição com o servidor.');
             return true;
         } catch (error) {
             console.error(`Erro ao enviar o formulário. ${error}`);
@@ -110,20 +96,16 @@ class PassageiroRequests {
     }
 
     async removerPassageiro(idPassageiro: number): Promise<boolean> {
-        const token = localStorage.getItem('token');
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeRemovePassageiro}?idPassageiro=${idPassageiro}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-type': 'application/json',
-                    'ladygagasenha': `${token}`
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
                 }
             });
 
-            if(!respostaAPI.ok) {
-                throw new Error('Erro ao fazer requisição à API.');
-            }
-
+            if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição à API.');
             return true;
         } catch (error) {
             console.error(`Erro ao fazer solicitação. ${error}`);
@@ -132,23 +114,17 @@ class PassageiroRequests {
     }
 
     async enviarFormularioAtualizacaoPassageiro(formPassageiro: PassageiroDTO): Promise<boolean> {
-        const token = localStorage.getItem('token');
-
         try {
-            const respostaAPI = 
-            await fetch(`${this.serverURL}${this.routeAtualizaPassageiro}?idPassageiro=${formPassageiro.idPassageiro}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-type': 'application/json',
-                        'ladygagasenha': `${token}`
-                    },
-                    body: JSON.stringify(formPassageiro)
-                });
+            const respostaAPI = await fetch(`${this.serverURL}${this.routeAtualizaPassageiro}?idPassageiro=${formPassageiro.idPassageiro}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
+                },
+                body: JSON.stringify(formPassageiro)
+            });
 
-            if(!respostaAPI.ok) {
-                throw new Error('Erro ao fazer requisição com o servidor.');
-            }
-
+            if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição com o servidor.');
             return true;
         } catch (error) {
             console.error(`Erro ao enviar requisição. ${error}`);
@@ -157,5 +133,4 @@ class PassageiroRequests {
     }
 }
 
-// Exporta a classe já instanciando um objeto da mesma
 export default new PassageiroRequests();

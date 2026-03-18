@@ -1,78 +1,72 @@
 import { SERVER_CFG } from '../appConfig';
 import { MotoristaDTO } from '../interface/MotoristaDTO';
 
-
-/**
- * Classe com a coleção de funções que farão as requisições à API
- * Esta classe representa apenas as requisições da entidade Motorista
- */
 class MotoristaRequests {
 
-    private serverURL: string;          // Variável para o endereço do servidor
-    private routeListaMotoristas: string;   // Variável para a rota de listagem de Motoristas
-    private routeCadastraMotorista: string; // Variável para a rota de cadastro de Motorista
-    private routeAtualizaMotorista: string; // Variável para a rota de atualização de Motorista
-    private routeRemoveMotorista: string;   // Variável para a rota de remoção do Motorista
+    private serverURL: string;
+    private routeListaMotoristas: string;
+    private routeCadastraMotorista: string;
+    private routeAtualizaMotorista: string;
+    private routeRemoveMotorista: string;
 
-    /**
-     * O construtor é chamado automaticamente quando criamos uma nova instância da classe.
-     * Ele define os valores iniciais das variáveis com base nas configurações da API.
-     */
     constructor() {
-        this.serverURL = SERVER_CFG.SERVER_URL;     // Endereço do servidor web
-        this.routeListaMotoristas = SERVER_CFG.ENDPOINT_LISTAR_MOTORISTA;    // Rota configurada na API
-        this.routeCadastraMotorista = SERVER_CFG.ENDPOINT_CADASTRAR_MOTORISTA;    // Rota configurada na API
-        this.routeAtualizaMotorista = SERVER_CFG.ENDPOINT_ATUALIZAR_MOTORISTA; // Rota configurada na API
-        this.routeRemoveMotorista = SERVER_CFG.ENDPOINT_REMOVER_MOTORISTA;    // Rota configurada na API
+        this.serverURL = SERVER_CFG.SERVER_URL;
+        this.routeListaMotoristas = SERVER_CFG.ENDPOINT_LISTAR_MOTORISTA;
+        this.routeCadastraMotorista = SERVER_CFG.ENDPOINT_CADASTRAR_MOTORISTA;
+        this.routeAtualizaMotorista = SERVER_CFG.ENDPOINT_ATUALIZAR_MOTORISTA;
+        this.routeRemoveMotorista = SERVER_CFG.ENDPOINT_REMOVER_MOTORISTA;
     }
 
-    /**
-     * Método que faz uma requisição à API para buscar a lista de Motoristas cadastrados
-     * @returns Retorna um JSON com a lista de Motoristas ou null em caso de erro
-     */
+    private getAuthHeader() {
+        const token = localStorage.getItem('token');
+        return { 'Authorization': `Bearer ${token}` };
+    }
+
+    // O backend retorna: { id, nome, sobrenome, cpf, cnh, dataNascimento, celular, email, antecedentes, especializacao }
+    // Aqui mapeamos para o formato que o DTO e os componentes esperam
+    private mapMotorista(m: any): MotoristaDTO {
+        return {
+            idMotorista: m.id,
+            nomeMotorista: m.nome,
+            sobrenomeMotorista: m.sobrenome,
+            cpf: m.cpf,
+            cnh: m.cnh,
+            dataNascimento: m.dataNascimento,
+            celular: m.celular,
+            email: m.email,
+            antecedentesCriminais: m.antecedentes,
+            especializacao: m.especializacao,
+            senha: '',
+        };
+    }
+
     async listarMotoristas(): Promise<MotoristaDTO[] | null> {
-        const token = localStorage.getItem('token'); // recupera o token do localStorage
         try {
-            // faz a requisição no servidor
             const respostaAPI = await fetch(`${this.serverURL}${this.routeListaMotoristas}`, {
-                headers: {
-                    'ladygagasenha': `${token}`
-                }
+                headers: this.getAuthHeader()
             });
 
-            // Verifica se a resposta foi bem-sucedida (status HTTP 200-299)
             if (respostaAPI.ok) {
-                // converte a reposta para um JSON
-                const listaDeMotoristas: MotoristaDTO[] = await respostaAPI.json();
-                // retorna a resposta
-                return listaDeMotoristas;
+                const lista: any[] = await respostaAPI.json();
+                return lista.map(this.mapMotorista);
             } else {
                 throw new Error("Não foi possível listar os Motoristas");
             }
         } catch (error) {
-            // exibe detalhes do erro no console
             console.error(`Erro ao fazer a consulta de Motoristas: ${error}`);
-            // retorna um valor nulo
             return null;
         }
     }
 
     async consultarMotorista(idMotorista: number): Promise<MotoristaDTO | null> {
-        const token = localStorage.getItem('token');
-
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeListaMotoristas}?idMotorista=${idMotorista}`, {
-                headers: {
-                    'ladygagasenha': `${token}`
-                }
+                headers: this.getAuthHeader()
             });
 
-            // Verifica se a resposta foi bem-sucedida (status HTTP 200-299)
             if (respostaAPI.ok) {
-                // converte a reposta para um JSON
-                const motorista: MotoristaDTO = await respostaAPI.json();
-                // retorna a resposta
-                return motorista;
+                const motorista: any = await respostaAPI.json();
+                return this.mapMotorista(motorista);
             } else {
                 throw new Error("Não foi possível consultar o Motorista");
             }
@@ -82,27 +76,18 @@ class MotoristaRequests {
         }
     }
 
-    /**
-     * Envia os dados do formulário Motorista para a API
-     * @param formMotorista Objeto com os valores do formulário
-     * @returns **true** se cadastro com sucesso, **false** se falha
-     */
     async enviaFormularioMotorista(formMotorista: string): Promise<boolean> {
-        const token = localStorage.getItem('token'); // recupera o token do localStorage
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeCadastraMotorista}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'ladygagasenha': `${token}`
+                    ...this.getAuthHeader()
                 },
                 body: formMotorista
             });
 
-            if(!respostaAPI.ok) {
-                throw new Error('Erro ao fazer requisição com o servidor.');
-            }
-
+            if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição com o servidor.');
             return true;
         } catch (error) {
             console.error(`Erro ao enviar o formulário. ${error}`);
@@ -111,20 +96,16 @@ class MotoristaRequests {
     }
 
     async removerMotorista(idMotorista: number): Promise<boolean> {
-        const token = localStorage.getItem('token');
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeRemoveMotorista}?idMotorista=${idMotorista}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-type': 'application/json',
-                    'ladygagasenha': `${token}`
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
                 }
             });
 
-            if(!respostaAPI.ok) {
-                throw new Error('Erro ao fazer requisição à API.');
-            }
-
+            if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição à API.');
             return true;
         } catch (error) {
             console.error(`Erro ao fazer solicitação. ${error}`);
@@ -133,23 +114,17 @@ class MotoristaRequests {
     }
 
     async enviarFormularioAtualizacaoMotorista(formMotorista: MotoristaDTO): Promise<boolean> {
-        const token = localStorage.getItem('token');
-
         try {
-            const respostaAPI = 
-            await fetch(`${this.serverURL}${this.routeAtualizaMotorista}?idMotorista=${formMotorista.idMotorista}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-type': 'application/json',
-                        'ladygagasenha': `${token}`
-                    },
-                    body: JSON.stringify(formMotorista)
-                });
+            const respostaAPI = await fetch(`${this.serverURL}${this.routeAtualizaMotorista}?idMotorista=${formMotorista.idMotorista}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
+                },
+                body: JSON.stringify(formMotorista)
+            });
 
-            if(!respostaAPI.ok) {
-                throw new Error('Erro ao fazer requisição com o servidor.');
-            }
-
+            if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição com o servidor.');
             return true;
         } catch (error) {
             console.error(`Erro ao enviar requisição. ${error}`);
@@ -158,5 +133,4 @@ class MotoristaRequests {
     }
 }
 
-// Exporta a classe já instanciando um objeto da mesma
 export default new MotoristaRequests();

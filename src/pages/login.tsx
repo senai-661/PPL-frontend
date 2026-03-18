@@ -4,6 +4,7 @@ import { Lock, LogIn, Mail, UserRound } from 'lucide-react';
 import { SERVER_CFG } from '../appConfig';
 
 type UserType = 'passenger' | 'driver' | 'admin';
+type ApiUserType = 'passageiro' | 'motorista' | 'admin';
 
 const dashboardByUserType: Record<UserType, string> = {
   passenger: '/passageiro/painel',
@@ -16,6 +17,13 @@ const registerByUserType: Record<Exclude<UserType, 'admin'>, string> = {
   driver: '/motorista/cadastro',
 };
 
+const mapApiUserTypeToFrontend = (apiUserType?: ApiUserType): UserType | null => {
+  if (apiUserType === 'passageiro') return 'passenger';
+  if (apiUserType === 'motorista') return 'driver';
+  if (apiUserType === 'admin') return 'admin';
+  return null;
+};
+
 export function Login() {
   const navigate = useNavigate();
   const [userType, setUserType] = useState<UserType>('passenger');
@@ -25,10 +33,7 @@ export function Login() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    let url = '';
-    if (userType === 'passenger') url = SERVER_CFG.SERVER_URL + '/api/passageiro/login';
-    else if (userType === 'driver') url = SERVER_CFG.SERVER_URL + '/api/motorista/login';
-    else url = SERVER_CFG.SERVER_URL + '/api/admin/login';
+    const url = `${SERVER_CFG.SERVER_URL}${SERVER_CFG.ENDPOINT_AUTH_LOGIN}`;
 
     try {
       const res = await fetch(url, {
@@ -39,13 +44,30 @@ export function Login() {
           senha: formData.password,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.mensagem || 'Falha no login');
+      const responseText = await res.text();
+      const responseTrimmed = responseText.trim();
+
+      let data: any = {};
+      if (responseTrimmed) {
+        try {
+          data = JSON.parse(responseTrimmed);
+        } catch {
+          if (responseTrimmed.startsWith('<!DOCTYPE') || responseTrimmed.startsWith('<html')) {
+            throw new Error('A API retornou HTML em vez de JSON. Verifique a URL/rota do backend.');
+          }
+          throw new Error('Resposta invalida do servidor. Nao foi possivel ler o JSON.');
+        }
+      }
+
+      if (!res.ok) throw new Error(data?.mensagem || 'Falha no login');
+      if (!data?.token) throw new Error('Resposta de login sem token.');
       // Salva token e dados do usuário
+      const userTypeFromApi = mapApiUserTypeToFrontend(data?.usuario?.tipo as ApiUserType);
+      const authenticatedUserType = userTypeFromApi ?? userType;
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userType', userType);
+      localStorage.setItem('userType', authenticatedUserType);
       localStorage.setItem('user', JSON.stringify(data.usuario || data.admin || {}));
-      navigate(dashboardByUserType[userType]);
+      navigate(dashboardByUserType[authenticatedUserType]);
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login');
     }

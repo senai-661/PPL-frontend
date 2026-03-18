@@ -51,7 +51,7 @@ export const SERVER_CFG = {
     ENDPOINT_REMOVER_CARRO: '/api/carro/delete',
 
     // endpoint de login
-    ENDPOINT_AUTH_LOGIN: '/login',
+    ENDPOINT_AUTH_LOGIN: '/api/login',
 
 }
 

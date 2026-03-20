@@ -3,19 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, FileText, Lock, Mail, Phone, User } from 'lucide-react';
 import PassageiroRequest from '../../fetch/PassageiroRequest';
 
-type PassengerRegistrationPayload = {
-  cpf: string;
-  nomePassageiro: string;
-  sobrenomePassageiro: string;
-  dataNascimento: Date;
-  email: string;
-  celular: string;
-  necessidades: string[];
-  tipoViagem: string;
-  preferenciaClima: string;
-  senha: string;
-};
-
 const necessidadesDisponiveis = [
   'Cadeirante',
   'Deficiencia visual',
@@ -27,53 +14,51 @@ export function PassengerRegistration() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     cpf: '',
-    nome_passageiro: '',
-    sobrenome_passageiro: '',
-    data_nascimento: '',
+    nomePassageiro: '',
+    sobrenomePassageiro: '',
+    dataNascimento: '',
     email: '',
     celular: '',
     necessidades: [] as string[],
-    tipo_viagem: '',
-    preferencia_clima: '',
+    tipoViagem: '',
+    preferenciaClima: '',
     senha: '',
   });
 
   const toggleNecessidade = (necessidade: string) => {
     setFormData((prev) => {
-      const necessidadeSelecionada = prev.necessidades.includes(necessidade);
-      const necessidades = necessidadeSelecionada
-        ? prev.necessidades.filter((item) => item !== necessidade)
-        : [...prev.necessidades, necessidade];
-
-      return { ...prev, necessidades };
+      const jaSelected = prev.necessidades.includes(necessidade);
+      return {
+        ...prev,
+        necessidades: jaSelected
+          ? prev.necessidades.filter((item) => item !== necessidade)
+          : [...prev.necessidades, necessidade],
+      };
     });
   };
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    // Limpar CPF (remover pontos e traço)
-    const cpfLimpo = formData.cpf.replace(/\D/g, '');
-    // Garantir valores válidos para tipo_viagem e preferencia_clima
-    let tipo_viagem = formData.tipo_viagem;
-    if (!['Convencional', 'EconoComigo', 'Premium'].includes(tipo_viagem)) tipo_viagem = 'Convencional';
-    let preferencia_clima = formData.preferencia_clima;
-    if (!['Silencioso', 'Com Música', 'Não Importa'].includes(preferencia_clima)) preferencia_clima = 'Não Importa';
+
     const payload = {
-      cpf: cpfLimpo,
-      nome_passageiro: formData.nome_passageiro,
-      sobrenome_passageiro: formData.sobrenome_passageiro,
-      data_nascimento: formData.data_nascimento,
-      email: formData.email,
-      celular: formData.celular,
-      necessidades: formData.necessidades,
-      tipo_viagem,
-      preferencia_clima,
-      senha: formData.senha,
-    };
+    tipo: 'passageiro',
+    cpf: formData.cpf.replace(/\D/g, ''),
+    nome: formData.nomePassageiro,        // ✅ "nome" em vez de "nomePassageiro"
+    sobrenome: formData.sobrenomePassageiro, // ✅ "sobrenome" em vez de "sobrenomePassageiro"
+    dataNascimento: formData.dataNascimento,
+    email: formData.email,
+    celular: formData.celular,
+    necessidades: formData.necessidades,
+    tipoViagem: formData.tipoViagem || 'Convencional',
+    preferenciaClima: formData.preferenciaClima || 'Não Importa',
+    senha: formData.senha,
+};
+
     try {
       const ok = await PassageiroRequest.enviaFormularioPassageiro(JSON.stringify(payload));
       if (ok) {
@@ -94,7 +79,7 @@ export function PassengerRegistration() {
       <div className="max-w-2xl mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl mb-4">Cadastro de Passageiro</h1>
-          <p className="text-gray-600">Preencha os dados obrigatorios para criar sua conta</p>
+          <p className="text-gray-600">Preencha os dados obrigatórios para criar sua conta</p>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-md">
@@ -107,8 +92,8 @@ export function PassengerRegistration() {
                   <input
                     type="text"
                     required
-                    value={formData.nome_passageiro}
-                    onChange={(e) => setFormData({ ...formData, nome_passageiro: e.target.value })}
+                    value={formData.nomePassageiro}
+                    onChange={(e) => setFormData({ ...formData, nomePassageiro: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Seu nome"
                   />
@@ -121,8 +106,8 @@ export function PassengerRegistration() {
                   <input
                     type="text"
                     required
-                    value={formData.sobrenome_passageiro}
-                    onChange={(e) => setFormData({ ...formData, sobrenome_passageiro: e.target.value })}
+                    value={formData.sobrenomePassageiro}
+                    onChange={(e) => setFormData({ ...formData, sobrenomePassageiro: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Seu sobrenome"
                   />
@@ -153,8 +138,8 @@ export function PassengerRegistration() {
                 <input
                   type="date"
                   required
-                  value={formData.data_nascimento}
-                  onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
+                  value={formData.dataNascimento}
+                  onChange={(e) => setFormData({ ...formData, dataNascimento: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                 />
               </div>
@@ -212,8 +197,8 @@ export function PassengerRegistration() {
                 <label className="block text-gray-700 mb-2">Tipo de Viagem *</label>
                 <select
                   required
-                  value={formData.tipo_viagem}
-                  onChange={(e) => setFormData({ ...formData, tipo_viagem: e.target.value })}
+                  value={formData.tipoViagem}
+                  onChange={(e) => setFormData({ ...formData, tipoViagem: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1] bg-white"
                 >
                   <option value="">Selecione</option>
@@ -226,8 +211,8 @@ export function PassengerRegistration() {
                 <label className="block text-gray-700 mb-2">Preferência de Clima *</label>
                 <select
                   required
-                  value={formData.preferencia_clima}
-                  onChange={(e) => setFormData({ ...formData, preferencia_clima: e.target.value })}
+                  value={formData.preferenciaClima}
+                  onChange={(e) => setFormData({ ...formData, preferenciaClima: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1] bg-white"
                 >
                   <option value="">Selecione</option>
@@ -248,7 +233,7 @@ export function PassengerRegistration() {
                   value={formData.senha}
                   onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                  placeholder="Minimo 8 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                 />
               </div>
             </div>

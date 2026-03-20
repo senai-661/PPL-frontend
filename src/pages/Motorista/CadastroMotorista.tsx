@@ -3,7 +3,6 @@ import { User, Mail, Phone, FileText, Lock } from 'lucide-react';
 import MotoristaRequest from '../../fetch/MotoristaRequest';
 import { useNavigate } from 'react-router-dom';
 
-
 export function DriverRegistration() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -25,10 +24,21 @@ export function DriverRegistration() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     const payload = {
-      ...formData,
-      dataNascimento: new Date(`${formData.dataNascimento}T00:00:00`),
+      tipo: 'motorista',                        // ✅ obrigatório pelo UsuarioController
+      nome: formData.nomeMotorista,             // ✅ banco espera "nome"
+      sobrenome: formData.sobrenomeMotorista,   // ✅ banco espera "sobrenome"
+      cpf: formData.cpf.replace(/\D/g, ''),
+      cnh: formData.cnh,
+      dataNascimento: formData.dataNascimento,
+      celular: formData.celular,
+      email: formData.email,
+      antecedentesCriminais: formData.antecedentesCriminais,
+      especializacao: formData.especializacao,
+      senha: formData.senha,
     };
+
     try {
       const ok = await MotoristaRequest.enviaFormularioMotorista(JSON.stringify(payload));
       if (ok) {
@@ -83,6 +93,7 @@ export function DriverRegistration() {
                 </div>
               </div>
             </div>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">CPF *</label>
@@ -110,6 +121,7 @@ export function DriverRegistration() {
                 />
               </div>
             </div>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">Data de Nascimento *</label>
@@ -136,6 +148,7 @@ export function DriverRegistration() {
                 </div>
               </div>
             </div>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">E-mail *</label>
@@ -163,6 +176,7 @@ export function DriverRegistration() {
                 />
               </div>
             </div>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">Especialização</label>
@@ -189,9 +203,11 @@ export function DriverRegistration() {
                 </div>
               </div>
             </div>
+
             {error && (
               <div className="rounded bg-red-100 text-red-700 px-3 py-2 text-sm mb-2 border border-red-200">{error}</div>
             )}
+
             <button
               type="submit"
               className="w-full bg-[#5a34a1] text-white py-3 rounded-lg hover:bg-[#4a2891] transition-colors"

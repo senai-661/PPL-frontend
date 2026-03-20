@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Accessibility as AccessibilityIcon } from 'lucide-react';
 import { useState } from 'react';
+import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
 import './Cabecalho.css';
 
 export function Header() {
@@ -40,21 +41,25 @@ export function Header() {
             ))}
           </nav>
 
-          {/* CTA Button Desktop */}
-          <div className="cta-desktop">
-            <Link to="/login" className="cta-button">
-              Entrar
-            </Link>
-          </div>
+          <div className="header-actions">
+            <ThemeToggleButton className="header-theme-toggle" />
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="menu-button"
-            aria-label="Menu"
-          >
-            {isMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
-          </button>
+            {/* CTA Button Desktop */}
+            <div className="cta-desktop">
+              <Link to="/login" className="cta-button">
+                Entrar
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="menu-button"
+              aria-label="Menu"
+            >
+              {isMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}

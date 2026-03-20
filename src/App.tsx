@@ -76,11 +76,12 @@ function ProtectedRoute({
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/administrador');
+  const isLoginRoute = location.pathname === '/login';
 
   return (
     <div className="app-shell min-h-screen flex flex-col">
       {!isAdminRoute && <Header />}
-      <main className="app-main flex-1">
+      <main className={`app-main flex-1 ${isLoginRoute ? 'login-main' : ''}`.trim()}>
         <Routes>
           {/* General Pages */}
           <Route path="/" element={<Home />} />

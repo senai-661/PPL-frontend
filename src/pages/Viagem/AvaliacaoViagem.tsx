@@ -1,4 +1,4 @@
-import { Star, ThumbsUp, MessageSquare } from 'lucide-react';
+﻿import { Star, ThumbsUp, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,7 +62,7 @@ export function TripRating() {
               <p className="text-2xl text-[#5a34a1]">{trip.value}</p>
             </div>
             <p className="text-sm text-gray-600">
-              {trip.from} → {trip.to}
+              {trip.from} ? {trip.to}
             </p>
           </div>
 
@@ -76,7 +76,7 @@ export function TripRating() {
                     key={star}
                     type="button"
                     onClick={() => setRating(star)}
-                    className="transition-transform hover:scale-110"
+                    className="transition-transform "
                   >
                     <Star
                       className={`size-12 ${
@@ -112,7 +112,7 @@ export function TripRating() {
                         className={`px-4 py-2 rounded-full text-sm transition-colors ${
                           selectedTags.includes(tag)
                             ? 'bg-[#5a34a1] text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-100 text-gray-700 '
                         }`}
                       >
                         {tag}
@@ -137,7 +137,7 @@ export function TripRating() {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#5a34a1] text-white py-3 rounded-lg hover:bg-[#4a2891] transition-colors"
+                  className="w-full bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
                 >
                   Enviar Avaliação
                 </button>
@@ -155,3 +155,4 @@ export function TripRating() {
     </div>
   );
 }
+

@@ -64,7 +64,7 @@ export function Drive() {
           <div className="text-center">
             <Link
               to="/motorista/cadastro"
-              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full hover:bg-[#4a2891] transition-colors"
+              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full  transition-colors"
             >
               Cadastre-se como Motorista
             </Link>
@@ -74,3 +74,4 @@ export function Drive() {
     </div>
   );
 }
+

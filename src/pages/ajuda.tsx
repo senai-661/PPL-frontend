@@ -1,4 +1,4 @@
-import { Search, MessageCircle, Book, Phone } from 'lucide-react';
+﻿import { Search, MessageCircle, Book, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -57,13 +57,13 @@ export function Help() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <Link to="/contato" className="bg-gray-50 p-6 rounded-lg hover:shadow-lg transition-shadow text-center">
+            <Link to="/contato" className="bg-gray-50 p-6 rounded-lg  transition-shadow text-center">
               <MessageCircle className="size-12 text-[#5a34a1] mx-auto mb-4" />
               <h3 className="text-xl mb-2">Chat ao Vivo</h3>
               <p className="text-gray-600">Fale com nossa equipe agora</p>
             </Link>
 
-            <a href="tel:08001234567" className="bg-gray-50 p-6 rounded-lg hover:shadow-lg transition-shadow text-center">
+            <a href="tel:08001234567" className="bg-gray-50 p-6 rounded-lg  transition-shadow text-center">
               <Phone className="size-12 text-[#5a34a1] mx-auto mb-4" />
               <h3 className="text-xl mb-2">Ligue para Nós</h3>
               <p className="text-gray-600">0800 123 4567</p>
@@ -84,7 +84,7 @@ export function Help() {
               <div className="space-y-4">
                 {category.questions.map((item, qIdx) => (
                   <details key={qIdx} className="bg-gray-50 p-6 rounded-lg">
-                    <summary className="cursor-pointer text-lg hover:text-[#5a34a1] transition-colors">
+                    <summary className="cursor-pointer text-lg  transition-colors">
                       {item.q}
                     </summary>
                     <p className="mt-4 text-gray-700">{item.a}</p>
@@ -98,3 +98,4 @@ export function Help() {
     </div>
   );
 }
+

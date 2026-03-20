@@ -1,4 +1,4 @@
-import { Calendar, MapPin, DollarSign, Star, Search } from 'lucide-react';
+﻿import { Calendar, MapPin, DollarSign, Star, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -98,7 +98,7 @@ export function TripList() {
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   filter === 'all'
                     ? 'bg-[#5a34a1] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 '
                 }`}
               >
                 Todas
@@ -108,7 +108,7 @@ export function TripList() {
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   filter === 'completed'
                     ? 'bg-[#5a34a1] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 '
                 }`}
               >
                 Concluídas
@@ -118,7 +118,7 @@ export function TripList() {
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   filter === 'cancelled'
                     ? 'bg-[#5a34a1] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 '
                 }`}
               >
                 Canceladas
@@ -141,7 +141,7 @@ export function TripList() {
         {/* Trip List */}
         <div className="space-y-4">
           {filteredTrips.map((trip) => (
-            <div key={trip.id} className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+            <div key={trip.id} className="bg-white p-6 rounded-lg shadow  transition-shadow">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
@@ -193,7 +193,7 @@ export function TripList() {
                   </div>
                   <Link
                     to={`/viagem/painel`}
-                    className="inline-block text-sm text-blue-600 hover:underline"
+                    className="inline-block text-sm text-blue-600 "
                   >
                     Ver detalhes
                   </Link>
@@ -212,3 +212,4 @@ export function TripList() {
     </div>
   );
 }
+

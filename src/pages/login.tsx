@@ -35,6 +35,13 @@ export function Login() {
   const [userType, setUserType] = useState<UserType>('passenger');
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
 
+  const getUserTypeButtonClass = (type: UserType) => {
+    const isSelected = userType === type;
+    return isSelected
+      ? 'bg-[#4a2c86] text-white font-extrabold shadow ring-2 ring-[#4a2c86]/30 dark:bg-[#6d4ab3] dark:text-white dark:ring-[#c4b5fd]/45'
+      : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100';
+  };
+
   const [error, setError] = useState<string | null>(null);
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -84,9 +91,9 @@ export function Login() {
   };
 
   return (
-    <section className="min-h-[80vh] bg-slate-100 px-4 py-12">
-      <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-xl shadow-slate-900/10 lg:grid-cols-[1.05fr_1fr]">
-        <aside className="flex flex-col justify-between bg-[#4a2c86] p-8 text-white sm:p-10">
+    <section className="login-page-surface min-h-[80vh] px-4 py-12">
+      <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 lg:grid-cols-[1.05fr_1fr]">
+        <aside className="flex flex-col justify-between bg-[#4a2c86] p-8 text-white dark:bg-gradient-to-br dark:from-[#251444] dark:to-[#130b26] sm:p-10">
           <div>
             <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-1 text-sm">
               <LogIn className="size-4" />
@@ -99,48 +106,36 @@ export function Login() {
               Escolha seu perfil e acesse seus recursos de viagem, motorista ou administracao.
             </p>
           </div>
-          <div className="mt-8 rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-white/90">
+          <div className="mt-8 rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-white/90 dark:bg-white/5">
             Use este login como simulacao de acesso para navegar pelos paineis.
           </div>
         </aside>
 
         <div className="p-8 sm:p-10">
-          <h2 className="text-2xl font-semibold text-slate-900">Entrar</h2>
-          <p className="mt-2 text-sm text-slate-600">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Entrar</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             Informe e-mail e senha para acessar sua area.
           </p>
 
-          <div className="mt-6 grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-1">
+          <div className="mt-6 grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/80">
             <button
               type="button"
               onClick={() => setUserType('passenger')}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                userType === 'passenger'
-                  ? 'bg-white text-[#4a2c86] shadow'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`lift-on-hover rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getUserTypeButtonClass('passenger')}`}
             >
               Passageiro
             </button>
             <button
               type="button"
               onClick={() => setUserType('driver')}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                userType === 'driver'
-                  ? 'bg-white text-[#4a2c86] shadow'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`lift-on-hover rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getUserTypeButtonClass('driver')}`}
             >
               Motorista
             </button>
             <button
               type="button"
               onClick={() => setUserType('admin')}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                userType === 'admin'
-                  ? 'bg-white text-[#4a2c86] shadow'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`lift-on-hover rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getUserTypeButtonClass('admin')}`}
             >
               Admin
             </button>
@@ -148,14 +143,14 @@ export function Login() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             {error && (
-              <div className="rounded bg-red-100 text-red-700 px-3 py-2 text-sm mb-2 border border-red-200">{error}</div>
+              <div className="mb-2 rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-700 dark:border-red-500/60 dark:bg-red-950/40 dark:text-red-300">{error}</div>
             )}
             <div>
-              <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 E-mail
               </label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="email"
                   type="email"
@@ -163,17 +158,17 @@ export function Login() {
                   onChange={(event) => setFormData({ ...formData, email: event.target.value })}
                   required
                   placeholder="seu@email.com"
-                  className="w-full rounded-lg border border-slate-200 py-3 pl-10 pr-3 text-slate-900 outline-none transition focus:border-[#4a2c86] focus:ring-2 focus:ring-[#4a2c86]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white py-3 pl-10 pr-3 text-slate-900 outline-none transition focus:border-[#4a2c86] focus:ring-2 focus:ring-[#4a2c86]/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-700">
+              <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Senha
               </label>
               <div className="relative">
-                <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="password"
                   type="password"
@@ -181,44 +176,47 @@ export function Login() {
                   onChange={(event) => setFormData({ ...formData, password: event.target.value })}
                   required
                   placeholder="Digite sua senha"
-                  className="w-full rounded-lg border border-slate-200 py-3 pl-10 pr-3 text-slate-900 outline-none transition focus:border-[#4a2c86] focus:ring-2 focus:ring-[#4a2c86]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white py-3 pl-10 pr-3 text-slate-900 outline-none transition focus:border-[#4a2c86] focus:ring-2 focus:ring-[#4a2c86]/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
                 />
               </div>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <label className="flex cursor-pointer items-center gap-2 text-slate-600">
+              <label className="flex cursor-pointer items-center gap-2 text-slate-600 dark:text-slate-300">
                 <input
                   type="checkbox"
                   checked={formData.rememberMe}
                   onChange={(event) =>
                     setFormData({ ...formData, rememberMe: event.target.checked })
                   }
-                  className="size-4 rounded border-slate-300 text-[#4a2c86] focus:ring-[#4a2c86]"
+                  className="size-4 rounded border-slate-300 text-[#4a2c86] focus:ring-[#4a2c86] dark:border-slate-600 dark:bg-slate-800"
                 />
                 Lembrar de mim
               </label>
-              <button type="button" className="font-medium text-[#4a2c86] hover:underline">
+              <button type="button" className="font-medium text-[#4a2c86] dark:text-[#b9a8e8]">
                 Esqueci minha senha
               </button>
             </div>
 
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#4a2c86] py-3 font-semibold text-white transition hover:bg-[#3f2570]"
+              className="lift-on-hover inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#4a2c86] py-3 font-semibold text-white transition "
             >
               <UserRound className="size-4" />
               Entrar
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-slate-600">
+          <p className="mt-6 text-sm text-slate-600 dark:text-slate-300">
             {userType === 'admin' ? (
               'Acesso administrativo interno.'
             ) : (
               <>
                 Nao possui conta?{' '}
-                <Link to={registerByUserType[userType]} className="font-semibold text-[#4a2c86] hover:underline">
+                <Link
+                  to={registerByUserType[userType]}
+                  className="lift-on-hover inline-flex items-center rounded-md bg-[#ede7ff] px-2.5 py-1 font-semibold text-[#4a2c86] dark:bg-[#2a1e48] dark:text-[#d8cfff]"
+                >
                   Criar conta
                 </Link>
               </>

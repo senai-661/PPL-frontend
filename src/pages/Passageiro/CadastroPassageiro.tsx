@@ -243,7 +243,7 @@ export function PassengerRegistration() {
             )}
             <button
               type="submit"
-              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg hover:bg-[#4a2891] transition-colors"
+              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
               disabled={loading}
             >
               {loading ? 'Cadastrando...' : 'Criar Conta'}

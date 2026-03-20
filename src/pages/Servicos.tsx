@@ -19,7 +19,7 @@ export function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8">
             {/* OpenLine Go */}
-            <div className="bg-gray-50 rounded-lg p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-gray-50 rounded-lg p-8  transition-shadow">
               <div className="bg-[#5a34a1] text-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                 <Car className="size-8" />
               </div>
@@ -52,7 +52,7 @@ export function Services() {
             </div>
 
             {/* OpenLine Share */}
-            <div className="bg-gray-50 rounded-lg p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-gray-50 rounded-lg p-8  transition-shadow">
               <div className="bg-[#5a34a1] text-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                 <Users className="size-8" />
               </div>
@@ -85,7 +85,7 @@ export function Services() {
             </div>
 
             {/* OpenLine Business */}
-            <div className="bg-gray-50 rounded-lg p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-gray-50 rounded-lg p-8  transition-shadow">
               <div className="bg-[#5a34a1] text-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                 <Briefcase className="size-8" />
               </div>
@@ -118,7 +118,7 @@ export function Services() {
             </div>
 
             {/* OpenLine Schedule */}
-            <div className="bg-gray-50 rounded-lg p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-gray-50 rounded-lg p-8  transition-shadow">
               <div className="bg-[#5a34a1] text-white w-16 h-16 rounded-full flex items-center justify-center mb-6">
                 <Calendar className="size-8" />
               </div>
@@ -244,7 +244,7 @@ export function Services() {
           </p>
           <Link
             to="/contato"
-            className="inline-block bg-white text-[#5a34a1] px-8 py-4 rounded-full hover:bg-gray-100 transition-colors"
+            className="inline-block bg-white text-[#5a34a1] px-8 py-4 rounded-full  transition-colors"
           >
             Solicitar Viagem
           </Link>
@@ -253,3 +253,4 @@ export function Services() {
     </div>
   );
 }
+

@@ -29,7 +29,7 @@ export function DriveRegistration() {
               </p>
               <Link
                 to="/motorista/cadastro"
-                className="inline-block bg-[#5a34a1] text-white px-6 py-3 rounded-lg hover:bg-[#4a2891] transition-colors"
+                className="inline-block bg-[#5a34a1] text-white px-6 py-3 rounded-lg  transition-colors"
               >
                 Iniciar Cadastro
               </Link>
@@ -80,7 +80,7 @@ export function DriveRegistration() {
               </ul>
               <Link
                 to="/motorista/cadastro-carro"
-                className="inline-block bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors"
+                className="inline-block bg-gray-200 text-gray-700 px-6 py-3 rounded-lg  transition-colors"
               >
                 Cadastrar Veículo
               </Link>
@@ -117,7 +117,7 @@ export function DriveRegistration() {
           </p>
           <Link
             to="/motorista/cadastro"
-            className="inline-block bg-white text-[#5a34a1] px-8 py-4 rounded-full hover:bg-gray-100 transition-colors"
+            className="inline-block bg-white text-[#5a34a1] px-8 py-4 rounded-full  transition-colors"
           >
             Iniciar Cadastro Agora
           </Link>
@@ -126,4 +126,5 @@ export function DriveRegistration() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { User, Mail, Phone, FileText, Lock } from 'lucide-react';
 import MotoristaRequest from '../../fetch/MotoristaRequest';
 import { useNavigate } from 'react-router-dom';
@@ -210,7 +210,7 @@ export function DriverRegistration() {
 
             <button
               type="submit"
-              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg hover:bg-[#4a2891] transition-colors"
+              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
               disabled={loading}
             >
               {loading ? 'Cadastrando...' : 'Criar Conta'}

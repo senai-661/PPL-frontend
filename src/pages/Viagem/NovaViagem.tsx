@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Users, CreditCard } from 'lucide-react';
+﻿import { MapPin, Calendar, Users, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -160,13 +160,13 @@ export function NewTrip() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors"
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg  transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-[#5a34a1] text-white py-3 rounded-lg hover:bg-[#4a2891] transition-colors"
+                className="flex-1 bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
               >
                 {tripData.scheduleDate ? 'Agendar Viagem' : 'Solicitar Agora'}
               </button>
@@ -177,3 +177,4 @@ export function NewTrip() {
     </div>
   );
 }
+

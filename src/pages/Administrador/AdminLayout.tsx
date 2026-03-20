@@ -1,5 +1,6 @@
-import { Car, ShieldCheck, User, Users } from 'lucide-react';
+﻿import { Car, ShieldCheck, User, Users } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
 
 const footerLinks = [
   { to: '/administrador/tabela-motoristas', label: 'Motoristas', icon: User },
@@ -20,15 +21,18 @@ export function AdminLayout() {
   const currentSection = sectionTitles[location.pathname] ?? 'Administracao';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-gradient-to-r from-[#5a34a1] to-[#7c51c9] text-white shadow">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col transition-colors">
+      <header className="bg-gradient-to-r from-[#5a34a1] to-[#7c51c9] text-white shadow dark:from-slate-900 dark:to-indigo-950/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="size-8" />
-            <div>
-              <p className="text-white/80 text-sm">Area Administrativa OpenLine</p>
-              <h1 className="text-2xl sm:text-3xl">{currentSection}</h1>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="size-8" />
+              <div>
+                <p className="text-white/80 text-sm">Area Administrativa OpenLine</p>
+                <h1 className="text-2xl sm:text-3xl">{currentSection}</h1>
+              </div>
             </div>
+            <ThemeToggleButton className="shrink-0" />
           </div>
         </div>
       </header>
@@ -37,7 +41,7 @@ export function AdminLayout() {
         <Outlet />
       </main>
 
-      <footer className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-gray-200">
+      <footer className="fixed bottom-0 inset-x-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-gray-200 dark:border-slate-700">
         <nav className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8" aria-label="Navegacao das tabelas do administrador">
           <ul className="grid grid-cols-3">
             {footerLinks.map((link) => (
@@ -47,7 +51,7 @@ export function AdminLayout() {
                   className={({ isActive }) =>
                     [
                       'w-full py-3 text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-colors',
-                      isActive ? 'text-[#5a34a1] font-semibold' : 'text-gray-600 hover:text-[#5a34a1]',
+                      isActive ? 'text-[#5a34a1] dark:text-indigo-300 font-semibold' : 'text-gray-600 dark:text-slate-300  ',
                     ].join(' ')
                   }
                 >
@@ -64,3 +68,4 @@ export function AdminLayout() {
 }
 
 export default AdminLayout;
+

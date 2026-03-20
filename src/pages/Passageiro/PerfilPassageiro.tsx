@@ -1,4 +1,4 @@
-import { User, Mail, Phone, MapPin, Edit, CreditCard } from 'lucide-react';
+﻿import { User, Mail, Phone, MapPin, Edit, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 
 export function PassengerProfile() {
@@ -38,7 +38,7 @@ export function PassengerProfile() {
               </div>
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className="bg-white text-[#5a34a1] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+                className="bg-white text-[#5a34a1] px-6 py-3 rounded-lg  transition-colors flex items-center gap-2"
               >
                 <Edit className="size-4" />
                 {isEditing ? 'Cancelar' : 'Editar Perfil'}
@@ -138,7 +138,7 @@ export function PassengerProfile() {
             )}
 
             {isEditing && (
-              <button className="mt-6 bg-[#5a34a1] text-white px-6 py-3 rounded-lg hover:bg-[#4a2891] transition-colors">
+              <button className="mt-6 bg-[#5a34a1] text-white px-6 py-3 rounded-lg  transition-colors">
                 Salvar Alterações
               </button>
             )}
@@ -159,10 +159,10 @@ export function PassengerProfile() {
                     <p className="text-sm text-gray-500">Cartão de Crédito - Principal</p>
                   </div>
                 </div>
-                <button className="text-blue-600 hover:text-blue-800 text-sm">Editar</button>
+                <button className="text-blue-600  text-sm">Editar</button>
               </div>
               
-              <button className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#5a34a1] hover:text-[#5a34a1] transition-colors">
+              <button className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600   transition-colors">
                 + Adicionar Método de Pagamento
               </button>
             </div>
@@ -172,3 +172,4 @@ export function PassengerProfile() {
     </div>
   );
 }
+

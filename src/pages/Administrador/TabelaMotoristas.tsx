@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Loader2, RefreshCw, Search, UserRound } from 'lucide-react';
 import MotoristaRequest from '../../fetch/MotoristaRequest';
 import { MotoristaDTO } from '../../interface/MotoristaDTO';
@@ -70,7 +70,7 @@ const TabelaMotoristas: React.FC = () => {
             <button
               type="button"
               onClick={fetchMotoristas}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition "
             >
               <RefreshCw className="size-4" />
               Atualizar
@@ -123,7 +123,7 @@ const TabelaMotoristas: React.FC = () => {
                   return (
                     <tr
                       key={m.idMotorista}
-                      className="border-t border-gray-100 hover:bg-slate-50 transition-colors"
+                      className="border-t border-gray-100  transition-colors"
                     >
                       <td className="px-4 py-3 text-gray-800">{m.idMotorista ?? '-'}</td>
                       <td className="px-4 py-3">
@@ -151,3 +151,4 @@ const TabelaMotoristas: React.FC = () => {
 };
 
 export default TabelaMotoristas;
+

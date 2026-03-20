@@ -26,7 +26,7 @@ export function PassengerDashboard() {
             </div>
             <Link
               to="/viagem/nova"
-              className="bg-white text-[#5a34a1] px-8 py-4 rounded-full hover:bg-gray-100 transition-colors text-lg"
+              className="bg-white text-[#5a34a1] px-8 py-4 rounded-full  transition-colors text-lg"
             >
               Nova Viagem
             </Link>
@@ -50,7 +50,7 @@ export function PassengerDashboard() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Link
             to="/passageiro/perfil"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
+            className="bg-white p-6 rounded-lg shadow  transition-shadow"
           >
             <User className="size-10 text-[#5a34a1] mb-3" />
             <h3 className="text-xl mb-2">Meu Perfil</h3>
@@ -59,7 +59,7 @@ export function PassengerDashboard() {
 
           <Link
             to="/viagem/lista"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
+            className="bg-white p-6 rounded-lg shadow  transition-shadow"
           >
             <List className="size-10 text-[#5a34a1] mb-3" />
             <h3 className="text-xl mb-2">Histórico de Viagens</h3>
@@ -68,7 +68,7 @@ export function PassengerDashboard() {
 
           <Link
             to="/viagem/nova"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
+            className="bg-white p-6 rounded-lg shadow  transition-shadow"
           >
             <MapPin className="size-10 text-[#5a34a1] mb-3" />
             <h3 className="text-xl mb-2">Solicitar Viagem</h3>

@@ -48,7 +48,7 @@ export function DriverProfile() {
               </div>
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className="bg-white text-[#5a34a1] px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+                className="bg-white text-[#5a34a1] px-6 py-3 rounded-lg  transition-colors flex items-center gap-2"
               >
                 <Edit className="size-4" />
                 {isEditing ? 'Cancelar' : 'Editar Perfil'}
@@ -141,7 +141,7 @@ export function DriverProfile() {
             </div>
 
             {isEditing && (
-              <button className="mt-6 bg-[#5a34a1] text-white px-6 py-3 rounded-lg hover:bg-[#4a2891] transition-colors">
+              <button className="mt-6 bg-[#5a34a1] text-white px-6 py-3 rounded-lg  transition-colors">
                 Salvar Alterações
               </button>
             )}

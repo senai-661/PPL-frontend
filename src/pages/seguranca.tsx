@@ -72,7 +72,7 @@ export function Safety() {
           <div className="mt-12 text-center">
             <Link
               to="/recursos-seguranca"
-              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full hover:bg-[#4a2891] transition-colors"
+              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full  transition-colors"
             >
               Conheça Todos os Recursos de Segurança
             </Link>
@@ -82,3 +82,4 @@ export function Safety() {
     </div>
   );
 }
+

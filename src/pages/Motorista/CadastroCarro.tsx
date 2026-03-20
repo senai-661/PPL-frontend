@@ -106,7 +106,7 @@ export function CarRegistration() {
               
               <div>
                 <label className="block text-gray-700 mb-2">CRLV (Documento do Veículo) *</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#5a34a1] transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center  transition-colors cursor-pointer">
                   <Upload className="size-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Clique para fazer upload ou arraste o arquivo</p>
                   <input type="file" className="hidden" accept="image/*,.pdf" />
@@ -115,7 +115,7 @@ export function CarRegistration() {
 
               <div>
                 <label className="block text-gray-700 mb-2">Certificado de Vistoria *</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#5a34a1] transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center  transition-colors cursor-pointer">
                   <Upload className="size-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Clique para fazer upload ou arraste o arquivo</p>
                   <input type="file" className="hidden" accept="image/*,.pdf" />
@@ -124,7 +124,7 @@ export function CarRegistration() {
 
               <div>
                 <label className="block text-gray-700 mb-2">Fotos do Veículo (frente, traseira, laterais) *</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#5a34a1] transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center  transition-colors cursor-pointer">
                   <Upload className="size-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Você pode selecionar múltiplas fotos</p>
                   <input type="file" multiple className="hidden" accept="image/*" />
@@ -141,7 +141,7 @@ export function CarRegistration() {
 
             <button
               type="submit"
-              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg hover:bg-[#4a2891] transition-colors"
+              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
             >
               Cadastrar Veículo
             </button>
@@ -151,3 +151,4 @@ export function CarRegistration() {
     </div>
   );
 }
+

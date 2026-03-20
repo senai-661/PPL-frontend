@@ -1,4 +1,4 @@
-import { Plane, Clock, Shield, DollarSign } from 'lucide-react';
+﻿import { Plane, Clock, Shield, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ImageWithFallback } from '../app/components/figma/ImagemComFallback';
 
@@ -77,7 +77,7 @@ export function Airports() {
           <div className="mt-12 text-center">
             <Link
               to="/viagem/nova"
-              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full hover:bg-[#4a2891] transition-colors"
+              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full  transition-colors"
             >
               Agendar Viagem para Aeroporto
             </Link>
@@ -87,3 +87,4 @@ export function Airports() {
     </div>
   );
 }
+

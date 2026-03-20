@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Loader2, RefreshCw, Search, Users } from 'lucide-react';
 import PassageiroRequest from '../../fetch/PassageiroRequest';
 import { PassageiroDTO } from '../../interface/PassageiroDTO';
@@ -70,7 +70,7 @@ const TabelaPassageiros: React.FC = () => {
             <button
               type="button"
               onClick={fetchPassageiros}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition "
             >
               <RefreshCw className="size-4" />
               Atualizar
@@ -122,7 +122,7 @@ const TabelaPassageiros: React.FC = () => {
                   return (
                     <tr
                       key={p.idPassageiro}
-                      className="border-t border-gray-100 hover:bg-slate-50 transition-colors"
+                      className="border-t border-gray-100  transition-colors"
                     >
                       <td className="px-4 py-3 text-gray-800">{p.idPassageiro ?? '-'}</td>
                       <td className="px-4 py-3">
@@ -149,3 +149,4 @@ const TabelaPassageiros: React.FC = () => {
 };
 
 export default TabelaPassageiros;
+

@@ -24,7 +24,7 @@ export function DriverDashboard() {
               <h1 className="text-4xl mb-2">Olá, Motorista!</h1>
               <p className="text-white/80">Bem-vindo ao seu painel</p>
             </div>
-            <button className="bg-white text-[#5a34a1] px-8 py-4 rounded-full hover:bg-gray-100 transition-colors text-lg">
+            <button className="bg-white text-[#5a34a1] px-8 py-4 rounded-full  transition-colors text-lg">
               Ficar Online
             </button>
           </div>
@@ -48,7 +48,7 @@ export function DriverDashboard() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Link
             to="/motorista/perfil"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
+            className="bg-white p-6 rounded-lg shadow  transition-shadow"
           >
             <Star className="size-10 text-[#5a34a1] mb-3" />
             <h3 className="text-xl mb-2">Meu Perfil</h3>
@@ -57,7 +57,7 @@ export function DriverDashboard() {
 
           <Link
             to="/viagem/lista"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
+            className="bg-white p-6 rounded-lg shadow  transition-shadow"
           >
             <MapPin className="size-10 text-[#5a34a1] mb-3" />
             <h3 className="text-xl mb-2">Histórico de Viagens</h3>
@@ -66,7 +66,7 @@ export function DriverDashboard() {
 
           <Link
             to="/motorista/cadastro-carro"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
+            className="bg-white p-6 rounded-lg shadow  transition-shadow"
           >
             <Car className="size-10 text-[#5a34a1] mb-3" />
             <h3 className="text-xl mb-2">Meu Veículo</h3>
@@ -118,4 +118,5 @@ export function DriverDashboard() {
     </div>
   );
 }
+
 

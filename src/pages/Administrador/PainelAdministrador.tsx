@@ -1,4 +1,4 @@
-import { AlertCircle, Car, DollarSign, MapPin, Users } from 'lucide-react';
+﻿import { AlertCircle, Car, DollarSign, MapPin, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function AdminDashboard() {
@@ -40,7 +40,7 @@ export function AdminDashboard() {
       <div className="grid md:grid-cols-3 gap-5">
         <Link
           to="/administrador/tabela-passageiros"
-          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm  transition-all "
         >
           <span className="inline-flex items-center justify-center size-11 rounded-xl bg-teal-100 text-teal-700 mb-4">
             <Users className="size-6" />
@@ -51,7 +51,7 @@ export function AdminDashboard() {
 
         <Link
           to="/administrador/tabela-motoristas"
-          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm  transition-all "
         >
           <span className="inline-flex items-center justify-center size-11 rounded-xl bg-violet-100 text-violet-700 mb-4">
             <Car className="size-6" />
@@ -62,7 +62,7 @@ export function AdminDashboard() {
 
         <Link
           to="/administrador/tabela-carros"
-          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm  transition-all "
         >
           <span className="inline-flex items-center justify-center size-11 rounded-xl bg-blue-100 text-blue-700 mb-4">
             <Car className="size-6" />
@@ -96,3 +96,4 @@ export function AdminDashboard() {
     </section>
   );
 }
+

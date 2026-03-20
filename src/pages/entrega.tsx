@@ -1,4 +1,4 @@
-import { Package, Truck, Clock } from 'lucide-react';
+﻿import { Package, Truck, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Delivery() {
@@ -47,7 +47,7 @@ export function Delivery() {
           <div className="mt-12 text-center">
             <Link
               to="/contato"
-              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full hover:bg-[#4a2891] transition-colors"
+              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full  transition-colors"
             >
               Cadastre-se para Receber Novidades
             </Link>
@@ -57,3 +57,4 @@ export function Delivery() {
     </div>
   );
 }
+

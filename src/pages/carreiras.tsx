@@ -1,4 +1,4 @@
-import { Briefcase, Heart, Users, TrendingUp } from 'lucide-react';
+﻿import { Briefcase, Heart, Users, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Careers() {
@@ -51,14 +51,14 @@ export function Careers() {
           <h2 className="text-3xl mb-8">Vagas Abertas</h2>
           <div className="space-y-4">
             {positions.map((position, idx) => (
-              <div key={idx} className="bg-gray-50 p-6 rounded-lg flex items-center justify-between hover:shadow-lg transition-shadow">
+              <div key={idx} className="bg-gray-50 p-6 rounded-lg flex items-center justify-between  transition-shadow">
                 <div>
                   <h3 className="text-xl mb-2">{position.title}</h3>
-                  <p className="text-gray-600">{position.dept} • {position.location} • {position.type}</p>
+                  <p className="text-gray-600">{position.dept} ? {position.location} ? {position.type}</p>
                 </div>
                 <Link
                   to="/contato"
-                  className="bg-[#5a34a1] text-white px-6 py-3 rounded-full hover:bg-[#4a2891] transition-colors"
+                  className="bg-[#5a34a1] text-white px-6 py-3 rounded-full  transition-colors"
                 >
                   Candidatar-se
                 </Link>
@@ -70,3 +70,4 @@ export function Careers() {
     </div>
   );
 }
+

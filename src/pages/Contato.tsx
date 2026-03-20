@@ -184,7 +184,7 @@ export function Contact() {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#5a34a1] text-white px-6 py-4 rounded-lg hover:bg-[#4a2891] transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-[#5a34a1] text-white px-6 py-4 rounded-lg  transition-colors flex items-center justify-center gap-2"
                 >
                   <Send className="size-5" />
                   Enviar Mensagem
@@ -294,10 +294,10 @@ export function Contact() {
             Disponível para iOS e Android
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-[#5a34a1] px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors">
+            <button className="bg-white text-[#5a34a1] px-8 py-4 rounded-lg  transition-colors">
               Download na App Store
             </button>
-            <button className="bg-white text-[#5a34a1] px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors">
+            <button className="bg-white text-[#5a34a1] px-8 py-4 rounded-lg  transition-colors">
               Download no Google Play
             </button>
           </div>
@@ -306,3 +306,4 @@ export function Contact() {
     </div>
   );
 }
+

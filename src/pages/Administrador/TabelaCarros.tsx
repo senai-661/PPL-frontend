@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Car, Loader2, RefreshCw, Search } from 'lucide-react';
 import CarroRequest from '../../fetch/CarroRequest';
 import { VeiculoDTO } from '../../interface/VeiculoDTO';
@@ -69,7 +69,7 @@ const TabelaCarros: React.FC = () => {
             <button
               type="button"
               onClick={fetchCarros}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition "
             >
               <RefreshCw className="size-4" />
               Atualizar
@@ -116,7 +116,7 @@ const TabelaCarros: React.FC = () => {
                   </tr>
                 )}
                 {filteredCarros.map((c) => (
-                  <tr key={c.idVeiculo} className="border-t border-gray-100 hover:bg-slate-50 transition-colors">
+                  <tr key={c.idVeiculo} className="border-t border-gray-100  transition-colors">
                     <td className="px-4 py-3 text-gray-800">{c.idVeiculo ?? '-'}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">{c.placa || '-'}</td>
                     <td className="px-4 py-3">
@@ -139,3 +139,4 @@ const TabelaCarros: React.FC = () => {
 };
 
 export default TabelaCarros;
+

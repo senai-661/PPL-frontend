@@ -99,10 +99,10 @@ export function TripDashboard() {
                   <p className="text-sm text-gray-600">{activeTrip.driver.vehicle}</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <button className="bg-[#5a34a1] text-white px-4 py-2 rounded-lg hover:bg-[#4a2891] transition-colors text-sm">
+                  <button className="bg-[#5a34a1] text-white px-4 py-2 rounded-lg  transition-colors text-sm">
                     Ligar
                   </button>
-                  <button className="border-2 border-[#5a34a1] text-[#5a34a1] px-4 py-2 rounded-lg hover:bg-[#5a34a1] hover:text-white transition-colors text-sm">
+                  <button className="border-2 border-[#5a34a1] text-[#5a34a1] px-4 py-2 rounded-lg   transition-colors text-sm">
                     Mensagem
                   </button>
                 </div>
@@ -111,10 +111,10 @@ export function TripDashboard() {
 
             {/* Action Buttons */}
             <div className="mt-6 flex gap-4">
-              <button className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors">
+              <button className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg  transition-colors">
                 Compartilhar Viagem
               </button>
-              <button className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors">
+              <button className="flex-1 bg-red-600 text-white py-3 rounded-lg  transition-colors">
                 Emergência SOS
               </button>
             </div>
@@ -135,3 +135,4 @@ export function TripDashboard() {
     </div>
   );
 }
+

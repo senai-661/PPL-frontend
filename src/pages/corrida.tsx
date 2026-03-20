@@ -50,7 +50,7 @@ export function Ride() {
           <div className="text-center">
             <Link
               to="/passageiro/painel"
-              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full hover:bg-[#4a2891] transition-colors"
+              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full  transition-colors"
             >
               Começar Agora
             </Link>

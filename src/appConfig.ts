@@ -1,4 +1,3 @@
-
 /**
  * Configuração de todas as rotas da interface web
  * Todas os endereços das páginas devem ser inseridas em APP_ROUTES
@@ -10,16 +9,15 @@ export const APP_ROUTES = {
     ROUTE_LOGIN: '/login',
 
     ROUTE_LISTAGEM_PASSAGEIRO: '/api/passageiros',
-    ROUTE_LISTAGEM_CARROS: '/api/CARROs',
+    ROUTE_LISTAGEM_CARROS: '/api/veiculos',
     ROUTE_LISTAGEM_MOTORISTA: '/api/motoristas',
 
-    ROUTE_CADASTRO_PASSAGEIRO: '/api/passageiro/register',
+    ROUTE_CADASTRO_PASSAGEIRO: '/api/registrar',  // ✅ rota unificada
     ROUTE_CADASTRO_CARROS: '/api/cadastro/veiculos',
-    ROUTE_CADASTRO_MOTORISTA: '/api/motorista/register',
+    ROUTE_CADASTRO_MOTORISTA: '/api/registrar',   // ✅ rota unificada
 
     ROUTE_ATUALIZACAO_PASSAGEIRO: '/api/passageiro/perfil',
     ROUTE_ATUALIZACAO_MOTORISTA: '/api/motorista/perfil',
-
 }
 
 /**
@@ -31,16 +29,16 @@ export const APP_ROUTES = {
 export const SERVER_CFG = {
     // endereço do servidor da API
     SERVER_URL: 'http://localhost:1285',
-    
+
     // endpoints de PASSAGEIRO
     ENDPOINT_LISTAR_PASSAGEIRO: '/api/passageiros',
-    ENDPOINT_CADASTRAR_PASSAGEIRO: '/api/passageiro/register',
+    ENDPOINT_CADASTRAR_PASSAGEIRO: '/api/registrar',  // ✅ rota unificada
     ENDPOINT_ATUALIZAR_PASSAGEIRO: '/api/passageiro/perfil',
     ENDPOINT_REMOVER_PASSAGEIRO: '/api/passageiro/delete',
 
     // endpoints de MOTORISTA
     ENDPOINT_LISTAR_MOTORISTA: '/api/motoristas',
-    ENDPOINT_CADASTRAR_MOTORISTA: '/api/motorista/register',
+    ENDPOINT_CADASTRAR_MOTORISTA: '/api/registrar',   // ✅ rota unificada
     ENDPOINT_ATUALIZAR_MOTORISTA: '/api/motorista/perfil',
     ENDPOINT_REMOVER_MOTORISTA: '/api/motorista/delete',
 
@@ -52,7 +50,6 @@ export const SERVER_CFG = {
 
     // endpoint de login
     ENDPOINT_AUTH_LOGIN: '/api/login',
-
 }
 
 /** Enumeração dos status do empréstimo */

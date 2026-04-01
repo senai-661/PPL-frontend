@@ -27,15 +27,13 @@ class PassageiroRequests {
     private mapPassageiro(p: any): PassageiroDTO {
         return {
             idPassageiro: p.id,
-            nomePassageiro: p.nome,
-            sobrenomePassageiro: p.sobrenome,
+            nome: p.nome,
+            sobrenome: p.sobrenome,
             cpf: p.cpf,
             dataNascimento: p.dataNascimento,
             celular: p.celular,
             email: p.email,
             necessidades: p.necessidades ?? [],
-            tipoViagem: p.tipoViagem ?? 'Convencional',
-            preferenciaClima: p.preferenciaClima ?? 'Não Importa',
             senha: '',
         };
     }

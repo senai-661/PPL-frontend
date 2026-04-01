@@ -27,8 +27,8 @@ class MotoristaRequests {
     private mapMotorista(m: any): MotoristaDTO {
         return {
             idMotorista: m.id,
-            nomeMotorista: m.nome,
-            sobrenomeMotorista: m.sobrenome,
+            nome: m.nome,
+            sobrenome: m.sobrenome,
             cpf: m.cpf,
             cnh: m.cnh,
             dataNascimento: m.dataNascimento,

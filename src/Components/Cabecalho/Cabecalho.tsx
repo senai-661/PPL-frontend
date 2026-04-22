@@ -147,10 +147,12 @@ export function Header() {
     <header className="header">
       <div className="header-container">
         <div className="header-content">
-          <Link to={logoPath} className="logo" onClick={() => setIsMenuOpen(false)}>
-            <AccessibilityIcon className="logo-icon" />
-            <span className="logo-text">OpenLine</span>
-          </Link>
+          <div className="header-leading">
+            <Link to={logoPath} className="logo" onClick={() => setIsMenuOpen(false)}>
+              <AccessibilityIcon className="logo-icon" />
+              <span className="logo-text">OpenLine</span>
+            </Link>
+          </div>
 
           <nav className="nav-desktop" aria-label="Navegacao principal">
             {navLinks.map((link) => (

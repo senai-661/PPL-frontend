@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Accessibility as AccessibilityIcon, LogOut, Menu, UserCircle2, X } from 'lucide-react';
 import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
+import { SERVER_CFG } from '../../appConfig';
 import './Cabecalho.css';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
@@ -10,6 +11,9 @@ type StoredUser = {
   nome?: string;
   sobrenome?: string;
   email?: string;
+  usuario?: {
+    email?: string;
+  };
 };
 
 const profilePathByUserType: Record<AuthenticatedUserType, string> = {
@@ -29,6 +33,7 @@ export function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userType, setUserType] = useState<AuthenticatedUserType | null>(null);
   const [userData, setUserData] = useState<StoredUser | null>(null);
+  const [storedEmail, setStoredEmail] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -36,9 +41,11 @@ export function Header() {
     const token = localStorage.getItem('token');
     const storedUserType = localStorage.getItem('userType') as AuthenticatedUserType | null;
     const storedUser = localStorage.getItem('user');
+    const userEmail = localStorage.getItem('userEmail') ?? '';
 
     setIsAuthenticated(!!token);
     setUserType(storedUserType);
+    setStoredEmail(userEmail);
 
     if (!storedUser) {
       setUserData(null);
@@ -52,13 +59,66 @@ export function Header() {
     }
   }, [location]);
 
+  useEffect(() => {
+    async function hydrateUserProfile() {
+      const token = localStorage.getItem('token');
+
+      if (!token || !userType || userData?.email?.trim() || storedEmail.trim()) {
+        return;
+      }
+
+      if (userType !== 'passenger' && userType !== 'driver') {
+        return;
+      }
+
+      const endpoint =
+        userType === 'passenger'
+          ? `${SERVER_CFG.SERVER_URL}/api/passageiro/perfil`
+          : `${SERVER_CFG.SERVER_URL}/api/motorista/perfil`;
+
+      try {
+        const response = await fetch(endpoint, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const profile = await response.json();
+        const normalizedProfile = {
+          ...userData,
+          ...profile,
+        };
+
+        setUserData(normalizedProfile);
+
+        if (profile?.email) {
+          setStoredEmail(profile.email);
+          localStorage.setItem('userEmail', profile.email);
+        }
+
+        localStorage.setItem('user', JSON.stringify(normalizedProfile));
+      } catch {
+        // Silently ignore header hydration failures.
+      }
+    }
+
+    hydrateUserProfile();
+  }, [storedEmail, userData, userType]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userType');
     localStorage.removeItem('user');
+    localStorage.removeItem('userEmail');
     setIsAuthenticated(false);
     setUserType(null);
     setUserData(null);
+    setStoredEmail('');
     setIsMenuOpen(false);
     navigate('/login');
   };
@@ -76,7 +136,11 @@ export function Header() {
   const logoPath = userType ? dashboardPathByUserType[userType] : '/';
   const displayName =
     [userData?.nome, userData?.sobrenome].filter(Boolean).join(' ').trim() || 'Usuario OpenLine';
-  const displayEmail = userData?.email?.trim() || 'Email nao informado';
+  const displayEmail =
+    userData?.email?.trim() ||
+    userData?.usuario?.email?.trim() ||
+    storedEmail.trim() ||
+    'Email nao informado';
   const isActive = (path: string) => location.pathname === path;
 
   return (

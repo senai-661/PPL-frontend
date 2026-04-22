@@ -189,12 +189,6 @@ export function PassengerProfile() {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  function formatarData(iso?: string) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  }
-
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (

@@ -27,19 +27,6 @@ export function PassengerRegistration() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const toggleNecessidade = (necessidade: string) => {
-    setFormData((prev) => {
-      const jaSelected = prev.necessidades.includes(necessidade);
-      return {
-        ...prev,
-        necessidades: jaSelected
-          ? prev.necessidades.filter((item) => item !== necessidade)
-          : [...prev.necessidades, necessidade],
-          celular: formData.celular.replace(/\D/g, ''),
-      };
-    });
-  };
-
   // Validação de celular
   const validarCelular = (celular: string): boolean => {
     const regex = /^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$/;
@@ -49,7 +36,7 @@ export function PassengerRegistration() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === 'celular') {
-      setFormData({ ...formData, [name]: formatarCelular(value) });
+      setFormData({ ...formData, [name]: formatCelular(value) });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -138,8 +125,8 @@ export function PassengerRegistration() {
                     type="text"
                     name="nome"
                     required
-                    value={formData.nomePassageiro}
-                    onChange={(e) => setFormData({ ...formData, celular: formatCelular(e.target.value)})}
+                    value={formData.nome}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Seu nome"
                   />

@@ -12,7 +12,7 @@ type StoredUser = {
   email?: string;
 };
 
-const dashboardByUserType: Record<AuthenticatedUserType, string> = {
+const profilePathByUserType: Record<AuthenticatedUserType, string> = {
   passenger: '/passageiro/perfil',
   driver: '/motorista/perfil',
   admin: '/administrador/painel',
@@ -57,7 +57,7 @@ export function Header() {
     navigate('/login');
   };
 
-  const navLinks = [
+  const publicLinks = [
     { path: '/', label: 'Inicio' },
     { path: '/sobre', label: 'Sobre Nos' },
     { path: '/servicos', label: 'Servicos' },
@@ -65,8 +65,10 @@ export function Header() {
     { path: '/contato', label: 'Contato' },
   ];
 
-  const panelPath = userType ? dashboardByUserType[userType] : null;
-  const displayName = [userData?.nome, userData?.sobrenome].filter(Boolean).join(' ').trim() || 'Usuario OpenLine';
+  const navLinks = isAuthenticated ? [] : publicLinks;
+  const profilePath = userType ? profilePathByUserType[userType] : null;
+  const displayName =
+    [userData?.nome, userData?.sobrenome].filter(Boolean).join(' ').trim() || 'Usuario OpenLine';
   const displayEmail = userData?.email?.trim() || 'Email nao informado';
   const isActive = (path: string) => location.pathname === path;
 
@@ -79,34 +81,32 @@ export function Header() {
             <span className="logo-text">OpenLine</span>
           </Link>
 
-          {!isAuthenticated && (
-            <nav className="nav-desktop">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          )}
+          <nav className="nav-desktop" aria-label="Navegacao principal">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
           <div className="header-actions">
             <ThemeToggleButton className="header-theme-toggle" />
 
-            {isAuthenticated && panelPath && (
+            {isAuthenticated && profilePath && (
               <div className="profile-menu">
                 <Link
-                  to={panelPath}
+                  to={profilePath}
                   className="profile-button"
-                  aria-label="Abrir painel da conta"
+                  aria-label="Abrir perfil da conta"
                 >
                   <UserCircle2 className="size-6" />
                 </Link>
 
-                <Link to={panelPath} className="profile-card">
+                <Link to={profilePath} className="profile-card">
                   <span className="profile-card-label">CONTA OPENLINE</span>
                   <strong className="profile-card-name">{displayName}</strong>
                   <span className="profile-card-email">{displayEmail}</span>
@@ -143,8 +143,8 @@ export function Header() {
           </div>
         </div>
 
-        {isMenuOpen && !isAuthenticated && (
-          <nav className="nav-mobile">
+        {isMenuOpen && (
+          <nav className="nav-mobile" aria-label="Navegacao mobile">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -155,35 +155,32 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setIsMenuOpen(false)}
-              className="cta-mobile"
-            >
-              Entrar
-            </Link>
-          </nav>
-        )}
 
-        {isMenuOpen && isAuthenticated && (
-          <nav className="nav-mobile">
-            {panelPath && (
-              <Link
-                to={panelPath}
-                onClick={() => setIsMenuOpen(false)}
-                className="nav-mobile-link nav-mobile-button"
-              >
-                Minha conta
+            {isAuthenticated ? (
+              <>
+                {profilePath && (
+                  <Link
+                    to={profilePath}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="nav-mobile-link nav-mobile-button"
+                  >
+                    Minha conta
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="cta-mobile flex items-center justify-center gap-2 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+                >
+                  <LogOut className="size-3" />
+                  Sair
+                </button>
+              </>
+            ) : (
+              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="cta-mobile">
+                Entrar
               </Link>
             )}
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="cta-mobile flex items-center justify-center gap-2 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
-            >
-              <LogOut className="size-3" />
-              Sair
-            </button>
           </nav>
         )}
       </div>

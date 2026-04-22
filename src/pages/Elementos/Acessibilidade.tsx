@@ -1,5 +1,5 @@
 import { Accessibility as AccessibilityIcon, Ear, Eye, Heart, Brain, Users2 } from 'lucide-react';
-import { ImageWithFallback } from '../app/components/figma/ImagemComFallback';
+import { ImageWithFallback } from '../../app/components/figma/ImagemComFallback';
 
 export function Accessibility() {
   return (

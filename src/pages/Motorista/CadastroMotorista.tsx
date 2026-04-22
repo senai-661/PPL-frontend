@@ -20,15 +20,61 @@ export function DriverRegistration() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // ✅ NOVO: Função para formatar celular enquanto digita
+  const formatarCelular = (valor: string): string => {
+    const numeros = valor.replace(/\D/g, '');
+    if (numeros.length <= 2) return `(${numeros}`;
+    if (numeros.length <= 7) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7, 11)}`;
+  };
+
+  // ✅ NOVO: Validação do celular
+  const validarCelular = (celular: string): boolean => {
+    const regex = /^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$/;
+    return regex.test(celular);
+  };
+
+  // ✅ ALTERADO: Adicionado formatação do celular
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    if (name === 'celular') {
+      const formatado = formatarCelular(value);
+      setFormData({ ...formData, [name]: formatado });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    // ✅ NOVO: Validação do celular antes de enviar
+    if (!validarCelular(formData.celular)) {
+      setError('Celular inválido. Use o formato (XX) 9XXXX-XXXX');
+      setLoading(false);
+      return;
+    }
+
+    // ✅ NOVO: Validação do CPF
+    if (formData.cpf.replace(/\D/g, '').length !== 11) {
+      setError('CPF deve conter 11 dígitos');
+      setLoading(false);
+      return;
+    }
+
+    // ✅ NOVO: Validação da CNH
+    if (formData.cnh.replace(/\D/g, '').length !== 11) {
+      setError('CNH deve conter 11 dígitos');
+      setLoading(false);
+      return;
+    }
+
     const payload = {
-      tipo: 'motorista',                        // ✅ obrigatório pelo UsuarioController
-      nome: formData.nomeMotorista,             // ✅ banco espera "nome"
-      sobrenome: formData.sobrenomeMotorista,   // ✅ banco espera "sobrenome"
+      tipo: 'motorista',
+      nome: formData.nomeMotorista,
+      sobrenome: formData.sobrenomeMotorista,
       cpf: formData.cpf.replace(/\D/g, ''),
       cnh: formData.cnh,
       dataNascimento: formData.dataNascimento,
@@ -71,8 +117,9 @@ export function DriverRegistration() {
                   <input
                     type="text"
                     required
+                    name="nomeMotorista"
                     value={formData.nomeMotorista}
-                    onChange={(e) => setFormData({ ...formData, nomeMotorista: e.target.value })}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Seu nome"
                   />
@@ -85,8 +132,9 @@ export function DriverRegistration() {
                   <input
                     type="text"
                     required
+                    name="sobrenomeMotorista"
                     value={formData.sobrenomeMotorista}
-                    onChange={(e) => setFormData({ ...formData, sobrenomeMotorista: e.target.value })}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Seu sobrenome"
                   />
@@ -102,23 +150,29 @@ export function DriverRegistration() {
                   <input
                     type="text"
                     required
+                    name="cpf"
+                    maxLength={11}
                     value={formData.cpf}
-                    onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                    placeholder="000.000.000-00"
+                    placeholder="12345678901"
                   />
                 </div>
+                <small className="text-gray-500 text-xs">Apenas números, 11 dígitos</small>
               </div>
               <div>
                 <label className="block text-gray-700 mb-2">CNH *</label>
                 <input
                   type="text"
                   required
+                  name="cnh"
+                  maxLength={11}
                   value={formData.cnh}
-                  onChange={(e) => setFormData({ ...formData, cnh: e.target.value })}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                   placeholder="00000000000"
                 />
+                <small className="text-gray-500 text-xs">Apenas números, 11 dígitos</small>
               </div>
             </div>
 
@@ -128,8 +182,9 @@ export function DriverRegistration() {
                 <input
                   type="date"
                   required
+                  name="dataNascimento"
                   value={formData.dataNascimento}
-                  onChange={(e) => setFormData({ ...formData, dataNascimento: e.target.value })}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                 />
               </div>
@@ -140,12 +195,14 @@ export function DriverRegistration() {
                   <input
                     type="tel"
                     required
+                    name="celular"
                     value={formData.celular}
-                    onChange={(e) => setFormData({ ...formData, celular: e.target.value })}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="(11) 98765-4321"
                   />
                 </div>
+                <small className="text-gray-500 text-xs">Formato: (DD) 9XXXX-XXXX</small>
               </div>
             </div>
 
@@ -157,8 +214,9 @@ export function DriverRegistration() {
                   <input
                     type="email"
                     required
+                    name="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="seu@email.com"
                   />
@@ -169,8 +227,9 @@ export function DriverRegistration() {
                 <input
                   type="text"
                   required
+                  name="antecedentesCriminais"
                   value={formData.antecedentesCriminais}
-                  onChange={(e) => setFormData({ ...formData, antecedentesCriminais: e.target.value })}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                   placeholder="Nada consta"
                 />
@@ -180,13 +239,18 @@ export function DriverRegistration() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">Especialização</label>
-                <input
-                  type="text"
+                <select
+                  name="especializacao"
                   value={formData.especializacao}
-                  onChange={(e) => setFormData({ ...formData, especializacao: e.target.value })}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                  placeholder="LIBRAS, Mobilidade Reduzida, etc."
-                />
+                >
+                  <option value="">Selecione...</option>
+                  <option value="CADEIRANTE">Cadeirante</option>
+                  <option value="VISUAL">Deficiência Visual</option>
+                  <option value="AUDITIVA">Deficiência Auditiva</option>
+                  <option value="COGNITIVA">Deficiência Cognitiva</option>
+                </select>
               </div>
               <div>
                 <label className="block text-gray-700 mb-2">Senha *</label>
@@ -195,8 +259,9 @@ export function DriverRegistration() {
                   <input
                     type="password"
                     required
+                    name="senha"
                     value={formData.senha}
-                    onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Mínimo 8 caracteres"
                   />
@@ -210,7 +275,7 @@ export function DriverRegistration() {
 
             <button
               type="submit"
-              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
+              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg transition-colors disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Cadastrando...' : 'Criar Conta'}

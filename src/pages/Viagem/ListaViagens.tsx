@@ -1,72 +1,129 @@
-﻿import { Calendar, MapPin, DollarSign, Star, Search } from 'lucide-react';
-import { useState } from 'react';
+﻿import { Calendar, MapPin, DollarSign, Star, Search, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import CorridaRequest from '../../fetch/CorridaRequest';
+
+interface PassageiroInfo {
+  id: number;
+  nome: string;
+  sobrenome: string;
+  celular: string;
+  necessidades: string[] | null;
+}
+
+interface Trip {
+  idCorrida: number;
+  origemCorrida: string;
+  destinoCorrida: string;
+  tipoCorrida: string;
+  preco: number;
+  dataCorrida: string;
+  duracaoCorrida: number;
+  motivoCancelamento: string | null;
+  statusCorrida: 'Pendente' | 'Aceito' | 'Em andamento' | 'Finalizada' | 'Cancelada';
+  passageiro: PassageiroInfo;
+}
 
 export function TripList() {
-  const [filter, setFilter] = useState('all'); // all, completed, cancelled
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [filter, setFilter] = useState<'all' | 'Finalizada' | 'Cancelada'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const trips = [
-    {
-      id: '1234',
-      date: '13 Fev 2026, 10:30',
-      driver: 'João Silva',
-      from: 'Av. Paulista, 1000',
-      to: 'Shopping Eldorado',
-      value: 'R$ 28,00',
-      status: 'completed',
-      rating: 5,
-    },
-    {
-      id: '1233',
-      date: '12 Fev 2026, 18:45',
-      driver: 'Maria Santos',
-      from: 'Trabalho',
-      to: 'Casa',
-      value: 'R$ 22,00',
-      status: 'completed',
-      rating: 4,
-    },
-    {
-      id: '1232',
-      date: '10 Fev 2026, 06:00',
-      driver: 'Carlos Oliveira',
-      from: 'Casa',
-      to: 'Aeroporto GRU',
-      value: 'R$ 65,00',
-      status: 'completed',
-      rating: 5,
-    },
-    {
-      id: '1231',
-      date: '09 Fev 2026, 14:20',
-      driver: 'Ana Costa',
-      from: 'Shopping',
-      to: 'Hospital',
-      value: 'R$ 18,00',
-      status: 'cancelled',
-      rating: 0,
-    },
-  ];
+  useEffect(() => {
+    async function carregarHistorico() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await CorridaRequest.getHistorico();
+        setTrips(data || []);
+      } catch (err: any) {
+        setError(err.message || 'Erro ao carregar viagens');
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    carregarHistorico();
+  }, []);
 
+  // Filtros
   const filteredTrips = trips.filter(trip => {
-    if (filter === 'all') return true;
-    return trip.status === filter;
+    if (filter !== 'all' && trip.statusCorrida !== filter) return false;
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        trip.idCorrida.toString().includes(searchLower) ||
+        trip.origemCorrida.toLowerCase().includes(searchLower) ||
+        trip.destinoCorrida.toLowerCase().includes(searchLower) ||
+        trip.passageiro.nome.toLowerCase().includes(searchLower)
+      );
+    }
+    return true;
   });
 
   const stats = {
     total: trips.length,
-    completed: trips.filter(t => t.status === 'completed').length,
-    cancelled: trips.filter(t => t.status === 'cancelled').length,
-    totalSpent: 'R$ 1.245,00',
+    completed: trips.filter(t => t.statusCorrida === 'Finalizada').length,
+    cancelled: trips.filter(t => t.statusCorrida === 'Cancelada').length,
+    totalEarned: trips
+      .filter(t => t.statusCorrida === 'Finalizada')
+      .reduce((sum, t) => sum + t.preco, 0),
   };
+
+  function formatarMoeda(valor: number) {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function formatarData(dataISO: string) {
+    const data = new Date(dataISO);
+    return data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  function getStatusText(status: string) {
+    switch (status) {
+      case 'Finalizada': return 'Concluída';
+      case 'Cancelada': return 'Cancelada';
+      case 'Pendente': return 'Pendente';
+      case 'Aceito': return 'Aceita';
+      case 'Em andamento': return 'Em Andamento';
+      default: return status;
+    }
+  }
+
+  function getStatusClass(status: string) {
+    switch (status) {
+      case 'Finalizada': return 'bg-green-100 text-green-800';
+      case 'Cancelada': return 'bg-red-100 text-red-800';
+      case 'Pendente': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-[#5a34a1]">
+          <Loader2 className="size-10 animate-spin" />
+          <p className="text-lg">Carregando histórico...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-6xl mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-4xl mb-2">Minhas Viagens</h1>
-          <p className="text-gray-600">Histórico completo de corridas</p>
+          <p className="text-gray-600">Histórico completo de corridas realizadas</p>
         </div>
 
         {/* Stats */}
@@ -84,10 +141,17 @@ export function TripList() {
             <p className="text-gray-600 text-sm">Canceladas</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
-            <p className="text-3xl text-[#5a34a1] mb-1">{stats.totalSpent}</p>
-            <p className="text-gray-600 text-sm">Total Gasto</p>
+            <p className="text-3xl text-[#5a34a1] mb-1">{formatarMoeda(stats.totalEarned)}</p>
+            <p className="text-gray-600 text-sm">Total Recebido</p>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+            <AlertCircle className="size-5 shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
@@ -98,27 +162,27 @@ export function TripList() {
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   filter === 'all'
                     ? 'bg-[#5a34a1] text-white'
-                    : 'bg-gray-100 text-gray-700 '
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 Todas
               </button>
               <button
-                onClick={() => setFilter('completed')}
+                onClick={() => setFilter('Finalizada')}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  filter === 'completed'
+                  filter === 'Finalizada'
                     ? 'bg-[#5a34a1] text-white'
-                    : 'bg-gray-100 text-gray-700 '
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 Concluídas
               </button>
               <button
-                onClick={() => setFilter('cancelled')}
+                onClick={() => setFilter('Cancelada')}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  filter === 'cancelled'
+                  filter === 'Cancelada'
                     ? 'bg-[#5a34a1] text-white'
-                    : 'bg-gray-100 text-gray-700 '
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 Canceladas
@@ -129,10 +193,10 @@ export function TripList() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
               <input
                 type="text"
-                placeholder="Buscar viagem..."
+                placeholder="Buscar por local ou passageiro..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                className="w-full md:w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
               />
             </div>
           </div>
@@ -141,59 +205,52 @@ export function TripList() {
         {/* Trip List */}
         <div className="space-y-4">
           {filteredTrips.map((trip) => (
-            <div key={trip.id} className="bg-white p-6 rounded-lg shadow  transition-shadow">
+            <div key={trip.idCorrida} className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
-                    <span className={`px-3 py-1 rounded-full text-xs ${
-                      trip.status === 'completed'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {trip.status === 'completed' ? 'Concluída' : 'Cancelada'}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusClass(trip.statusCorrida)}`}>
+                      {getStatusText(trip.statusCorrida)}
                     </span>
-                    <span className="text-sm text-gray-500">#{trip.id}</span>
+                    <span className="text-sm text-gray-500">#{trip.idCorrida}</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                     <Calendar className="size-4" />
-                    <span>{trip.date}</span>
+                    <span>{formatarData(trip.dataCorrida)}</span>
                   </div>
 
                   <div className="flex items-start gap-2 mb-2">
-                    <MapPin className="size-4 text-green-600 mt-1" />
+                    <MapPin className="size-4 text-green-600 mt-1 shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-600">Origem</p>
-                      <p className="text-gray-900">{trip.from}</p>
+                      <p className="text-xs text-gray-500">Origem</p>
+                      <p className="text-gray-900 text-sm">{trip.origemCorrida}</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2 mb-2">
-                    <MapPin className="size-4 text-red-600 mt-1" />
+                    <MapPin className="size-4 text-red-600 mt-1 shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-600">Destino</p>
-                      <p className="text-gray-900">{trip.to}</p>
+                      <p className="text-xs text-gray-500">Destino</p>
+                      <p className="text-gray-900 text-sm">{trip.destinoCorrida}</p>
                     </div>
                   </div>
 
-                  {trip.status === 'completed' && (
-                    <div className="flex items-center gap-1 mt-2">
-                      {[...Array(trip.rating)].map((_, i) => (
-                        <Star key={i} className="size-4 text-yellow-500 fill-yellow-500" />
-                      ))}
-                      <span className="text-sm text-gray-600 ml-2">Motorista: {trip.driver}</span>
+                  {trip.statusCorrida === 'Finalizada' && (
+                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                      <span>Passageiro: {trip.passageiro.nome} {trip.passageiro.sobrenome}</span>
                     </div>
                   )}
                 </div>
 
                 <div className="text-right">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 justify-end">
                     <DollarSign className="size-5 text-[#5a34a1]" />
-                    <span className="text-2xl text-[#5a34a1]">{trip.value}</span>
+                    <span className="text-2xl text-[#5a34a1]">{formatarMoeda(trip.preco)}</span>
                   </div>
                   <Link
-                    to={`/viagem/painel`}
-                    className="inline-block text-sm text-blue-600 "
+                    to={`/viagem/${trip.idCorrida}`}
+                    className="inline-block text-sm text-[#5a34a1] hover:underline"
                   >
                     Ver detalhes
                   </Link>
@@ -203,13 +260,16 @@ export function TripList() {
           ))}
         </div>
 
-        {filteredTrips.length === 0 && (
+        {filteredTrips.length === 0 && !loading && (
           <div className="bg-white p-12 rounded-lg shadow text-center">
-            <p className="text-gray-500 text-lg">Nenhuma viagem encontrada</p>
+            <p className="text-gray-500 text-lg">
+              {trips.length === 0 
+                ? 'Nenhuma viagem realizada ainda.' 
+                : 'Nenhuma viagem encontrada com os filtros selecionados.'}
+            </p>
           </div>
         )}
       </div>
     </div>
   );
 }
-

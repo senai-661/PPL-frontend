@@ -1,4 +1,4 @@
-﻿import { Calendar, MapPin, DollarSign, Star, Search, Loader2, AlertCircle } from 'lucide-react';
+﻿import { Calendar, MapPin, DollarSign, Search, Loader2, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CorridaRequest from '../../fetch/CorridaRequest';

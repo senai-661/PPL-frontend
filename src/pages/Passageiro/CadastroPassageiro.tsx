@@ -1,14 +1,7 @@
 ﻿import { useState } from 'react';
+import { User, Mail, Phone, FileText, Lock, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileText, Lock, Mail, Phone, User } from 'lucide-react';
-import PassageiroRequest from '../../fetch/PassageiroRequest';
-
-const necessidadesDisponiveis = [
-  'Cadeirante',
-  'Deficiencia visual',
-  'Deficiencia auditiva',
-  'Acompanhamento no embarque',
-];
+import { SERVER_CFG } from '../../appConfig';
 
 const formatCelular = (valor: string) => {
   const digits = valor.replace(/\D/g, '').slice(0, 11);
@@ -21,17 +14,18 @@ const formatCelular = (valor: string) => {
 export function PassengerRegistration() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    nome: '',
+    sobrenome: '',
     cpf: '',
-    nomePassageiro: '',
-    sobrenomePassageiro: '',
     dataNascimento: '',
-    email: '',
     celular: '',
-    necessidades: [] as string[],
-    tipoViagem: '',
-    preferenciaClima: '',
+    email: '',
     senha: '',
+    confirmarSenha: '',
+    necessidades: '', // opcional
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const toggleNecessidade = (necessidade: string) => {
     setFormData((prev) => {
@@ -46,38 +40,80 @@ export function PassengerRegistration() {
     });
   };
 
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Validação de celular
+  const validarCelular = (celular: string): boolean => {
+    const regex = /^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$/;
+    return regex.test(celular);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name === 'celular') {
+      setFormData({ ...formData, [name]: formatarCelular(value) });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    // Validações
+    if (!validarCelular(formData.celular)) {
+      setError('Celular inválido. Use o formato (XX) 9XXXX-XXXX');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.cpf.replace(/\D/g, '').length !== 11) {
+      setError('CPF deve conter 11 dígitos');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.senha !== formData.confirmarSenha) {
+      setError('As senhas não coincidem');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.senha.length < 6) {
+      setError('A senha deve ter no mínimo 6 caracteres');
+      setLoading(false);
+      return;
+    }
+
     const payload = {
-    tipo: 'passageiro',
-    cpf: formData.cpf.replace(/\D/g, ''),
-    nome: formData.nomePassageiro,        // ✅ "nome" em vez de "nomePassageiro"
-    sobrenome: formData.sobrenomePassageiro, // ✅ "sobrenome" em vez de "sobrenomePassageiro"
-    dataNascimento: formData.dataNascimento,
-    email: formData.email,
-    celular: formData.celular,
-    necessidades: formData.necessidades,
-    tipoViagem: formData.tipoViagem || 'Convencional',
-    preferenciaClima: formData.preferenciaClima || 'Não Importa',
-    senha: formData.senha,
-};
+      tipo: 'passageiro',
+      nome: formData.nome,
+      sobrenome: formData.sobrenome,
+      cpf: formData.cpf.replace(/\D/g, ''),
+      dataNascimento: formData.dataNascimento,
+      celular: formData.celular,
+      email: formData.email,
+      senha: formData.senha,
+      necessidades: formData.necessidades ? [formData.necessidades] : [],
+    };
 
     try {
-      const ok = await PassageiroRequest.enviaFormularioPassageiro(JSON.stringify(payload));
-      if (ok) {
-        alert('Cadastro realizado com sucesso!');
-        navigate('/passageiro/painel');
-      } else {
-        setError('Erro ao cadastrar passageiro. Tente novamente.');
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/registrar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.mensagem || 'Erro ao cadastrar');
       }
+
+      alert('Cadastro realizado com sucesso! Faça login para continuar.');
+      navigate('/login');
     } catch (err: any) {
-      setError('Erro ao cadastrar passageiro.');
+      setError(err.message || 'Erro ao cadastrar passageiro');
     } finally {
       setLoading(false);
     }
@@ -85,21 +121,22 @@ export function PassengerRegistration() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl mb-4">Cadastro de Passageiro</h1>
-          <p className="text-gray-600">Preencha os dados obrigatórios para criar sua conta</p>
+          <p className="text-gray-600">Crie sua conta para começar a usar o OpenLine</p>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-md">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">Nome *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
                   <input
                     type="text"
+                    name="nome"
                     required
                     value={formData.nomePassageiro}
                     onChange={(e) => setFormData({ ...formData, celular: formatCelular(e.target.value)})}
@@ -108,15 +145,17 @@ export function PassengerRegistration() {
                   />
                 </div>
               </div>
+
               <div>
                 <label className="block text-gray-700 mb-2">Sobrenome *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
                   <input
                     type="text"
+                    name="sobrenome"
                     required
-                    value={formData.sobrenomePassageiro}
-                    onChange={(e) => setFormData({ ...formData, sobrenomePassageiro: e.target.value })}
+                    value={formData.sobrenome}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Seu sobrenome"
                   />
@@ -124,140 +163,144 @@ export function PassengerRegistration() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-gray-700 mb-2">CPF *</label>
-              <div className="relative">
-                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
-                <input
-                  type="text"
-                  required
-                  value={formData.cpf}
-                  onChange={(e) => setFormData({ ...formData, cpf: e.target.value.replace(/\D/g, '') })}
-                  maxLength={11}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                  placeholder="Somente números"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 mb-2">Data de Nascimento *</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
-                <input
-                  type="date"
-                  required
-                  value={formData.dataNascimento}
-                  onChange={(e) => setFormData({ ...formData, dataNascimento: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 mb-2">E-mail *</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                  placeholder="seu@email.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 mb-2">Celular *</label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
-                <input
-                  type="tel"
-                  required
-                  value={formData.celular}
-                  onChange={(e) => setFormData({ ...formData, celular: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                  placeholder="(11) 98765-4321"
-                />
-              </div>
-            </div>
-
-            <div className="border-t pt-6">
-              <p className="block text-gray-700 mb-3">Necessidades</p>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {necessidadesDisponiveis.map((necessidade) => (
-                  <label key={necessidade} className="flex items-center gap-3 cursor-pointer text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={formData.necessidades.includes(necessidade)}
-                      onChange={() => toggleNecessidade(necessidade)}
-                      className="w-4 h-4 text-[#5a34a1]"
-                    />
-                    <span>{necessidade}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 mb-2">Tipo de Viagem *</label>
-                <select
-                  required
-                  value={formData.tipoViagem}
-                  onChange={(e) => setFormData({ ...formData, tipoViagem: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1] bg-white"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Convencional">Convencional</option>
-                  <option value="EconoComigo">EconoComigo</option>
-                  <option value="Premium">Premium</option>
-                </select>
+                <label className="block text-gray-700 mb-2">CPF *</label>
+                <div className="relative">
+                  <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <input
+                    type="text"
+                    name="cpf"
+                    required
+                    maxLength={11}
+                    value={formData.cpf}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    placeholder="12345678901"
+                  />
+                </div>
+                <small className="text-gray-500 text-xs">Apenas números, 11 dígitos</small>
               </div>
+
               <div>
-                <label className="block text-gray-700 mb-2">Preferência de Clima *</label>
-                <select
-                  required
-                  value={formData.preferenciaClima}
-                  onChange={(e) => setFormData({ ...formData, preferenciaClima: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1] bg-white"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Silencioso">Silencioso</option>
-                  <option value="Com Música">Com Música</option>
-                  <option value="Não Importa">Não Importa</option>
-                </select>
+                <label className="block text-gray-700 mb-2">Data de Nascimento *</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <input
+                    type="date"
+                    name="dataNascimento"
+                    required
+                    value={formData.dataNascimento}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 mb-2">Celular *</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <input
+                    type="tel"
+                    name="celular"
+                    required
+                    value={formData.celular}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    placeholder="(11) 91234-5678"
+                  />
+                </div>
+                <small className="text-gray-500 text-xs">Formato: (DD) 9XXXX-XXXX</small>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2">E-mail *</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    placeholder="seu@email.com"
+                  />
+                </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Senha *</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
-                <input
-                  type="password"
-                  required
-                  value={formData.senha}
-                  onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                  placeholder="Mínimo 8 caracteres"
-                />
+              <label className="block text-gray-700 mb-2">Necessidades Especiais (opcional)</label>
+              <textarea
+                name="necessidades"
+                value={formData.necessidades}
+                onChange={handleChange}
+                rows={2}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                placeholder="Ex: Cadeirante, Deficiência visual, mobilidade reduzida, etc."
+              />
+              <small className="text-gray-500 text-xs">Isso ajuda os motoristas a se prepararem melhor para sua viagem</small>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 mb-2">Senha *</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <input
+                    type="password"
+                    name="senha"
+                    required
+                    value={formData.senha}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    placeholder="Mínimo 6 caracteres"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2">Confirmar Senha *</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <input
+                    type="password"
+                    name="confirmarSenha"
+                    required
+                    value={formData.confirmarSenha}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    placeholder="Confirme sua senha"
+                  />
+                </div>
               </div>
             </div>
 
             {error && (
-              <div className="rounded bg-red-100 text-red-700 px-3 py-2 text-sm mb-2 border border-red-200">{error}</div>
+              <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
             )}
+
             <button
               type="submit"
-              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
               disabled={loading}
+              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg hover:bg-[#4a2891] transition-colors disabled:opacity-50"
             >
               {loading ? 'Cadastrando...' : 'Criar Conta'}
             </button>
           </form>
+
+          <p className="mt-6 text-center text-gray-600">
+            Já tem uma conta?{' '}
+            <a href="/login" className="text-[#5a34a1] hover:underline">
+              Faça login
+            </a>
+          </p>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
-﻿import { Car, ShieldCheck, User, Users } from 'lucide-react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Car, Home, LogOut, ShieldCheck, User, Users } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
 
 const footerLinks = [
@@ -18,7 +18,15 @@ const sectionTitles: Record<string, string> = {
 
 export function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentSection = sectionTitles[location.pathname] ?? 'Administracao';
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col transition-colors">
@@ -32,7 +40,27 @@ export function AdminLayout() {
                 <h1 className="text-2xl sm:text-3xl">{currentSection}</h1>
               </div>
             </div>
-            <ThemeToggleButton className="shrink-0" />
+
+            <div className="flex shrink-0 items-center gap-2">
+              <NavLink
+                to="/"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20"
+              >
+                <Home className="size-4" />
+                Pagina inicial
+              </NavLink>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20"
+              >
+                <LogOut className="size-4" />
+                Sair
+              </button>
+
+              <ThemeToggleButton className="shrink-0" />
+            </div>
           </div>
         </div>
       </header>
@@ -51,7 +79,7 @@ export function AdminLayout() {
                   className={({ isActive }) =>
                     [
                       'w-full py-3 text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-colors',
-                      isActive ? 'text-[#5a34a1] dark:text-indigo-300 font-semibold' : 'text-gray-600 dark:text-slate-300  ',
+                      isActive ? 'text-[#5a34a1] dark:text-indigo-300 font-semibold' : 'text-gray-600 dark:text-slate-300',
                     ].join(' ')
                   }
                 >
@@ -68,4 +96,3 @@ export function AdminLayout() {
 }
 
 export default AdminLayout;
-

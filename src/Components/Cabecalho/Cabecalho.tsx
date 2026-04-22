@@ -1,8 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Accessibility as AccessibilityIcon, LogOut } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Accessibility as AccessibilityIcon, LogOut, Menu, X } from 'lucide-react';
 import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
-import './Cabecalho.css'; // Importa o CSS específico para o cabeçalho
+import './Cabecalho.css';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,67 +11,60 @@ export function Header() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verifica se o usuário está autenticado ao carregar e quando a rota muda
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
   }, [location]);
 
   const handleLogout = () => {
-    // Remove dados de autenticação
     localStorage.removeItem('token');
     localStorage.removeItem('userType');
     localStorage.removeItem('user');
-    
-    // Atualiza estado e redireciona
     setIsAuthenticated(false);
     setIsMenuOpen(false);
     navigate('/login');
   };
 
-  const navLinks = [
-    { path: '/', label: 'Início' },
-    { path: '/sobre', label: 'Sobre Nós' },
-    { path: '/servicos', label: 'Serviços' },
+  const publicLinks = [
+    { path: '/', label: 'Inicio' },
+    { path: '/sobre', label: 'Sobre Nos' },
+    { path: '/servicos', label: 'Servicos' },
     { path: '/acessibilidade', label: 'Acessibilidade' },
     { path: '/contato', label: 'Contato' },
   ];
 
+  const navLinks = isAuthenticated ? [] : publicLinks;
   const isActive = (path: string) => location.pathname === path;
 
   return (
     <header className="header">
       <div className="header-container">
         <div className="header-content">
-          {/* Logo */}
-          <Link to="/" className="logo">
+          <Link to="/" className="logo" onClick={() => setIsMenuOpen(false)}>
             <AccessibilityIcon className="logo-icon" />
             <span className="logo-text">OpenLine</span>
           </Link>
 
-          {/* Desktop Navigation - Oculto quando autenticado */}
-          {!isAuthenticated && (
-            <nav className="nav-desktop">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          )}
+          <nav className="nav-desktop" aria-label="Navegacao principal">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
           <div className="header-actions">
             <ThemeToggleButton className="header-theme-toggle" />
 
-            {/* CTA Button Desktop */}
             <div className="cta-desktop">
               {isAuthenticated ? (
                 <button
+                  type="button"
                   onClick={handleLogout}
-                  className="cta-button flex items-center gap-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 px-3 py-1.5 text-sm"
+                  className="cta-button flex items-center gap-1 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
                 >
                   <LogOut className="size-3" />
                   Sair
@@ -83,20 +76,20 @@ export function Header() {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              type="button"
+              onClick={() => setIsMenuOpen((current) => !current)}
               className="menu-button"
               aria-label="Menu"
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation - Oculto quando autenticado */}
-        {isMenuOpen && !isAuthenticated && (
-          <nav className="nav-mobile">
+        {isMenuOpen && (
+          <nav className="nav-mobile" aria-label="Navegacao mobile">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -107,26 +100,21 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setIsMenuOpen(false)}
-              className="cta-mobile"
-            >
-              Entrar
-            </Link>
-          </nav>
-        )}
 
-        {/* Mobile Logout - Mostrado apenas quando autenticado */}
-        {isMenuOpen && isAuthenticated && (
-          <nav className="nav-mobile">
-            <button
-              onClick={handleLogout}
-              className="cta-mobile flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 px-3 py-1.5 text-sm"
-            >
-              <LogOut className="size-3" />
-              Sair
-            </button>
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="cta-mobile flex items-center justify-center gap-2 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+              >
+                <LogOut className="size-3" />
+                Sair
+              </button>
+            ) : (
+              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="cta-mobile">
+                Entrar
+              </Link>
+            )}
           </nav>
         )}
       </div>

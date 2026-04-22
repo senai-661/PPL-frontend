@@ -4,7 +4,6 @@ import { Lock, LogIn, Mail, UserRound } from 'lucide-react';
 import { SERVER_CFG } from '../../appConfig';
 
 type UserType = 'passenger' | 'driver' | 'admin';
-type ApiUserType = 'passageiro' | 'motorista' | 'admin';
 
 const dashboardByUserType: Record<UserType, string> = {
   passenger: '/passageiro/painel',
@@ -12,40 +11,17 @@ const dashboardByUserType: Record<UserType, string> = {
   admin: '/administrador/painel',
 };
 
-const registerByUserType: Record<Exclude<UserType, 'admin'>, string> = {
-  passenger: '/passageiro/cadastro',
-  driver: '/motorista/cadastro',
-};
-
-const mapApiUserTypeToFrontend = (apiUserType?: ApiUserType): UserType | null => {
-  if (apiUserType === 'passageiro') return 'passenger';
-  if (apiUserType === 'motorista') return 'driver';
-  if (apiUserType === 'admin') return 'admin';
-  return null;
-};
-
-const mapFrontendUserTypeToApi = (frontendUserType: UserType): ApiUserType => {
-  if (frontendUserType === 'passenger') return 'passageiro';
-  if (frontendUserType === 'driver') return 'motorista';
-  return 'admin';
-};
-
 export function Login() {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<UserType>('passenger');
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
-
-  const getUserTypeButtonClass = (type: UserType) => {
-    const isSelected = userType === type;
-    return isSelected
-      ? 'bg-[#4a2c86] text-white font-extrabold shadow ring-2 ring-[#4a2c86]/30 dark:bg-[#6d4ab3] dark:text-white dark:ring-[#c4b5fd]/45'
-      : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100';
-  };
-
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setLoading(true);
+
     const url = `${SERVER_CFG.SERVER_URL}${SERVER_CFG.ENDPOINT_AUTH_LOGIN}`;
 
     try {
@@ -55,38 +31,41 @@ export function Login() {
         body: JSON.stringify({
           email: formData.email,
           senha: formData.password,
-          tipo: mapFrontendUserTypeToApi(userType),
+          // ✅ NÃO envia 'tipo' - o backend descobre automaticamente
         }),
       });
-      const responseText = await res.text();
-      const responseTrimmed = responseText.trim();
 
-      let data: any = {};
-      if (responseTrimmed) {
-        try {
-          data = JSON.parse(responseTrimmed);
-        } catch {
-          if (responseTrimmed.startsWith('<!DOCTYPE') || responseTrimmed.startsWith('<html')) {
-            throw new Error('A API retornou HTML em vez de JSON. Verifique a URL/rota do backend.');
-          }
-          throw new Error('Resposta invalida do servidor. Nao foi possivel ler o JSON.');
-        }
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.mensagem || 'Falha no login');
       }
 
-      if (!res.ok) throw new Error(data?.mensagem || 'Falha no login');
-      if (!data?.token) throw new Error('Resposta de login sem token.');
+      if (!data?.token) {
+        throw new Error('Resposta de login sem token.');
+      }
 
-      const userTypeFromApi = mapApiUserTypeToFrontend(data?.usuario?.tipo as ApiUserType);
-      if (!userTypeFromApi) {
-        throw new Error('Resposta de login sem perfil de usuario valido.');
+      // Mapeia o tipo que veio do backend para o formato do frontend
+      const tipoBackend = data?.usuario?.tipo;
+      let userType: UserType | null = null;
+      
+      if (tipoBackend === 'passageiro') userType = 'passenger';
+      else if (tipoBackend === 'motorista') userType = 'driver';
+      else if (tipoBackend === 'admin') userType = 'admin';
+
+      if (!userType) {
+        throw new Error('Perfil de usuário inválido retornado pelo servidor.');
       }
 
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userType', userTypeFromApi);
+      localStorage.setItem('userType', userType);
       localStorage.setItem('user', JSON.stringify(data.usuario || data.admin || {}));
-      navigate(dashboardByUserType[userTypeFromApi]);
+
+      navigate(dashboardByUserType[userType]);
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,48 +82,27 @@ export function Login() {
               Entre na sua conta e continue sua jornada.
             </h1>
             <p className="mt-4 text-sm text-white/85 sm:text-base">
-              Escolha seu perfil e acesse seus recursos de viagem, motorista ou administracao.
+              Acesse o maior site de acessibilidade para transporte público do Brasil. Faça login para explorar rotas, horários e muito mais!
             </p>
           </div>
           <div className="mt-8 rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-white/90 dark:bg-white/5">
-            Use este login como simulacao de acesso para navegar pelos paineis.
+            O sistema identifica automaticamente seu perfil ao fazer login.
           </div>
         </aside>
 
         <div className="p-8 sm:p-10">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Entrar</h2>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            Informe e-mail e senha para acessar sua area.
+            Informe e-mail e senha para acessar sua área.
           </p>
-
-          <div className="mt-6 grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/80">
-            <button
-              type="button"
-              onClick={() => setUserType('passenger')}
-              className={`lift-on-hover rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getUserTypeButtonClass('passenger')}`}
-            >
-              Passageiro
-            </button>
-            <button
-              type="button"
-              onClick={() => setUserType('driver')}
-              className={`lift-on-hover rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getUserTypeButtonClass('driver')}`}
-            >
-              Motorista
-            </button>
-            <button
-              type="button"
-              onClick={() => setUserType('admin')}
-              className={`lift-on-hover rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getUserTypeButtonClass('admin')}`}
-            >
-              Admin
-            </button>
-          </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             {error && (
-              <div className="mb-2 rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-700 dark:border-red-500/60 dark:bg-red-950/40 dark:text-red-300">{error}</div>
+              <div className="mb-2 rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-700 dark:border-red-500/60 dark:bg-red-950/40 dark:text-red-300">
+                {error}
+              </div>
             )}
+
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 E-mail
@@ -200,27 +158,22 @@ export function Login() {
 
             <button
               type="submit"
-              className="lift-on-hover inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#4a2c86] py-3 font-semibold text-white transition "
+              disabled={loading}
+              className="lift-on-hover inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#4a2c86] py-3 font-semibold text-white transition disabled:opacity-50"
             >
               <UserRound className="size-4" />
-              Entrar
+              {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-slate-600 dark:text-slate-300">
-            {userType === 'admin' ? (
-              'Acesso administrativo interno.'
-            ) : (
-              <>
-                Nao possui conta?{' '}
-                <Link
-                  to={registerByUserType[userType]}
-                  className="lift-on-hover inline-flex items-center rounded-md bg-[#ede7ff] px-2.5 py-1 font-semibold text-[#4a2c86] dark:bg-[#2a1e48] dark:text-[#d8cfff]"
-                >
-                  Criar conta
-                </Link>
-              </>
-            )}
+          <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
+            Não possui conta?{' '}
+            <Link
+              to="/cadastro"
+              className="lift-on-hover inline-flex items-center rounded-md bg-[#ede7ff] px-2.5 py-1 font-semibold text-[#4a2c86] dark:bg-[#2a1e48] dark:text-[#d8cfff]"
+            >
+              Criar conta
+            </Link>
           </p>
         </div>
       </div>

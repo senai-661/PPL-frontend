@@ -1,12 +1,13 @@
-﻿import { Plane, Clock, Shield, DollarSign } from 'lucide-react';
+import { Plane, Clock, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 import { ImageWithFallback } from '../../app/components/figma/ImagemComFallback';
 
 export function Airports() {
   const airports = [
-    { name: 'Aeroporto Internacional de Guarulhos (GRU)', city: 'São Paulo', zone: 'A partir de R$ 45' },
-    { name: 'Aeroporto de Congonhas (CGH)', city: 'São Paulo', zone: 'A partir de R$ 35' },
-    { name: 'Aeroporto Internacional do Galeão (GIG)', city: 'Rio de Janeiro', zone: 'A partir de R$ 50' },
+    { name: 'Aeroporto Internacional de Guarulhos (GRU)', city: 'Sao Paulo', zone: 'A partir de R$ 45' },
+    { name: 'Aeroporto de Congonhas (CGH)', city: 'Sao Paulo', zone: 'A partir de R$ 35' },
+    { name: 'Aeroporto Internacional do Galeao (GIG)', city: 'Rio de Janeiro', zone: 'A partir de R$ 50' },
     { name: 'Aeroporto Santos Dumont (SDU)', city: 'Rio de Janeiro', zone: 'A partir de R$ 40' },
   ];
 
@@ -16,7 +17,7 @@ export function Airports() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-5xl mb-6">Viagens para Aeroportos</h1>
           <p className="text-xl text-white/90 max-w-3xl">
-            Transporte acessível e confiável para todos os principais aeroportos do Brasil
+            Transporte acessivel e confiavel para todos os principais aeroportos do Brasil
           </p>
         </div>
       </section>
@@ -27,28 +28,28 @@ export function Airports() {
             <div>
               <h2 className="text-4xl mb-6">Viaje com Tranquilidade</h2>
               <p className="text-lg text-gray-700 mb-4">
-                Nossas viagens para aeroportos são planejadas para garantir que você chegue no horário,
-                com conforto e sem preocupações.
+                Nossas viagens para aeroportos sao planejadas para garantir que voce chegue no horario,
+                com conforto e sem preocupacoes.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Clock className="size-6 text-[#5a34a1] mt-1" />
                   <div>
                     <h3 className="text-lg mb-1">Pontualidade Garantida</h3>
-                    <p className="text-gray-600">Motoristas monitoram o tráfego em tempo real</p>
+                    <p className="text-gray-600">Motoristas monitoram o trafego em tempo real</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Shield className="size-6 text-[#5a34a1] mt-1" />
                   <div>
-                    <h3 className="text-lg mb-1">Veículos Premium</h3>
-                    <p className="text-gray-600">Frota moderna e 100% acessível</p>
+                    <h3 className="text-lg mb-1">Veiculos Premium</h3>
+                    <p className="text-gray-600">Frota moderna e 100% acessivel</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Plane className="size-6 text-[#5a34a1] mt-1" />
                   <div>
-                    <h3 className="text-lg mb-1">Assistência com Bagagem</h3>
+                    <h3 className="text-lg mb-1">Assistencia com Bagagem</h3>
                     <p className="text-gray-600">Ajuda completa do motorista</p>
                   </div>
                 </div>
@@ -77,7 +78,7 @@ export function Airports() {
           <div className="mt-12 text-center">
             <Link
               to="/viagem/nova"
-              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full  transition-colors"
+              className="inline-block bg-[#5a34a1] text-white px-8 py-4 rounded-full transition-colors"
             >
               Agendar Viagem para Aeroporto
             </Link>
@@ -87,4 +88,3 @@ export function Airports() {
     </div>
   );
 }
-

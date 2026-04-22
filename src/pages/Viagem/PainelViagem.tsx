@@ -1,11 +1,11 @@
-﻿import { MapPin, Clock, DollarSign, User, Navigation } from 'lucide-react';
+import { MapPin, Clock, DollarSign, Navigation } from 'lucide-react';
 
 export function TripDashboard() {
   const activeTrip = {
     id: '1234',
     status: 'em_andamento',
     driver: {
-      name: 'João Silva',
+      name: 'Joao Silva',
       rating: 4.9,
       photo: null,
       vehicle: 'Fiat Ducato Branca - ABC-1234',
@@ -20,7 +20,6 @@ export function TripDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Active Trip Card */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-[#5a34a1] to-[#7c51c9] text-white p-6">
             <div className="flex items-center justify-between">
@@ -35,7 +34,6 @@ export function TripDashboard() {
             </div>
           </div>
 
-          {/* Map Placeholder */}
           <div className="relative h-96 bg-gray-200 flex items-center justify-center">
             <Navigation className="size-24 text-gray-400" />
             <div className="absolute inset-0 flex items-center justify-center">
@@ -43,7 +41,6 @@ export function TripDashboard() {
             </div>
           </div>
 
-          {/* Trip Details */}
           <div className="p-6">
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
@@ -73,7 +70,7 @@ export function TripDashboard() {
               <div className="flex items-center gap-2">
                 <Navigation className="size-5 text-[#5a34a1]" />
                 <div>
-                  <p className="text-sm text-gray-500">Distância</p>
+                  <p className="text-sm text-gray-500">Distancia</p>
                   <p className="text-gray-900">{activeTrip.estimatedDistance}</p>
                 </div>
               </div>
@@ -86,9 +83,8 @@ export function TripDashboard() {
               </div>
             </div>
 
-            {/* Driver Info */}
             <div className="border-t pt-6">
-              <h3 className="text-lg mb-4">Informações do Motorista</h3>
+              <h3 className="text-lg mb-4">Informacoes do Motorista</h3>
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                 <div className="bg-[#5a34a1] text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl">
                   {activeTrip.driver.name.charAt(0)}
@@ -99,40 +95,37 @@ export function TripDashboard() {
                   <p className="text-sm text-gray-600">{activeTrip.driver.vehicle}</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <button className="bg-[#5a34a1] text-white px-4 py-2 rounded-lg  transition-colors text-sm">
+                  <button className="bg-[#5a34a1] text-white px-4 py-2 rounded-lg transition-colors text-sm">
                     Ligar
                   </button>
-                  <button className="border-2 border-[#5a34a1] text-[#5a34a1] px-4 py-2 rounded-lg   transition-colors text-sm">
+                  <button className="border-2 border-[#5a34a1] text-[#5a34a1] px-4 py-2 rounded-lg transition-colors text-sm">
                     Mensagem
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="mt-6 flex gap-4">
-              <button className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg  transition-colors">
+              <button className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg transition-colors">
                 Compartilhar Viagem
               </button>
-              <button className="flex-1 bg-red-600 text-white py-3 rounded-lg  transition-colors">
-                Emergência SOS
+              <button className="flex-1 bg-red-600 text-white py-3 rounded-lg transition-colors">
+                Emergencia SOS
               </button>
             </div>
           </div>
         </div>
 
-        {/* Safety Tips */}
         <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg">
-          <h3 className="text-lg mb-3 text-blue-900">Dicas de Segurança</h3>
+          <h3 className="text-lg mb-3 text-blue-900">Dicas de Seguranca</h3>
           <ul className="space-y-2 text-blue-800 text-sm">
-            <li>• Verifique se a placa do veículo corresponde à informação no app</li>
-            <li>• Compartilhe sua viagem com um contato de confiança</li>
-            <li>• Use sempre o cinto de segurança</li>
-            <li>• Em caso de emergência, pressione o botão SOS</li>
+            <li>• Verifique se a placa do veiculo corresponde a informacao no app</li>
+            <li>• Compartilhe sua viagem com um contato de confianca</li>
+            <li>• Use sempre o cinto de seguranca</li>
+            <li>• Em caso de emergencia, pressione o botao SOS</li>
           </ul>
         </div>
       </div>
     </div>
   );
 }
-

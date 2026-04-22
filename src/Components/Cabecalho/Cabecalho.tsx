@@ -1,49 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Accessibility as AccessibilityIcon, LogOut, Menu, UserCircle2, X } from 'lucide-react';
+import { Accessibility as AccessibilityIcon, LogOut, Menu, X } from 'lucide-react';
 import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
 import './Cabecalho.css';
-
-type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
-
-type StoredUser = {
-  nome?: string;
-  sobrenome?: string;
-  email?: string;
-};
-
-const profilePathByUserType: Record<AuthenticatedUserType, string> = {
-  passenger: '/passageiro/perfil',
-  driver: '/motorista/perfil',
-  admin: '/administrador/painel',
-};
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState<AuthenticatedUserType | null>(null);
-  const [userData, setUserData] = useState<StoredUser | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const storedUserType = localStorage.getItem('userType') as AuthenticatedUserType | null;
-    const storedUser = localStorage.getItem('user');
-
     setIsAuthenticated(!!token);
-    setUserType(storedUserType);
-
-    if (!storedUser) {
-      setUserData(null);
-      return;
-    }
-
-    try {
-      setUserData(JSON.parse(storedUser) as StoredUser);
-    } catch {
-      setUserData(null);
-    }
   }, [location]);
 
   const handleLogout = () => {
@@ -51,8 +20,6 @@ export function Header() {
     localStorage.removeItem('userType');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
-    setUserType(null);
-    setUserData(null);
     setIsMenuOpen(false);
     navigate('/login');
   };
@@ -66,10 +33,6 @@ export function Header() {
   ];
 
   const navLinks = isAuthenticated ? [] : publicLinks;
-  const profilePath = userType ? profilePathByUserType[userType] : null;
-  const displayName =
-    [userData?.nome, userData?.sobrenome].filter(Boolean).join(' ').trim() || 'Usuario OpenLine';
-  const displayEmail = userData?.email?.trim() || 'Email nao informado';
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -95,24 +58,6 @@ export function Header() {
 
           <div className="header-actions">
             <ThemeToggleButton className="header-theme-toggle" />
-
-            {isAuthenticated && profilePath && (
-              <div className="profile-menu">
-                <Link
-                  to={profilePath}
-                  className="profile-button"
-                  aria-label="Abrir perfil da conta"
-                >
-                  <UserCircle2 className="size-6" />
-                </Link>
-
-                <Link to={profilePath} className="profile-card">
-                  <span className="profile-card-label">CONTA OPENLINE</span>
-                  <strong className="profile-card-name">{displayName}</strong>
-                  <span className="profile-card-email">{displayEmail}</span>
-                </Link>
-              </div>
-            )}
 
             <div className="cta-desktop">
               {isAuthenticated ? (
@@ -157,25 +102,14 @@ export function Header() {
             ))}
 
             {isAuthenticated ? (
-              <>
-                {profilePath && (
-                  <Link
-                    to={profilePath}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="nav-mobile-link nav-mobile-button"
-                  >
-                    Minha conta
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="cta-mobile flex items-center justify-center gap-2 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
-                >
-                  <LogOut className="size-3" />
-                  Sair
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="cta-mobile flex items-center justify-center gap-2 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+              >
+                <LogOut className="size-3" />
+                Sair
+              </button>
             ) : (
               <Link to="/login" onClick={() => setIsMenuOpen(false)} className="cta-mobile">
                 Entrar

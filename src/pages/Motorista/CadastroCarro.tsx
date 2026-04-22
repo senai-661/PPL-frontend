@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Car, Upload, Loader2, AlertCircle } from 'lucide-react';
+import { Car, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SERVER_CFG } from '../../appConfig';
 
@@ -15,14 +15,25 @@ export function CarRegistration() {
 
   const token = localStorage.getItem('token');
 
+  // ✅ Validação da placa (antiga e Mercosul)
+  const validarPlaca = (placa: string): boolean => {
+    const placaUpper = placa.toUpperCase();
+    // Formato antigo: ABC-1234
+    const regexAntigo = /^[A-Z]{3}-[0-9]{4}$/;
+    // Formato Mercosul: ABC1D23
+    const regexMercosul = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
+    
+    return regexAntigo.test(placaUpper) || regexMercosul.test(placaUpper);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    // Validações
-    if (!formData.placa || formData.placa.length < 7) {
-      setError('Placa inválida');
+    // ✅ Validação da placa
+    if (!formData.placa || !validarPlaca(formData.placa)) {
+      setError('Placa inválida. Use o formato ABC-1234 ou ABC1D23');
       setLoading(false);
       return;
     }
@@ -92,11 +103,11 @@ export function CarRegistration() {
                 type="text"
                 required
                 value={formData.placa}
-                onChange={(e) => setFormData({ ...formData, placa: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                onChange={(e) => setFormData({ ...formData, placa: e.target.value.toUpperCase() })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1] uppercase"
                 placeholder="ABC-1234 ou ABC1D23"
               />
-              <small className="text-gray-500 text-xs">Formato: ABC-1234 ou ABC1D23 (Mercosul)</small>
+              <small className="text-gray-500 text-xs">Formatos aceitos: ABC-1234 (antigo) ou ABC1D23 (Mercosul)</small>
             </div>
 
             <div>

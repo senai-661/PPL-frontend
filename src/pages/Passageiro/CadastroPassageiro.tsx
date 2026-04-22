@@ -10,6 +10,14 @@ const necessidadesDisponiveis = [
   'Acompanhamento no embarque',
 ];
 
+const formatCelular = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+  }
+  return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+};
+
 export function PassengerRegistration() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -33,6 +41,7 @@ export function PassengerRegistration() {
         necessidades: jaSelected
           ? prev.necessidades.filter((item) => item !== necessidade)
           : [...prev.necessidades, necessidade],
+          celular: formData.celular.replace(/\D/g, ''),
       };
     });
   };
@@ -93,7 +102,7 @@ export function PassengerRegistration() {
                     type="text"
                     required
                     value={formData.nomePassageiro}
-                    onChange={(e) => setFormData({ ...formData, nomePassageiro: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, celular: formatCelular(e.target.value)})}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                     placeholder="Seu nome"
                   />

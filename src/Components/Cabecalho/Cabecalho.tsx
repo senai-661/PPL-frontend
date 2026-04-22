@@ -1,12 +1,32 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Accessibility as AccessibilityIcon } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Accessibility as AccessibilityIcon, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
-import './Cabecalho.css';
+import './Cabecalho.css'; // Importa o CSS específico para o cabeçalho
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Verifica se o usuário está autenticado ao carregar e quando a rota muda
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, [location]);
+
+  const handleLogout = () => {
+    // Remove dados de autenticação
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('user');
+    
+    // Atualiza estado e redireciona
+    setIsAuthenticated(false);
+    setIsMenuOpen(false);
+    navigate('/login');
+  };
 
   const navLinks = [
     { path: '/', label: 'Início' },
@@ -28,27 +48,39 @@ export function Header() {
             <span className="logo-text">OpenLine</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="nav-desktop">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop Navigation - Oculto quando autenticado */}
+          {!isAuthenticated && (
+            <nav className="nav-desktop">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`nav-link ${isActive(link.path) ? 'nav-link-active' : ''}`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
 
           <div className="header-actions">
             <ThemeToggleButton className="header-theme-toggle" />
 
             {/* CTA Button Desktop */}
             <div className="cta-desktop">
-              <Link to="/login" className="cta-button">
-                Entrar
-              </Link>
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="cta-button flex items-center gap-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 px-3 py-1.5 text-sm"
+                >
+                  <LogOut className="size-3" />
+                  Sair
+                </button>
+              ) : (
+                <Link to="/login" className="cta-button">
+                  Entrar
+                </Link>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -62,8 +94,8 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
+        {/* Mobile Navigation - Oculto quando autenticado */}
+        {isMenuOpen && !isAuthenticated && (
           <nav className="nav-mobile">
             {navLinks.map((link) => (
               <Link
@@ -82,6 +114,19 @@ export function Header() {
             >
               Entrar
             </Link>
+          </nav>
+        )}
+
+        {/* Mobile Logout - Mostrado apenas quando autenticado */}
+        {isMenuOpen && isAuthenticated && (
+          <nav className="nav-mobile">
+            <button
+              onClick={handleLogout}
+              className="cta-mobile flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 px-3 py-1.5 text-sm"
+            >
+              <LogOut className="size-3" />
+              Sair
+            </button>
           </nav>
         )}
       </div>

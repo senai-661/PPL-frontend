@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, LogIn, Mail, UserRound } from 'lucide-react';
-import { SERVER_CFG } from '../appConfig';
+import { SERVER_CFG } from '../../appConfig';
 
 type UserType = 'passenger' | 'driver' | 'admin';
 type ApiUserType = 'passageiro' | 'motorista' | 'admin';

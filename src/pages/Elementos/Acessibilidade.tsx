@@ -1,6 +1,6 @@
 import { Accessibility as AccessibilityIcon, Ear, Eye, Heart, Brain, Users2 } from 'lucide-react';
 import { ImageWithFallback } from '../../app/components/figma/ImagemComFallback';
-
+import celularImg from '../../assets/celularOpenLine.png';
 export function Accessibility() {
   return (
     <div className="flex flex-col">
@@ -9,7 +9,7 @@ export function Accessibility() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-5xl mb-6">Acessibilidade para Todos</h1>
           <p className="text-xl text-white/90 max-w-3xl">
-            Nosso compromisso é garantir que cada pessoa, independentemente de suas necessidades, 
+            Nosso compromisso é garantir que cada pessoa, independentemente de suas necessidades,
             tenha acesso a transporte digno, seguro e confortável.
           </p>
         </div>
@@ -22,16 +22,16 @@ export function Accessibility() {
             <div>
               <h2 className="text-4xl mb-6">Mobilidade é um Direito Universal</h2>
               <p className="text-lg text-gray-700 mb-4">
-                Na OpenLine, acessibilidade não é um diferencial – é o nosso padrão. Cada veículo, 
+                Na OpenLine, acessibilidade não é um diferencial – é o nosso padrão. Cada veículo,
                 cada motorista e cada recurso do nosso aplicativo foi pensado para atender a todos.
               </p>
               <p className="text-lg text-gray-700 mb-4">
-                Trabalhamos em parceria com organizações de defesa dos direitos das pessoas com 
-                deficiência e minorias para garantir que nossas soluções realmente atendam às 
+                Trabalhamos em parceria com organizações de defesa dos direitos das pessoas com
+                deficiência e minorias para garantir que nossas soluções realmente atendam às
                 necessidades de quem mais precisa.
               </p>
               <p className="text-lg text-gray-700">
-                Porque acreditamos que a verdadeira inclusão acontece quando todos podem ir e vir 
+                Porque acreditamos que a verdadeira inclusão acontece quando todos podem ir e vir
                 com autonomia, segurança e dignidade.
               </p>
             </div>
@@ -50,7 +50,7 @@ export function Accessibility() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl mb-12 text-center">Recursos de Acessibilidade</h2>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Mobilidade Reduzida */}
             <div className="bg-white p-8 rounded-lg shadow-md">
@@ -239,7 +239,7 @@ export function Accessibility() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl mb-12 text-center">Tecnologia Assistiva no App</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-gradient-to-br from-[#5a34a1] to-[#7c51c9] text-white p-8 rounded-lg">
               <h3 className="text-2xl mb-4">Para Todos os Usuários</h3>
@@ -268,11 +268,14 @@ export function Accessibility() {
             </div>
 
             <div>
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1554260570-83dc2f46ef79?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2JpbGUlMjBhcHAlMjBwaG9uZSUyMHRyYW5zcG9ydGF0aW9ufGVufDF8fHx8MTc3MTAxMDYwMnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              <img
+                src={celularImg}
                 alt="App acessível"
                 className="rounded-lg shadow-xl h-full object-cover"
               />
+              
+                
+              
             </div>
           </div>
         </div>
@@ -285,7 +288,7 @@ export function Accessibility() {
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
             Trabalhamos em conformidade com as normas de acessibilidade nacionais e internacionais
           </p>
-          
+
           <div className="grid md:grid-cols-4 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <p className="text-gray-700">NBR 9050 - Acessibilidade</p>
@@ -307,7 +310,7 @@ export function Accessibility() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl mb-12 text-center">O que dizem nossos usuários</h2>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-gray-50 p-6 rounded-lg">
               <p className="text-gray-700 mb-4 italic">

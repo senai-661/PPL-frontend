@@ -1,5 +1,5 @@
 ﻿import { Target, Eye, Award, Heart } from 'lucide-react';
-import { ImageWithFallback } from '../app/components/figma/ImagemComFallback';
+import { ImageWithFallback } from '../../app/components/figma/ImagemComFallback';
 
 export function About() {
   return (

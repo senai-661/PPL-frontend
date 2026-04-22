@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Car, FileText, Upload } from 'lucide-react';
+import { Car, Upload } from 'lucide-react';
 
 export function CarRegistration() {
   const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ export function CarRegistration() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Veículo cadastrado com sucesso!');
+    alert('Veiculo cadastrado com sucesso!');
   };
 
   return (
@@ -21,8 +21,8 @@ export function CarRegistration() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-8">
           <Car className="size-16 text-[#5a34a1] mx-auto mb-4" />
-          <h1 className="text-4xl mb-4">Cadastrar Veículo</h1>
-          <p className="text-gray-600">Adicione um veículo à sua conta de motorista</p>
+          <h1 className="text-4xl mb-4">Cadastrar Veiculo</h1>
+          <p className="text-gray-600">Adicione um veiculo a sua conta de motorista</p>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-md">
@@ -102,11 +102,11 @@ export function CarRegistration() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-xl">Documentos do Veículo</h3>
-              
+              <h3 className="text-xl">Documentos do Veiculo</h3>
+
               <div>
-                <label className="block text-gray-700 mb-2">CRLV (Documento do Veículo) *</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center  transition-colors cursor-pointer">
+                <label className="block text-gray-700 mb-2">CRLV (Documento do Veiculo) *</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-colors cursor-pointer">
                   <Upload className="size-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Clique para fazer upload ou arraste o arquivo</p>
                   <input type="file" className="hidden" accept="image/*,.pdf" />
@@ -115,7 +115,7 @@ export function CarRegistration() {
 
               <div>
                 <label className="block text-gray-700 mb-2">Certificado de Vistoria *</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center  transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-colors cursor-pointer">
                   <Upload className="size-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Clique para fazer upload ou arraste o arquivo</p>
                   <input type="file" className="hidden" accept="image/*,.pdf" />
@@ -123,10 +123,10 @@ export function CarRegistration() {
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Fotos do Veículo (frente, traseira, laterais) *</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center  transition-colors cursor-pointer">
+                <label className="block text-gray-700 mb-2">Fotos do Veiculo (frente, traseira, laterais) *</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-colors cursor-pointer">
                   <Upload className="size-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Você pode selecionar múltiplas fotos</p>
+                  <p className="text-gray-600">Voce pode selecionar multiplas fotos</p>
                   <input type="file" multiple className="hidden" accept="image/*" />
                 </div>
               </div>
@@ -134,16 +134,16 @@ export function CarRegistration() {
 
             <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
               <p className="text-blue-800 text-sm">
-                <strong>Importante:</strong> O veículo deve estar em boas condições e possuir 
-                adaptações de acessibilidade (rampa ou elevador) para ser aprovado na plataforma OpenLine.
+                <strong>Importante:</strong> O veiculo deve estar em boas condicoes e possuir
+                adaptacoes de acessibilidade (rampa ou elevador) para ser aprovado na plataforma OpenLine.
               </p>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg  transition-colors"
+              className="w-full bg-[#5a34a1] text-white py-3 rounded-lg transition-colors"
             >
-              Cadastrar Veículo
+              Cadastrar Veiculo
             </button>
           </form>
         </div>
@@ -151,4 +151,3 @@ export function CarRegistration() {
     </div>
   );
 }
-

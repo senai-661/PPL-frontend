@@ -1,27 +1,42 @@
 ﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CorridaAgendamentoRequests from '../../fetch/CorridaAgendamentoRequests';
 
 export default function Inicio() {
   const navigate = useNavigate();
+
   const [tipoSelecionado, setTipoSelecionado] = useState<'agora' | 'agendar'>('agora');
   const [dataAgendada, setDataAgendada] = useState('');
   const [horaAgendada, setHoraAgendada] = useState('');
 
-  const handleVerPrecos = () => {
+  const handleVerPrecos = async () => {
     if (tipoSelecionado === 'agora') {
       navigate('/solicitar-corrida');
-    } else {
-      if (!dataAgendada || !horaAgendada) {
-        alert('Selecione data e hora para agendar');
-        return;
-      }
-      navigate('/solicitar-corrida', {
-        state: {
-          tipo: 'agendada',
-          data: dataAgendada,
-          hora: horaAgendada
-        }
+      return;
+    }
+
+    if (!dataAgendada || !horaAgendada) {
+      alert('Selecione data e hora para agendar');
+      return;
+    }
+
+    try {
+      const dataHoraCompleta = new Date(`${dataAgendada}T${horaAgendada}`).toISOString();
+
+      await CorridaAgendamentoRequests.criarAgendamento({
+        origemCorrida: "Origem temporária",
+        destinoCorrida: "Destino temporário",
+        dataAgendada: dataHoraCompleta,
+        tipoCorrida: 'NORMAL'
       });
+
+      alert('Corrida agendada com sucesso 🚀');
+
+      navigate('/corridas-agendadas');
+
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao agendar corrida');
     }
   };
 
@@ -33,10 +48,10 @@ export default function Inicio() {
         <div className="flex gap-3 mb-5">
           <button
             onClick={() => setTipoSelecionado('agora')}
-            className={`flex-1 py-3 rounded-xl border transition-all ${
+            className={`flex-1 py-3 rounded-xl border ${
               tipoSelecionado === 'agora' 
-                ? 'bg-blue-500 border-blue-500 text-white' 
-                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                ? 'bg-blue-500 text-white' 
+                : 'border-gray-300 text-gray-600'
             }`}
           >
             Agora
@@ -44,10 +59,10 @@ export default function Inicio() {
           
           <button
             onClick={() => setTipoSelecionado('agendar')}
-            className={`flex-1 py-3 rounded-xl border transition-all ${
+            className={`flex-1 py-3 rounded-xl border ${
               tipoSelecionado === 'agendar' 
-                ? 'bg-blue-500 border-blue-500 text-white' 
-                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                ? 'bg-blue-500 text-white' 
+                : 'border-gray-300 text-gray-600'
             }`}
           >
             Agendar mais tarde
@@ -61,42 +76,30 @@ export default function Inicio() {
               value={dataAgendada}
               onChange={(e) => setDataAgendada(e.target.value)}
               className="flex-1 p-3 border rounded-xl"
-              placeholder="Data"
             />
             <input
               type="time"
               value={horaAgendada}
               onChange={(e) => setHoraAgendada(e.target.value)}
               className="flex-1 p-3 border rounded-xl"
-              placeholder="Hora"
             />
           </div>
         )}
         
         <button
           onClick={handleVerPrecos}
-          className="w-full bg-blue-500 py-4 rounded-xl text-white font-bold text-lg mb-3 hover:bg-blue-600 transition-all"
+          className="w-full bg-blue-500 py-4 rounded-xl text-white font-bold text-lg mb-3"
         >
           Ver preços
         </button>
-        
-        <p className="text-center text-gray-400 text-sm">
-          Faça login para ver sua atividade recente
-        </p>
-      </div>
-      <h2 className="text-2xl font-bold mb-2">Nossos Serviços</h2>
-      <p className="text-gray-500 mb-5">
-        Soluções completas para sua mobilidade e muito mais
-      </p>
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-md">
-          <h3 className="text-lg font-bold mb-2">Corridas</h3>
-          <p className="text-gray-500">
-            Solicite uma corrida imediata ou agende para mais tarde
-          </p>
-        </div>
-      </div>
 
+        <button
+          onClick={() => navigate('/corridas-agendadas')}
+          className="w-full bg-gray-200 py-3 rounded-xl text-gray-700 font-semibold"
+        >
+          Ver corridas agendadas
+        </button>
+      </div>
     </div>
   );
 }

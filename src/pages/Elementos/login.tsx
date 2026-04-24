@@ -103,7 +103,7 @@ export function Login() {
             Informe e-mail e senha para acessar sua área.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5" autoComplete="on">
             {error && (
               <div className="mb-2 rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-700 dark:border-red-500/60 dark:bg-red-950/40 dark:text-red-300">
                 {error}
@@ -118,7 +118,9 @@ export function Login() {
                 <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(event) => setFormData({ ...formData, email: event.target.value })}
                   required
@@ -136,7 +138,9 @@ export function Login() {
                 <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={(event) => setFormData({ ...formData, password: event.target.value })}
                   required

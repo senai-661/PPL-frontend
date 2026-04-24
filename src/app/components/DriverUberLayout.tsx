@@ -73,7 +73,12 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
       if (response.ok) {
         const data = await response.json();
-        setRideNotifications(data);
+        // Garante que cada corrida tenha um ID válido (fallback para id_corrida)
+        const corridasComId = data.map((corrida: any) => ({
+          ...corrida,
+          id: corrida.id_corrida ?? corrida.id
+        }));
+        setRideNotifications(corridasComId);
       }
     } catch (error) {
       console.error('Erro ao buscar corridas:', error);

@@ -1,45 +1,28 @@
-import { SERVER_CFG } from '../appConfig';
-import { CorridaAgendamentoDTO } from '../interface/CorridaAgendamentoDTO';
+import api from './api';
+
+export interface CorridaAgendamentoDTO {
+  idPassageiro?: number;
+  origemCorrida: string;
+  destinoCorrida: string;
+  tipoCorrida?: string;
+  dataAgendada: string;
+  preco?: number;
+}
 
 class CorridaAgendamentoRequests {
-
-  private serverURL: string;
-  private routeAgendarCorrida: string;
-
-  constructor() {
-    this.serverURL = SERVER_CFG.SERVER_URL;
-    this.routeAgendarCorrida = SERVER_CFG.ENDPOINT_AGENDAR_CORRIDA;
+  
+  async criarAgendamento(data: CorridaAgendamentoDTO) {
+    const response = await api.post('/api/corridas-agendadas', {
+      ...data,
+      statusAgendamento: 'PENDENTE',
+      tipoCorrida: data.tipoCorrida || 'NORMAL'
+    });
+    return response.data;
   }
 
-  private getAuthHeader() {
-    const token = localStorage.getItem('token');
-    return { 'Authorization': `Bearer ${token}` };
-  }
-
-  async agendarCorrida(dados: CorridaAgendamentoDTO): Promise<boolean> {
-    try {
-      const response = await fetch(
-        `${this.serverURL}${this.routeAgendarCorrida}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...this.getAuthHeader()
-          },
-          body: JSON.stringify(dados)
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Erro ao agendar corrida');
-      }
-
-      return true;
-
-    } catch (error) {
-      console.error('Erro ao agendar corrida:', error);
-      return false;
-    }
+  async listarAgendamentos() {
+    const response = await api.get('/api/corridas-agendadas');
+    return response.data;
   }
 }
 

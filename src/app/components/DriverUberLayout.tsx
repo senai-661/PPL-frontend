@@ -11,7 +11,7 @@ import {
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests from '../../fetch/MapRequest';
+import MapRequests, { type RouteData } from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
 
 interface DriverUberLayoutProps {
@@ -35,6 +35,8 @@ type RideMapLookup = Record<
   {
     origin: LatLngTuple | null;
     destination: LatLngTuple | null;
+    routeToPassenger: RouteData | null;
+    routeToDestination: RouteData | null;
   }
 >;
 
@@ -147,13 +149,30 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
               MapRequests.geocodeAddress(ride.destination),
             ]);
 
+            const originCoords = origin ? ([origin.lat, origin.lng] as LatLngTuple) : null;
+            const destinationCoords = destination
+              ? ([destination.lat, destination.lng] as LatLngTuple)
+              : null;
+
+            // Calcular rotas reais
+            let routeToPassenger: RouteData | null = null;
+            let routeToDestination: RouteData | null = null;
+
+            if (originCoords) {
+              routeToPassenger = await MapRequests.calculateRoute(driverPosition, originCoords);
+            }
+
+            if (originCoords && destinationCoords) {
+              routeToDestination = await MapRequests.calculateRoute(originCoords, destinationCoords);
+            }
+
             return [
               ride.id,
               {
-                origin: origin ? ([origin.lat, origin.lng] as LatLngTuple) : null,
-                destination: destination
-                  ? ([destination.lat, destination.lng] as LatLngTuple)
-                  : null,
+                origin: originCoords,
+                destination: destinationCoords,
+                routeToPassenger,
+                routeToDestination,
               },
             ] as const;
           }),
@@ -176,7 +195,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     return () => {
       isMounted = false;
     };
-  }, [isOnline, rideNotifications]);
+  }, [isOnline, rideNotifications, driverPosition]);
 
   const mapPoints: MapPoint[] = [
     {
@@ -216,10 +235,19 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   }
 
   const selectedRideCoordinates = selectedRide ? rideMapLookup[selectedRide] : undefined;
-  const selectedRideRoute =
-    selectedRideCoordinates?.origin && selectedRideCoordinates.destination
-      ? [driverPosition, selectedRideCoordinates.origin, selectedRideCoordinates.destination]
-      : undefined;
+  
+  // Construir rota combinada: motorista -> passageiro -> destino
+  let selectedRideRoute: LatLngTuple[] | undefined;
+  if (selectedRideCoordinates?.routeToPassenger && selectedRideCoordinates?.routeToDestination) {
+    // Combinar as rotas
+    selectedRideRoute = [
+      ...selectedRideCoordinates.routeToPassenger.coordinates,
+      ...selectedRideCoordinates.routeToDestination.coordinates.slice(1), // Evitar duplicar o ponto de origem
+    ];
+  } else if (selectedRideCoordinates?.routeToPassenger) {
+    selectedRideRoute = selectedRideCoordinates.routeToPassenger.coordinates;
+  }
+
   const mapCenter = selectedRideCoordinates?.origin ?? driverPosition;
 
   return (
@@ -386,12 +414,20 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                     <div className="text-center">
                       <Clock className="size-4 text-blue-600 mx-auto mb-1" />
                       <p className="text-xs text-gray-600">Tempo</p>
-                      <p className="text-sm font-bold text-gray-800">{ride.estimatedTime}</p>
+                      <p className="text-sm font-bold text-gray-800">
+                        {rideMapLookup[ride.id]?.routeToPassenger
+                          ? `~${MapRequests.formatDuration(rideMapLookup[ride.id]!.routeToPassenger!.duration)}`
+                          : ride.estimatedTime}
+                      </p>
                     </div>
                     <div className="text-center">
                       <Navigation className="size-4 text-purple-600 mx-auto mb-1" />
                       <p className="text-xs text-gray-600">Distancia</p>
-                      <p className="text-sm font-bold text-gray-800">{ride.distance}</p>
+                      <p className="text-sm font-bold text-gray-800">
+                        {rideMapLookup[ride.id]?.routeToPassenger
+                          ? MapRequests.formatDistance(rideMapLookup[ride.id]!.routeToPassenger!.distance)
+                          : ride.distance}
+                      </p>
                     </div>
                   </div>
 

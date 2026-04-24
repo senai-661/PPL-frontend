@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Car, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SERVER_CFG } from '../../appConfig';
+import { useToast } from '../../hooks/useToast';
 
 export function CarRegistration() {
   const navigate = useNavigate();
+  const { success, error: showError } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -66,7 +68,7 @@ export function CarRegistration() {
         throw new Error(data.mensagem || 'Erro ao cadastrar veículo');
       }
 
-      alert('Veículo cadastrado com sucesso!');
+      success('Veículo cadastrado com sucesso!');
       navigate('/motorista/painel');
     } catch (err: any) {
       setError(err.message || 'Erro ao cadastrar veículo');

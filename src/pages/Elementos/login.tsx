@@ -176,7 +176,7 @@ export function Login() {
           <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
             Não possui conta?{' '}
             <Link
-              to="/cadastro"
+              to="/"
               className="lift-on-hover inline-flex items-center rounded-md bg-[#ede7ff] px-2.5 py-1 font-semibold text-[#4a2c86] dark:bg-[#2a1e48] dark:text-[#d8cfff]"
             >
               Criar conta

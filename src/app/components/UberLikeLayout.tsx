@@ -2,7 +2,7 @@ import { MapPin, Navigation, X, DollarSign, Loader2 } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import MapRequests from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
 import { SERVER_CFG } from '../../appConfig';
 
@@ -205,7 +205,11 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     });
   }
 
-  const tripRoute = routeData?.coordinates;
+  // ✅ CORRIGIDO: rota direta entre origem e destino
+  const tripRoute = originPosition && destinationPosition
+    ? [originPosition, destinationPosition]
+    : undefined;
+    
   const mapCenter = destinationPosition ?? originPosition ?? DEFAULT_CENTER;
 
   return (

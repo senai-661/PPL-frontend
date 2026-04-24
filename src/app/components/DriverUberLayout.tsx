@@ -2,6 +2,7 @@ import {
   Clock,
   DollarSign,
   MapPin,
+  Navigation,
   Navigation2,
   Phone,
   Search,
@@ -11,7 +12,7 @@ import {
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import MapRequests from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
 import { SERVER_CFG } from '../../appConfig';
 
@@ -39,8 +40,6 @@ type RideMapLookup = Record<
   {
     origin: LatLngTuple | null;
     destination: LatLngTuple | null;
-    routeToPassenger: RouteData | null;
-    routeToDestination: RouteData | null;
   }
 >;
 
@@ -58,7 +57,6 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const [stats, setStats] = useState({
     ganhosDia: 0,
     viagensDia: 0,
-    mediaAvaliacao: null as number | null,
   });
   const [togglingOnline, setTogglingOnline] = useState(false);
 
@@ -92,7 +90,6 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
         setStats({
           ganhosDia: data.totalGanho || 0,
           viagensDia: data.corridasFinalizadas || 0,
-          mediaAvaliacao: null,
         });
       }
     } catch (error) {
@@ -188,30 +185,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
               MapRequests.geocodeAddress(ride.destinoCorrida),
             ]);
 
-            const originCoords = origin ? ([origin.lat, origin.lng] as LatLngTuple) : null;
-            const destinationCoords = destination
-              ? ([destination.lat, destination.lng] as LatLngTuple)
-              : null;
-
-            // Calcular rotas reais
-            let routeToPassenger: RouteData | null = null;
-            let routeToDestination: RouteData | null = null;
-
-            if (originCoords) {
-              routeToPassenger = await MapRequests.calculateRoute(driverPosition, originCoords);
-            }
-
-            if (originCoords && destinationCoords) {
-              routeToDestination = await MapRequests.calculateRoute(originCoords, destinationCoords);
-            }
-
             return [
               ride.id,
               {
-                origin: originCoords,
-                destination: destinationCoords,
-                routeToPassenger,
-                routeToDestination,
+                origin: origin ? ([origin.lat, origin.lng] as LatLngTuple) : null,
+                destination: destination
+                  ? ([destination.lat, destination.lng] as LatLngTuple)
+                  : null,
               },
             ] as const;
           }),
@@ -324,19 +304,10 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   }
 
   const selectedRideCoordinates = selectedRide ? rideMapLookup[selectedRide] : undefined;
-  
-  // Construir rota combinada: motorista -> passageiro -> destino
-  let selectedRideRoute: LatLngTuple[] | undefined;
-  if (selectedRideCoordinates?.routeToPassenger && selectedRideCoordinates?.routeToDestination) {
-    // Combinar as rotas
-    selectedRideRoute = [
-      ...selectedRideCoordinates.routeToPassenger.coordinates,
-      ...selectedRideCoordinates.routeToDestination.coordinates.slice(1), // Evitar duplicar o ponto de origem
-    ];
-  } else if (selectedRideCoordinates?.routeToPassenger) {
-    selectedRideRoute = selectedRideCoordinates.routeToPassenger.coordinates;
-  }
-
+  const selectedRideRoute =
+    selectedRideCoordinates?.origin && selectedRideCoordinates.destination
+      ? [driverPosition, selectedRideCoordinates.origin, selectedRideCoordinates.destination]
+      : undefined;
   const mapCenter = selectedRideCoordinates?.origin ?? driverPosition;
 
   return (
@@ -396,9 +367,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 <p className="text-xs text-gray-600 font-semibold mb-3">HOJE</p>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Ganhos:</span>
-                  <span className="font-bold text-green-600 text-lg">
-                    {formatarMoeda(stats.ganhosDia)}
-                  </span>
+                  <span className="font-bold text-green-600 text-lg">{formatarMoeda(stats.ganhosDia)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Viagens:</span>
@@ -464,9 +433,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                         {ride.passageiro.nome} {ride.passageiro.sobrenome}
                       </p>
                       {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 && (
-                        <span className="text-xs text-amber-600">
-                          🦽 Necessidades especiais
-                        </span>
+                        <span className="text-xs text-amber-600">🦽 Necessidades especiais</span>
                       )}
                     </div>
                     <span

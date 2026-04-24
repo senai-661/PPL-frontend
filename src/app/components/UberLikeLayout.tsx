@@ -7,7 +7,13 @@ import {
   type AutocompleteAddress,
 } from './AddressAutocomplete';
 import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import { MapPin, Navigation, X, DollarSign, Loader2 } from 'lucide-react';
+import type { LatLngTuple } from 'leaflet';
+import { useEffect, useState } from 'react';
+
+import MapRequests from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
+import { SERVER_CFG } from '../../appConfig';
 
 interface UberLikeLayoutProps {
   userType: 'passenger' | 'driver';
@@ -27,6 +33,7 @@ const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 
 export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<RideRequestData>({
     origin: '',
     destination: '',
@@ -66,6 +73,11 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     setSelectedDestinationAddress(address);
     setDestinationPosition([address.lat, address.lon]);
   };
+  const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
+  const [estimatedDistance, setEstimatedDistance] = useState<string | null>(null);
+
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     let isMounted = true;
@@ -78,6 +90,9 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         setOriginPosition(null);
         setDestinationPosition(null);
         setIsMapLoading(false);
+        setEstimatedPrice(null);
+        setEstimatedTime(null);
+        setEstimatedDistance(null);
         return;
       }
 
@@ -119,12 +134,34 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         setDestinationPosition(
           resolvedDestination ? [resolvedDestination.lat, resolvedDestination.lng] : null,
         );
+
+        // Calcular preço estimado se tiver os dois pontos
+        if (resolvedOrigin && resolvedDestination && userType === 'passenger') {
+          const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/preco-estimado`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              latOrigem: resolvedOrigin.lat,
+              lngOrigem: resolvedOrigin.lng,
+              latDestino: resolvedDestination.lat,
+              lngDestino: resolvedDestination.lng,
+              tipoCorrida: 'Convencional',
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setEstimatedPrice(data.preco);
+            setEstimatedTime(`${data.duracaoEstimadaMin} min`);
+            setEstimatedDistance(`${data.distanciaKm.toFixed(1)} km`);
+          }
+        }
       } finally {
         if (isMounted) {
           setIsMapLoading(false);
         }
       }
-    }, 500);
+    }, 800);
 
     return () => {
       isMounted = false;
@@ -140,33 +177,54 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   // Calcular rota real quando origem e destino estiverem disponíveis
   useEffect(() => {
     let isMounted = true;
+  }, [formData.destination, formData.origin, userType]);
 
-    const calculateRoute = async () => {
-      if (!originPosition || !destinationPosition) {
-        setRouteData(null);
-        return;
+  const handleRequestRide = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.origin || !formData.destination) {
+      alert('Por favor, preencha a origem e o destino');
+      return;
+    }
+
+    if (!originPosition || !destinationPosition) {
+      alert('Aguardando localização dos endereços... Tente novamente');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          origemCorrida: formData.origin,
+          destinoCorrida: formData.destination,
+          latOrigem: originPosition[0],
+          lngOrigem: originPosition[1],
+          latDestino: destinationPosition[0],
+          lngDestino: destinationPosition[1],
+          tipoCorrida: 'Convencional',
+          numPassageiros: formData.passengers ?? 1,
+          observacoes: formData.notes ?? null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.mensagem || 'Erro ao solicitar viagem');
       }
 
-      setIsRouteLoading(true);
+      alert(`Viagem solicitada com sucesso! ID: ${data.idCorrida}\nPreço: R$ ${data.preco.toFixed(2)}\nDistância: ${data.distanciaKm.toFixed(1)} km\nTempo estimado: ${data.duracaoEstimadaMin} min`);
 
-      try {
-        const route = await MapRequests.calculateRoute(originPosition, destinationPosition);
-        if (isMounted) {
-          setRouteData(route);
-        }
-      } finally {
-        if (isMounted) {
-          setIsRouteLoading(false);
-        }
+      if (onRequestRide) {
+        onRequestRide(formData);
       }
-    };
-
-    calculateRoute();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [originPosition, destinationPosition]);
 
   const handleRequestRide = (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,6 +238,23 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         originCoords: originPosition,
         destinationCoords: destinationPosition,
       });
+      // Limpar formulário
+      setFormData({
+        origin: '',
+        destination: '',
+        passengers: 1,
+        notes: '',
+      });
+      setOriginPosition(null);
+      setDestinationPosition(null);
+      setEstimatedPrice(null);
+      setEstimatedTime(null);
+      setEstimatedDistance(null);
+
+    } catch (err: any) {
+      alert(err.message || 'Erro ao solicitar viagem');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -217,7 +292,11 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     });
   }
 
-  const tripRoute = routeData?.coordinates;
+  // ✅ CORRIGIDO: rota direta entre origem e destino
+  const tripRoute = originPosition && destinationPosition
+    ? [originPosition, destinationPosition]
+    : undefined;
+    
   const mapCenter = destinationPosition ?? originPosition ?? DEFAULT_CENTER;
 
   return (
@@ -264,6 +343,19 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                   maxSuggestions={6}
                   required
                 />
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 size-5 text-green-600" />
+                  <input
+                    type="text"
+                    value={formData.origin}
+                    onChange={(e) =>
+                      setFormData({ ...formData, origin: e.target.value })
+                    }
+                    placeholder="Onde voce esta?"
+                    required
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-center">
@@ -290,67 +382,90 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                   maxSuggestions={6}
                   required
                 />
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 size-5 text-red-600" />
+                  <input
+                    type="text"
+                    value={formData.destination}
+                    onChange={(e) =>
+                      setFormData({ ...formData, destination: e.target.value })
+                    }
+                    placeholder="Para onde quer ir?"
+                    required
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                  />
+                </div>
               </div>
 
               {userType === 'passenger' && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Numero de Passageiros
-                  </label>
-                  <select
-                    value={formData.passengers}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        passengers: Number.parseInt(e.target.value, 10),
-                      })
-                    }
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map((num) => (
-                      <option key={num} value={num}>
-                        {num} {num === 1 ? 'Passageiro' : 'Passageiros'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Número de Passageiros
+                    </label>
+                    <select
+                      value={formData.passengers}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          passengers: Number.parseInt(e.target.value, 10),
+                        })
+                      }
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'Passageiro' : 'Passageiros'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Observacoes (opcional)
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Ex: Tenho muitas malas, precisamos de carro grande..."
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors resize-none h-20"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Observações (opcional)
+                    </label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      placeholder="Ex: Tenho muitas malas, precisamos de carro grande..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors resize-none h-20"
+                    />
+                  </div>
+                </>
+              )}
 
               <button
                 type="submit"
-                className="w-full bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg mt-6"
+                disabled={loading}
+                className="w-full bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {userType === 'passenger' ? 'Solicitar Viagem' : 'Ativar Modo Online'}
+                {loading && <Loader2 className="size-5 animate-spin" />}
+                {loading ? 'Solicitando...' : userType === 'passenger' ? 'Solicitar Viagem' : 'Ativar Modo Online'}
               </button>
             </form>
 
             <div className="pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-600 font-semibold mb-3">ATALHOS</p>
               <div className="space-y-2">
-                <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left">
+                <button 
+                  onClick={() => setFormData({ ...formData, origin: 'Av. Paulista, 1000, São Paulo' })}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                >
                   <MapPin className="size-5 text-gray-400" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-700">Casa</p>
-                    <p className="text-xs text-gray-500 truncate">Seu endereco de casa</p>
+                    <p className="text-sm font-semibold text-gray-700">Av. Paulista</p>
+                    <p className="text-xs text-gray-500 truncate">Av. Paulista, 1000 - Bela Vista, SP</p>
                   </div>
                 </button>
-                <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left">
+                <button 
+                  onClick={() => setFormData({ ...formData, destination: 'Shopping Ibirapuera, São Paulo' })}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                >
                   <MapPin className="size-5 text-gray-400" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-700">Trabalho</p>
-                    <p className="text-xs text-gray-500 truncate">Seu endereco de trabalho</p>
+                    <p className="text-sm font-semibold text-gray-700">Shopping Ibirapuera</p>
+                    <p className="text-xs text-gray-500 truncate">Av. Ibirapuera, 3103 - SP</p>
                   </div>
                 </button>
               </div>
@@ -374,29 +489,20 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           }
         />
 
-        {userType === 'passenger' && formData.destination && (
+        {userType === 'passenger' && estimatedPrice && (
           <div className="absolute bottom-6 left-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4 max-w-xs">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-xs text-gray-500 font-semibold mb-1">PRECO ESTIMADO</p>
-                <p className="text-2xl font-bold text-[#5a34a1]">R$ 32,50</p>
+                <p className="text-xs text-gray-500 font-semibold mb-1">PREÇO ESTIMADO</p>
+                <p className="text-2xl font-bold text-[#5a34a1]">
+                  R$ {estimatedPrice.toFixed(2)}
+                </p>
               </div>
               <DollarSign className="size-5 text-green-600" />
             </div>
             <div className="border-t border-gray-200 pt-3 text-sm text-gray-600">
-              {isRouteLoading ? (
-                <p className="text-gray-400">Calculando rota...</p>
-              ) : routeData ? (
-                <>
-                  <p>Tempo: ~{MapRequests.formatDuration(routeData.duration)}</p>
-                  <p>Distancia: {MapRequests.formatDistance(routeData.distance)}</p>
-                </>
-              ) : (
-                <>
-                  <p>Tempo: --</p>
-                  <p>Distancia: --</p>
-                </>
-              )}
+              <p>Tempo: ~{estimatedTime}</p>
+              <p>Distância: ~{estimatedDistance}</p>
             </div>
           </div>
         )}
@@ -405,9 +511,9 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           <div className="absolute top-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="size-3 bg-green-600 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-gray-700">Voce esta online</span>
+              <span className="text-sm font-semibold text-gray-700">Você está online</span>
             </div>
-            <p className="text-xs text-gray-600">Aguardando solicitacoes proximas...</p>
+            <p className="text-xs text-gray-600">Aguardando solicitações próximas...</p>
           </div>
         )}
       </div>

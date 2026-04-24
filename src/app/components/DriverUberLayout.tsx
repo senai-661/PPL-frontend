@@ -7,36 +7,39 @@ import {
   Phone,
   Search,
   X,
+  Loader2,
 } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import MapRequests from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
+import { SERVER_CFG } from '../../appConfig';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;
 }
 
 interface RideNotification {
-  id: string;
-  passengerName: string;
-  passengerRating: number;
-  origin: string;
-  destination: string;
-  estimatedPrice: string;
-  estimatedTime: string;
-  distance: string;
-  rideType: 'EconoComigo' | 'Convencional' | 'Premium';
+  id: number;
+  passageiro: {
+    nome: string;
+    sobrenome: string;
+    celular: string;
+    necessidades: string[] | null;
+  };
+  origemCorrida: string;
+  destinoCorrida: string;
+  preco: number;
+  dataCorrida: string;
+  statusCorrida: string;
 }
 
 type RideMapLookup = Record<
-  string,
+  number,
   {
     origin: LatLngTuple | null;
     destination: LatLngTuple | null;
-    routeToPassenger: RouteData | null;
-    routeToDestination: RouteData | null;
   }
 >;
 
@@ -45,70 +48,104 @@ const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
-  const [selectedRide, setSelectedRide] = useState<string | null>(null);
+  const [selectedRide, setSelectedRide] = useState<number | null>(null);
   const [driverPosition, setDriverPosition] = useState<LatLngTuple>(DEFAULT_CENTER);
   const [rideMapLookup, setRideMapLookup] = useState<RideMapLookup>({});
   const [isMapLoading, setIsMapLoading] = useState(false);
+  const [rideNotifications, setRideNotifications] = useState<RideNotification[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    ganhosDia: 0,
+    viagensDia: 0,
+  });
+  const [togglingOnline, setTogglingOnline] = useState(false);
 
-  const [rideNotifications, setRideNotifications] = useState<RideNotification[]>([
-    {
-      id: '1',
-      passengerName: 'Maria Silva',
-      passengerRating: 4.9,
-      origin: 'Av. Paulista, 1000, Sao Paulo',
-      destination: 'Shopping Imigrantes, Sao Paulo',
-      estimatedPrice: 'R$ 32,50',
-      estimatedTime: '12 min',
-      distance: '3.2 km',
-      rideType: 'EconoComigo',
-    },
-    {
-      id: '2',
-      passengerName: 'Joao Santos',
-      passengerRating: 4.8,
-      origin: 'Centro, Sao Paulo',
-      destination: 'Aeroporto GRU, Guarulhos',
-      estimatedPrice: 'R$ 65,00',
-      estimatedTime: '25 min',
-      distance: '15.8 km',
-      rideType: 'Premium',
-    },
-  ]);
-
-  const handleToggleOnline = () => {
-    const nextStatus = !isOnline;
-    setIsOnline(nextStatus);
-    onToggleOnline?.(nextStatus);
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
   };
 
-  const handleAcceptRide = (rideId: string) => {
-    alert(`Corrida ${rideId} aceita! Navegando para o passageiro...`);
-    setRideNotifications(rideNotifications.filter((ride) => ride.id !== rideId));
-    setSelectedRide(null);
-  };
-
-  const handleRejectRide = (rideId: string) => {
-    setRideNotifications(rideNotifications.filter((ride) => ride.id !== rideId));
-    setSelectedRide(null);
-  };
-
-  const getRideTypeColor = (rideType: string) => {
-    switch (rideType) {
-      case 'Premium':
-        return 'bg-amber-600';
-      case 'Convencional':
-        return 'bg-[#5a34a1]';
-      case 'EconoComigo':
-        return 'bg-green-600';
-      default:
-        return 'bg-[#5a34a1]';
+  // Buscar corridas pendentes
+  const fetchPendingRides = async () => {
+    if (!isOnline) return;
+    
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
+      if (response.ok) {
+        const data = await response.json();
+        setRideNotifications(data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar corridas:', error);
     }
   };
 
+  // Buscar stats do dia
+  const fetchDailyStats = async () => {
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/resumo-dia`, { headers });
+      if (response.ok) {
+        const data = await response.json();
+        setStats({
+          ganhosDia: data.totalGanho || 0,
+          viagensDia: data.corridasFinalizadas || 0,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar stats:', error);
+    }
+  };
+
+  // Alternar disponibilidade
+  const handleToggleOnline = async () => {
+    setTogglingOnline(true);
+    const novoStatus = !isOnline;
+    
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/disponibilidade`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ disponivel: novoStatus }),
+      });
+      
+      if (response.ok) {
+        setIsOnline(novoStatus);
+        onToggleOnline?.(novoStatus);
+        if (novoStatus) {
+          fetchPendingRides();
+          fetchDailyStats();
+        } else {
+          setRideNotifications([]);
+          setRideMapLookup({});
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao alterar disponibilidade:', error);
+    } finally {
+      setTogglingOnline(false);
+    }
+  };
+
+  // Buscar corridas a cada 10 segundos quando online
   useEffect(() => {
-    if (!navigator.geolocation) {
-      return;
+    if (!isOnline) return;
+    
+    fetchPendingRides();
+    const interval = setInterval(fetchPendingRides, 10000);
+    return () => clearInterval(interval);
+  }, [isOnline]);
+
+  // Buscar stats quando online
+  useEffect(() => {
+    if (isOnline) {
+      fetchDailyStats();
     }
+  }, [isOnline]);
+
+  // Geolocalização do motorista
+  useEffect(() => {
+    if (!navigator.geolocation) return;
 
     const watchId = navigator.geolocation.watchPosition(
       ({ coords }) => {
@@ -124,11 +161,10 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       },
     );
 
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
+  // Geocodificar endereços das corridas
   useEffect(() => {
     let isMounted = true;
 
@@ -145,67 +181,100 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
         const entries = await Promise.all(
           rideNotifications.map(async (ride) => {
             const [origin, destination] = await Promise.all([
-              MapRequests.geocodeAddress(ride.origin),
-              MapRequests.geocodeAddress(ride.destination),
+              MapRequests.geocodeAddress(ride.origemCorrida),
+              MapRequests.geocodeAddress(ride.destinoCorrida),
             ]);
-
-            const originCoords = origin ? ([origin.lat, origin.lng] as LatLngTuple) : null;
-            const destinationCoords = destination
-              ? ([destination.lat, destination.lng] as LatLngTuple)
-              : null;
-
-            // Calcular rotas reais
-            let routeToPassenger: RouteData | null = null;
-            let routeToDestination: RouteData | null = null;
-
-            if (originCoords) {
-              routeToPassenger = await MapRequests.calculateRoute(driverPosition, originCoords);
-            }
-
-            if (originCoords && destinationCoords) {
-              routeToDestination = await MapRequests.calculateRoute(originCoords, destinationCoords);
-            }
 
             return [
               ride.id,
               {
-                origin: originCoords,
-                destination: destinationCoords,
-                routeToPassenger,
-                routeToDestination,
+                origin: origin ? ([origin.lat, origin.lng] as LatLngTuple) : null,
+                destination: destination
+                  ? ([destination.lat, destination.lng] as LatLngTuple)
+                  : null,
               },
             ] as const;
           }),
         );
 
-        if (!isMounted) {
-          return;
-        }
-
+        if (!isMounted) return;
         setRideMapLookup(Object.fromEntries(entries));
       } finally {
-        if (isMounted) {
-          setIsMapLoading(false);
-        }
+        if (isMounted) setIsMapLoading(false);
       }
     };
 
-    void loadRideCoordinates();
+    loadRideCoordinates();
+    return () => { isMounted = false; };
+  }, [isOnline, rideNotifications]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [isOnline, rideNotifications, driverPosition]);
+  // Aceitar corrida
+  const handleAcceptRide = async (rideId: number) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/aceitar`, {
+        method: 'PATCH',
+        headers,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.mensagem || 'Erro ao aceitar corrida');
+      }
+
+      alert(`Corrida aceita! Navegando para o passageiro...`);
+      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
+      setSelectedRide(null);
+      fetchDailyStats();
+    } catch (err: any) {
+      alert(err.message || 'Erro ao aceitar corrida');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Recusar corrida (cancelar)
+  const handleRejectRide = async (rideId: number) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/cancelar`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ motivoCancelamento: 'Motorista recusou a corrida' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.mensagem || 'Erro ao recusar corrida');
+      }
+
+      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
+      setSelectedRide(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao recusar corrida');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRideTypeColor = (necessidades: string[] | null) => {
+    if (necessidades && necessidades.length > 0) return 'bg-amber-600';
+    return 'bg-[#5a34a1]';
+  };
+
+  function formatarMoeda(valor: number) {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
 
   const mapPoints: MapPoint[] = [
     {
       id: 'driver-position',
-      label: isOnline ? 'Sua localizacao' : 'Posicao estimada',
+      label: isOnline ? 'Sua localização' : 'Posição estimada',
       position: driverPosition,
       color: isOnline ? '#16a34a' : '#64748b',
       description: isOnline
-        ? 'Sua posicao atual esta sendo compartilhada no mapa.'
-        : 'Ative o modo online para compartilhar sua localizacao.',
+        ? 'Sua posição atual está sendo compartilhada.'
+        : 'Ative o modo online para compartilhar sua localização.',
       radius: 10,
     },
   ];
@@ -216,38 +285,29 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     if (rideCoordinates?.origin) {
       mapPoints.push({
         id: `ride-origin-${ride.id}`,
-        label: `Coleta: ${ride.passengerName}`,
+        label: `Coleta: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
         position: rideCoordinates.origin,
         color: selectedRide === ride.id ? '#2563eb' : '#f59e0b',
-        description: ride.origin,
+        description: ride.origemCorrida,
       });
     }
 
     if (selectedRide === ride.id && rideCoordinates?.destination) {
       mapPoints.push({
         id: `ride-destination-${ride.id}`,
-        label: `Destino: ${ride.passengerName}`,
+        label: `Destino: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
         position: rideCoordinates.destination,
         color: '#dc2626',
-        description: ride.destination,
+        description: ride.destinoCorrida,
       });
     }
   }
 
   const selectedRideCoordinates = selectedRide ? rideMapLookup[selectedRide] : undefined;
-  
-  // Construir rota combinada: motorista -> passageiro -> destino
-  let selectedRideRoute: LatLngTuple[] | undefined;
-  if (selectedRideCoordinates?.routeToPassenger && selectedRideCoordinates?.routeToDestination) {
-    // Combinar as rotas
-    selectedRideRoute = [
-      ...selectedRideCoordinates.routeToPassenger.coordinates,
-      ...selectedRideCoordinates.routeToDestination.coordinates.slice(1), // Evitar duplicar o ponto de origem
-    ];
-  } else if (selectedRideCoordinates?.routeToPassenger) {
-    selectedRideRoute = selectedRideCoordinates.routeToPassenger.coordinates;
-  }
-
+  const selectedRideRoute =
+    selectedRideCoordinates?.origin && selectedRideCoordinates.destination
+      ? [driverPosition, selectedRideCoordinates.origin, selectedRideCoordinates.destination]
+      : undefined;
   const mapCenter = selectedRideCoordinates?.origin ?? driverPosition;
 
   return (
@@ -274,19 +334,21 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
 
               <button
                 onClick={handleToggleOnline}
-                className={`w-full py-4 px-6 rounded-lg font-bold text-white transition-all ${
+                disabled={togglingOnline}
+                className={`w-full py-4 px-6 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 ${
                   isOnline
                     ? 'bg-green-600 hover:bg-green-700'
                     : 'bg-gray-400 hover:bg-gray-500'
-                }`}
+                } disabled:opacity-50`}
               >
-                {isOnline ? 'Online' : 'Offline'}
+                {togglingOnline && <Loader2 className="size-5 animate-spin" />}
+                {togglingOnline ? (isOnline ? 'Ficando Offline...' : 'Ficando Online...') : (isOnline ? 'Online' : 'Offline')}
               </button>
 
               {isOnline && (
                 <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-sm text-green-800">
-                    Voce esta disponivel para receber solicitacoes.
+                    Você está disponível para receber solicitações.
                   </p>
                 </div>
               )}
@@ -294,7 +356,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
               {!isOnline && (
                 <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    Clique no botao acima para ativar o modo online.
+                    Clique no botão acima para ativar o modo online.
                   </p>
                 </div>
               )}
@@ -305,15 +367,11 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 <p className="text-xs text-gray-600 font-semibold mb-3">HOJE</p>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Ganhos:</span>
-                  <span className="font-bold text-green-600 text-lg">R$ 245,00</span>
+                  <span className="font-bold text-green-600 text-lg">{formatarMoeda(stats.ganhosDia)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Viagens:</span>
-                  <span className="font-bold text-[#5a34a1] text-lg">12</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Avaliacao:</span>
-                  <span className="font-bold text-yellow-600">4.9</span>
+                  <span className="font-bold text-[#5a34a1] text-lg">{stats.viagensDia}</span>
                 </div>
               </div>
             )}
@@ -325,10 +383,6 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                   <Phone className="size-5 text-blue-600" />
                   <span className="text-sm font-semibold">Suporte 24/7</span>
                 </button>
-                <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left">
-                  <MapPin className="size-5 text-gray-600" />
-                  <span className="text-sm font-semibold">Meu Veiculo</span>
-                </button>
               </div>
             </div>
 
@@ -337,7 +391,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 <div>
                   <Search className="size-12 mx-auto text-gray-300 mb-3" />
                   <p className="text-gray-600 text-sm">
-                    Aguardando solicitacoes proximas...
+                    Aguardando solicitações próximas...
                   </p>
                 </div>
               </div>
@@ -354,7 +408,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
           route={selectedRideRoute}
           loading={isMapLoading}
           emptyTitle="Mapa do motorista"
-          emptySubtitle="Sua localizacao e as proximas corridas aparecerao aqui."
+          emptySubtitle="Sua localização e as próximas corridas aparecerão aqui."
         />
 
         {isOnline && rideNotifications.length > 0 && (
@@ -364,7 +418,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 <div
                   key={ride.id}
                   className={`bg-white rounded-lg shadow-2xl p-4 mb-4 transform transition-all cursor-pointer border-l-4 ${
-                    getRideTypeColor(ride.rideType)
+                    getRideTypeColor(ride.passageiro.necessidades)
                   } ${
                     selectedRide === ride.id ? 'ring-2 ring-blue-400' : ''
                   }`}
@@ -375,16 +429,17 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="font-bold text-gray-800">{ride.passengerName}</p>
-                      <div className="flex items-center gap-1">
-                        <span className="text-yellow-500">★</span>
-                        <span className="text-sm text-gray-600">{ride.passengerRating}</span>
-                      </div>
+                      <p className="font-bold text-gray-800">
+                        {ride.passageiro.nome} {ride.passageiro.sobrenome}
+                      </p>
+                      {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 && (
+                        <span className="text-xs text-amber-600">🦽 Necessidades especiais</span>
+                      )}
                     </div>
                     <span
-                      className={`px-3 py-1 rounded-full text-white text-xs font-bold ${getRideTypeColor(ride.rideType)}`}
+                      className={`px-3 py-1 rounded-full text-white text-xs font-bold ${getRideTypeColor(ride.passageiro.necessidades)}`}
                     >
-                      {ride.rideType.toUpperCase()}
+                      {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 ? 'ADAPTADO' : 'CONVENCIONAL'}
                     </span>
                   </div>
 
@@ -393,40 +448,29 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                       <MapPin className="size-5 text-green-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs text-gray-600">Origem</p>
-                        <p className="text-sm font-semibold text-gray-800">{ride.origin}</p>
+                        <p className="text-sm font-semibold text-gray-800">{ride.origemCorrida}</p>
                       </div>
                     </div>
                     <div className="flex gap-3">
                       <MapPin className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs text-gray-600">Destino</p>
-                        <p className="text-sm font-semibold text-gray-800">{ride.destination}</p>
+                        <p className="text-sm font-semibold text-gray-800">{ride.destinoCorrida}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 mb-4 p-3 bg-gray-50 rounded">
+                  <div className="grid grid-cols-2 gap-2 mb-4 p-3 bg-gray-50 rounded">
                     <div className="text-center">
                       <DollarSign className="size-4 text-green-600 mx-auto mb-1" />
-                      <p className="text-xs text-gray-600">Preco</p>
-                      <p className="text-sm font-bold text-gray-800">{ride.estimatedPrice}</p>
+                      <p className="text-xs text-gray-600">Preço</p>
+                      <p className="text-sm font-bold text-gray-800">{formatarMoeda(ride.preco)}</p>
                     </div>
                     <div className="text-center">
                       <Clock className="size-4 text-blue-600 mx-auto mb-1" />
-                      <p className="text-xs text-gray-600">Tempo</p>
+                      <p className="text-xs text-gray-600">Solicitada</p>
                       <p className="text-sm font-bold text-gray-800">
-                        {rideMapLookup[ride.id]?.routeToPassenger
-                          ? `~${MapRequests.formatDuration(rideMapLookup[ride.id]!.routeToPassenger!.duration)}`
-                          : ride.estimatedTime}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <Navigation className="size-4 text-purple-600 mx-auto mb-1" />
-                      <p className="text-xs text-gray-600">Distancia</p>
-                      <p className="text-sm font-bold text-gray-800">
-                        {rideMapLookup[ride.id]?.routeToPassenger
-                          ? MapRequests.formatDistance(rideMapLookup[ride.id]!.routeToPassenger!.distance)
-                          : ride.distance}
+                        {new Date(ride.dataCorrida).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
@@ -438,7 +482,8 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                           event.stopPropagation();
                           handleAcceptRide(ride.id);
                         }}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded transition-colors"
+                        disabled={loading}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
                       >
                         Aceitar
                       </button>
@@ -447,9 +492,10 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                           event.stopPropagation();
                           handleRejectRide(ride.id);
                         }}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition-colors"
+                        disabled={loading}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
                       >
-                        Rejeitar
+                        Recusar
                       </button>
                     </div>
                   )}
@@ -475,9 +521,9 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20">
             <div className="text-center text-white">
               <Navigation2 className="size-20 mx-auto mb-4 opacity-75" />
-              <h2 className="text-3xl font-bold mb-2">Voce esta Offline</h2>
+              <h2 className="text-3xl font-bold mb-2">Você está Offline</h2>
               <p className="text-lg opacity-90">
-                Ative o modo online para receber solicitacoes
+                Ative o modo online para receber solicitações
               </p>
             </div>
           </div>

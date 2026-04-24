@@ -1,15 +1,15 @@
-import { DollarSign, MapPin, Navigation, X, Loader2 } from 'lucide-react';
+import { DollarSign, Loader2, MapPin, Navigation, X } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
+import { SERVER_CFG } from '../../appConfig';
+import MapRequests, { type RouteData } from '../../fetch/MapRequest';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
-} from './AutocompleteEndereco';
-import MapRequests from '../../fetch/MapRequest';
-import { AguardandoMotorista } from './AguardandoMotorista';
+} from './AddressAutocomplete';
 import { MapComponent, type MapPoint } from './MapComponent';
-import { SERVER_CFG } from '../../appConfig';
+import { AguardandoMotorista } from './AguardandoMotorista';
 
 interface UberLikeLayoutProps {
   userType: 'passenger' | 'driver';
@@ -28,6 +28,14 @@ export interface RideRequestData {
 
 const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 
+function toLatLngTuple(lat: number, lng: number): LatLngTuple {
+  return [lat, lng];
+}
+
+function toRoutePoint(position: LatLngTuple): [number, number] {
+  return [position[0], position[1]];
+}
+
 export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -41,6 +49,8 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [originPosition, setOriginPosition] = useState<LatLngTuple | null>(null);
   const [destinationPosition, setDestinationPosition] = useState<LatLngTuple | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(false);
+  const [routeData, setRouteData] = useState<RouteData | null>(null);
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
   const [selectedOriginAddress, setSelectedOriginAddress] = useState<AutocompleteAddress | null>(null);
   const [selectedDestinationAddress, setSelectedDestinationAddress] = useState<AutocompleteAddress | null>(null);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
@@ -106,12 +116,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
   const handleOriginSelect = (address: AutocompleteAddress) => {
     setSelectedOriginAddress(address);
-    setOriginPosition([address.lat, address.lon]);
+    setOriginPosition(toLatLngTuple(address.lat, address.lon));
   };
 
   const handleDestinationSelect = (address: AutocompleteAddress) => {
     setSelectedDestinationAddress(address);
-    setDestinationPosition([address.lat, address.lon]);
+    setDestinationPosition(toLatLngTuple(address.lat, address.lon));
   };
 
   useEffect(() => {
@@ -164,13 +174,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         }
 
         setOriginPosition(
-          resolvedOrigin ? [resolvedOrigin.lat, resolvedOrigin.lng] : null,
+          resolvedOrigin ? toLatLngTuple(resolvedOrigin.lat, resolvedOrigin.lng) : null,
         );
         setDestinationPosition(
-          resolvedDestination ? [resolvedDestination.lat, resolvedDestination.lng] : null,
+          resolvedDestination ? toLatLngTuple(resolvedDestination.lat, resolvedDestination.lng) : null,
         );
 
-        // Calcular preço estimado se tiver os dois pontos
         if (resolvedOrigin && resolvedDestination && userType === 'passenger') {
           const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/preco-estimado`, {
             method: 'POST',
@@ -186,11 +195,35 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
           if (response.ok) {
             const data = await response.json();
-            setEstimatedPrice(data.preco);
-            setEstimatedTime(`${data.duracaoEstimadaMin} min`);
-            setEstimatedDistance(`${data.distanciaKm.toFixed(1)} km`);
+
+            if (!isMounted) {
+              return;
+            }
+
+            setEstimatedPrice(data.preco ?? null);
+            setEstimatedTime(
+              typeof data.duracaoEstimadaMin === 'number'
+                ? `${data.duracaoEstimadaMin} min`
+                : null,
+            );
+            setEstimatedDistance(
+              typeof data.distanciaKm === 'number'
+                ? `${data.distanciaKm.toFixed(1)} km`
+                : null,
+            );
           }
+        } else if (isMounted) {
+          setEstimatedPrice(null);
+          setEstimatedTime(null);
+          setEstimatedDistance(null);
         }
+      } catch (error) {
+        if (isMounted) {
+          setEstimatedPrice(null);
+          setEstimatedTime(null);
+          setEstimatedDistance(null);
+        }
+        console.error('Erro ao preparar dados da corrida:', error);
       } finally {
         if (isMounted) {
           setIsMapLoading(false);
@@ -211,16 +244,65 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     userType,
   ]);
 
-  const handleRequestRide = async (e: React.FormEvent) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    const calculateRoute = async () => {
+      if (!originPosition || !destinationPosition) {
+        setRouteData(null);
+        setIsRouteLoading(false);
+        return;
+      }
+
+      setIsRouteLoading(true);
+
+      try {
+        const route = await MapRequests.calculateRoute(
+          toRoutePoint(originPosition),
+          toRoutePoint(destinationPosition),
+        );
+
+        if (isMounted) {
+          setRouteData(route);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setRouteData(null);
+        }
+        console.error('Erro ao calcular rota da viagem:', error);
+      } finally {
+        if (isMounted) {
+          setIsRouteLoading(false);
+        }
+      }
+    };
+
+    void calculateRoute();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [destinationPosition, originPosition]);
+
+  const handleRequestRide = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!formData.origin || !formData.destination) {
       alert('Por favor, preencha a origem e o destino');
       return;
     }
 
     if (!originPosition || !destinationPosition) {
-      alert('Aguardando localização dos endereços... Tente novamente');
+      alert('Aguardando localizacao dos enderecos. Tente novamente.');
+      return;
+    }
+
+    if (userType !== 'passenger') {
+      onRequestRide?.({
+        ...formData,
+        originCoords: originPosition,
+        destinationCoords: destinationPosition,
+      });
       return;
     }
 
@@ -231,7 +313,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           origemCorrida: formData.origin,
@@ -262,15 +344,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         setPollingInterval(interval);
       }
 
-      if (onRequestRide) {
-        onRequestRide({
-          ...formData,
-          originCoords: originPosition,
-          destinationCoords: destinationPosition,
-        });
-      }
+      onRequestRide?.({
+        ...formData,
+        originCoords: originPosition,
+        destinationCoords: destinationPosition,
+      });
 
-      // Limpar formulário
       setFormData({
         origin: '',
         destination: '',
@@ -280,12 +359,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       });
       setOriginPosition(null);
       setDestinationPosition(null);
+      setSelectedOriginAddress(null);
+      setSelectedDestinationAddress(null);
+      setRouteData(null);
       setEstimatedPrice(null);
       setEstimatedTime(null);
       setEstimatedDistance(null);
-
-    } catch (err: any) {
-      alert(err.message || 'Erro ao solicitar viagem');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao solicitar viagem';
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -325,10 +407,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     });
   }
 
-  const tripRoute = originPosition && destinationPosition
-    ? [originPosition, destinationPosition]
-    : undefined;
-    
+  const tripRoute = routeData?.coordinates;
   const mapCenter = destinationPosition ?? originPosition ?? DEFAULT_CENTER;
 
   return (
@@ -412,7 +491,10 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                     <select
                       value={formData.rideType}
                       onChange={(e) =>
-                        setFormData({ ...formData, rideType: e.target.value })
+                        setFormData((current) => ({
+                          ...current,
+                          rideType: e.target.value,
+                        }))
                       }
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
                     >
@@ -424,15 +506,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Número de Passageiros
+                      Numero de Passageiros
                     </label>
                     <select
                       value={formData.passengers}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
+                        setFormData((current) => ({
+                          ...current,
                           passengers: Number.parseInt(e.target.value, 10),
-                        })
+                        }))
                       }
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
                     >
@@ -446,11 +528,13 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Observações (opcional)
+                      Observacoes (opcional)
                     </label>
                     <textarea
                       value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      onChange={(e) =>
+                        setFormData((current) => ({ ...current, notes: e.target.value }))
+                      }
                       placeholder="Ex: Tenho muitas malas, precisamos de carro grande..."
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors resize-none h-20"
                     />
@@ -464,31 +548,51 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                 className="w-full bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="size-5 animate-spin" />}
-                {loading ? 'Solicitando...' : userType === 'passenger' ? 'Solicitar Viagem' : 'Ativar Modo Online'}
+                {loading
+                  ? 'Solicitando...'
+                  : userType === 'passenger'
+                    ? 'Solicitar Viagem'
+                    : 'Ativar Modo Online'}
               </button>
             </form>
 
             <div className="pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-600 font-semibold mb-3">ATALHOS</p>
               <div className="space-y-2">
-                <button 
-                  onClick={() => setFormData({ ...formData, origin: 'Av. Paulista, 1000, São Paulo' })}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((current) => ({
+                      ...current,
+                      origin: 'Av. Paulista, 1000, Sao Paulo',
+                    }))
+                  }
                   className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
                 >
                   <MapPin className="size-5 text-gray-400" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-700">Av. Paulista</p>
-                    <p className="text-xs text-gray-500 truncate">Av. Paulista, 1000 - Bela Vista, SP</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      Av. Paulista, 1000 - Bela Vista, SP
+                    </p>
                   </div>
                 </button>
-                <button 
-                  onClick={() => setFormData({ ...formData, destination: 'Shopping Ibirapuera, São Paulo' })}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((current) => ({
+                      ...current,
+                      destination: 'Shopping Ibirapuera, Sao Paulo',
+                    }))
+                  }
                   className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
                 >
                   <MapPin className="size-5 text-gray-400" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-700">Shopping Ibirapuera</p>
-                    <p className="text-xs text-gray-500 truncate">Av. Ibirapuera, 3103 - SP</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      Av. Ibirapuera, 3103 - SP
+                    </p>
                   </div>
                 </button>
               </div>
@@ -512,20 +616,31 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           }
         />
 
-        {userType === 'passenger' && estimatedPrice && (
+        {userType === 'passenger' && formData.destination && (
           <div className="absolute bottom-6 left-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4 max-w-xs">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-xs text-gray-500 font-semibold mb-1">PREÇO ESTIMADO</p>
+                <p className="text-xs text-gray-500 font-semibold mb-1">PRECO ESTIMADO</p>
                 <p className="text-2xl font-bold text-[#5a34a1]">
-                  R$ {estimatedPrice.toFixed(2)}
+                  {estimatedPrice !== null ? `R$ ${estimatedPrice.toFixed(2)}` : 'R$ --,--'}
                 </p>
               </div>
               <DollarSign className="size-5 text-green-600" />
             </div>
             <div className="border-t border-gray-200 pt-3 text-sm text-gray-600">
-              <p>Tempo: ~{estimatedTime}</p>
-              <p>Distância: ~{estimatedDistance}</p>
+              {isRouteLoading ? (
+                <p className="text-gray-400">Calculando rota...</p>
+              ) : routeData ? (
+                <>
+                  <p>Tempo: ~{MapRequests.formatDuration(routeData.duration)}</p>
+                  <p>Distancia: {MapRequests.formatDistance(routeData.distance)}</p>
+                </>
+              ) : (
+                <>
+                  <p>Tempo: {estimatedTime ? `~${estimatedTime}` : '--'}</p>
+                  <p>Distancia: {estimatedDistance ? `~${estimatedDistance}` : '--'}</p>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -534,9 +649,9 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           <div className="absolute top-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="size-3 bg-green-600 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-gray-700">Você está online</span>
+              <span className="text-sm font-semibold text-gray-700">Voce esta online</span>
             </div>
-            <p className="text-xs text-gray-600">Aguardando solicitações próximas...</p>
+            <p className="text-xs text-gray-600">Aguardando solicitacoes proximas...</p>
           </div>
         )}
       </div>

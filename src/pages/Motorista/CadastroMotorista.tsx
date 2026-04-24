@@ -2,9 +2,11 @@
 import { User, Mail, Phone, FileText, Lock } from 'lucide-react';
 import MotoristaRequest from '../../fetch/MotoristaRequest';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../hooks/useToast';
 
 export function DriverRegistration() {
   const navigate = useNavigate();
+  const { success, error: showError } = useToast();
   const [formData, setFormData] = useState({
     nomeMotorista: '',
     sobrenomeMotorista: '',
@@ -86,11 +88,15 @@ export function DriverRegistration() {
     };
 
     try {
-      await MotoristaRequest.enviaFormularioMotorista(JSON.stringify(payload));
-      alert('Cadastro realizado com sucesso!');
-      navigate('/motorista/painel');
+      const ok = await MotoristaRequest.enviaFormularioMotorista(JSON.stringify(payload));
+      if (ok) {
+        success('Cadastro realizado com sucesso!');
+        navigate('/motorista/painel');
+      } else {
+        showError('Erro ao cadastrar motorista. Tente novamente.');
+      }
     } catch (err: any) {
-      setError(err.message || 'Erro ao cadastrar motorista.');
+      showError('Erro ao cadastrar motorista.');
     } finally {
       setLoading(false);
     }

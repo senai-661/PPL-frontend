@@ -1,6 +1,7 @@
 import { Calendar, CreditCard, Users } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
@@ -20,6 +21,7 @@ interface TripFormData {
 
 export function NewTrip() {
   const navigate = useNavigate();
+
   const [tripData, setTripData] = useState<TripFormData>({
     origin: '',
     destination: '',
@@ -48,11 +50,40 @@ export function NewTrip() {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Simulação de criação de viagem
-    alert('Viagem solicitada com sucesso!');
-    navigate('/viagem/painel');
+
+    const isScheduled = tripData.scheduleDate && tripData.scheduleTime;
+
+    const payload = {
+      idPassageiro: 1,
+      origemCorrida: tripData.origin,
+      destinoCorrida: tripData.destination,
+      tipoCorrida: isScheduled ? 'AGENDADA' : 'NORMAL',
+      dataAgendada: isScheduled
+        ? `${tripData.scheduleDate}T${tripData.scheduleTime}:00`
+        : null,
+      statusAgendamento: isScheduled ? 'PENDENTE' : null,
+      preco: 28, // temporário (backend pode calcular depois)
+    };
+
+    try {
+      await axios.post(
+        'http://localhost:3333/api/corridas-agendadas',
+        payload
+      );
+
+      alert(
+        isScheduled
+          ? 'Viagem agendada com sucesso!'
+          : 'Viagem solicitada com sucesso!'
+      );
+
+      navigate('/viagem/painel');
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao agendar corrida');
+    }
   };
 
   return (
@@ -65,10 +96,13 @@ export function NewTrip() {
 
         <div className="bg-white p-8 rounded-lg shadow-md">
           <form onSubmit={handleSubmit} className="space-y-6">
+
             <AddressAutocomplete
               label="Origem *"
               value={tripData.origin}
-              onChange={(value) => setTripData({ ...tripData, origin: value })}
+              onChange={(value) =>
+                setTripData({ ...tripData, origin: value })
+              }
               onSelect={handleOriginSelect}
               placeholder="Endereço de origem ou use localização atual"
               iconColor="text-green-600"
@@ -78,7 +112,9 @@ export function NewTrip() {
             <AddressAutocomplete
               label="Destino *"
               value={tripData.destination}
-              onChange={(value) => setTripData({ ...tripData, destination: value })}
+              onChange={(value) =>
+                setTripData({ ...tripData, destination: value })
+              }
               onSelect={handleDestinationSelect}
               placeholder="Para onde você vai?"
               iconColor="text-red-600"
@@ -87,6 +123,7 @@ export function NewTrip() {
 
             <div className="border-t pt-6">
               <h3 className="text-lg mb-4">Agendar Viagem (Opcional)</h3>
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-700 mb-2">Data</label>
@@ -95,18 +132,29 @@ export function NewTrip() {
                     <input
                       type="date"
                       value={tripData.scheduleDate}
-                      onChange={(e) => setTripData({ ...tripData, scheduleDate: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                      onChange={(e) =>
+                        setTripData({
+                          ...tripData,
+                          scheduleDate: e.target.value,
+                        })
+                      }
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg"
                     />
                   </div>
                 </div>
+
                 <div>
                   <label className="block text-gray-700 mb-2">Horário</label>
                   <input
                     type="time"
                     value={tripData.scheduleTime}
-                    onChange={(e) => setTripData({ ...tripData, scheduleTime: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    onChange={(e) =>
+                      setTripData({
+                        ...tripData,
+                        scheduleTime: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                   />
                 </div>
               </div>
@@ -116,13 +164,20 @@ export function NewTrip() {
               <h3 className="text-lg mb-4">Opções Adicionais</h3>
 
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Número de Passageiros</label>
+                <label className="block text-gray-700 mb-2">
+                  Número de Passageiros
+                </label>
                 <div className="relative">
-                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <Users className="absolute left-3 top-1/2 text-gray-400 size-5" />
                   <select
                     value={tripData.passengers}
-                    onChange={(e) => setTripData({ ...tripData, passengers: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    onChange={(e) =>
+                      setTripData({
+                        ...tripData,
+                        passengers: e.target.value,
+                      })
+                    }
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg"
                   >
                     <option value="1">1 passageiro</option>
                     <option value="2">2 passageiros</option>
@@ -133,13 +188,20 @@ export function NewTrip() {
               </div>
 
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Método de Pagamento</label>
+                <label className="block text-gray-700 mb-2">
+                  Método de Pagamento
+                </label>
                 <div className="relative">
-                  <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+                  <CreditCard className="absolute left-3 top-1/2 text-gray-400 size-5" />
                   <select
                     value={tripData.paymentMethod}
-                    onChange={(e) => setTripData({ ...tripData, paymentMethod: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                    onChange={(e) =>
+                      setTripData({
+                        ...tripData,
+                        paymentMethod: e.target.value,
+                      })
+                    }
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg"
                   >
                     <option value="credit_card">Cartão de Crédito</option>
                     <option value="debit_card">Cartão de Débito</option>
@@ -150,25 +212,28 @@ export function NewTrip() {
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Observações (Opcional)</label>
+                <label className="block text-gray-700 mb-2">
+                  Observações
+                </label>
                 <textarea
                   value={tripData.notes}
-                  onChange={(e) => setTripData({ ...tripData, notes: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1] resize-none"
+                  onChange={(e) =>
+                    setTripData({ ...tripData, notes: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                   rows={3}
-                  placeholder="Alguma informação adicional para o motorista..."
                 />
               </div>
             </div>
 
             <div className="bg-gradient-to-br from-[#5a34a1] to-[#7c51c9] text-white p-6 rounded-lg">
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between">
                 <div>
-                  <p className="text-white/80 mb-1">Valor Estimado</p>
+                  <p>Valor Estimado</p>
                   <p className="text-3xl">R$ 28,00</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-white/80 mb-1">Tempo Estimado</p>
+                <div>
+                  <p>Tempo Estimado</p>
                   <p className="text-xl">15 min</p>
                 </div>
               </div>
@@ -178,17 +243,21 @@ export function NewTrip() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg transition-colors"
+                className="flex-1 bg-gray-200 py-3 rounded-lg"
               >
                 Cancelar
               </button>
+
               <button
                 type="submit"
-                className="flex-1 bg-[#5a34a1] text-white py-3 rounded-lg transition-colors"
+                className="flex-1 bg-[#5a34a1] text-white py-3 rounded-lg"
               >
-                {tripData.scheduleDate ? 'Agendar Viagem' : 'Solicitar Agora'}
+                {tripData.scheduleDate
+                  ? 'Agendar Viagem'
+                  : 'Solicitar Agora'}
               </button>
             </div>
+
           </form>
         </div>
       </div>

@@ -2,7 +2,6 @@ import {
   Clock,
   DollarSign,
   MapPin,
-  Navigation,
   Navigation2,
   Phone,
   Search,

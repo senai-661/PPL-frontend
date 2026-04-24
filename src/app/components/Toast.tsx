@@ -32,6 +32,7 @@ const textColors = {
 };
 
 export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
+  console.log('Toast RENDERIZADO:', { message, type });
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {

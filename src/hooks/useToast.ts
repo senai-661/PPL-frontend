@@ -1,36 +1,3 @@
-import { useState, useCallback } from 'react';
-import type { ToastType } from '../app/components/Toast';
-
-interface ToastItem {
-  id: number;
-  message: string;
-  type: ToastType;
-}
-
-export function useToast() {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-
-  const showToast = useCallback((message: string, type: ToastType) => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, message, type }]);
-  }, []);
-
-  const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
-
-  const success = useCallback((message: string) => showToast(message, 'success'), [showToast]);
-  const error = useCallback((message: string) => showToast(message, 'error'), [showToast]);
-  const info = useCallback((message: string) => showToast(message, 'info'), [showToast]);
-  const warning = useCallback((message: string) => showToast(message, 'warning'), [showToast]);
-
-  return {
-    toasts,
-    removeToast,
-    success,
-    error,
-    info,
-    warning,
-    showToast,
-  };
-}
+// Re-exporta o hook do context centralizado.
+// Todos os componentes que importam de 'hooks/useToast' continuam funcionando sem alteração.
+export { useToast } from '../context/ToastContext';

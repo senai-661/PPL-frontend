@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { SERVER_CFG } from '../../appConfig';
 import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import { useToast } from '../../hooks/useToast';
 import { AguardandoMotorista } from './AguardandoMotorista';
 import {
   AddressAutocomplete,
@@ -78,6 +79,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
   const token = localStorage.getItem('token');
   const pollingIntervalRef = useRef<number | null>(null);
+  const { success, error: showError, info, warning } = useToast();
 
   const clearPollingInterval = () => {
     if (pollingIntervalRef.current !== null) {
@@ -169,13 +171,13 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       if (data.statusCorrida === 'Aceito' || data.statusCorrida === 'Em andamento') {
         clearPollingInterval();
         resetAguardandoCorrida();
-        alert(`Corrida aceita! O motorista ${data.motorista?.nome || 'esta'} a caminho.`);
+        success(`Corrida aceita! O motorista ${data.motorista?.nome || 'esta'} a caminho.`);
       }
 
       if (data.statusCorrida === 'Cancelada') {
         clearPollingInterval();
         resetAguardandoCorrida();
-        alert('Sua solicitacao foi cancelada.');
+        info('Sua solicitacao foi cancelada.');
       }
     } catch (error) {
       console.error('Erro ao verificar status da corrida:', error);
@@ -213,7 +215,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Erro ao cancelar solicitacao';
-      alert(message);
+      showError(message);
     } finally {
       resetAguardandoCorrida();
     }
@@ -385,12 +387,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     e.preventDefault();
 
     if (!formData.origin || !formData.destination) {
-      alert('Por favor, preencha a origem e o destino');
+      warning('Por favor, preencha a origem e o destino');
       return;
     }
 
     if (!originPosition || !destinationPosition) {
-      alert('Aguardando localizacao dos enderecos. Tente novamente.');
+      info('Aguardando localizacao dos enderecos. Tente novamente.');
       return;
     }
 
@@ -534,176 +536,180 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         </div>
 
         {isExpanded && (
-          <div className="flex-1 p-6 space-y-6">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                {userType === 'passenger' ? 'Solicitar Viagem' : 'Disponivel para Viagens'}
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {userType === 'passenger'
-                  ? 'Para onde voce quer ir?'
-                  : 'Sua localizacao atual esta sendo compartilhada'}
-              </p>
-            </div>
-
-            <form onSubmit={handleRequestRide} className="space-y-4">
-              <div className="relative">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Origem
-                </label>
-                <AddressAutocomplete
-                  value={formData.origin}
-                  onChange={handleOriginChange}
-                  onSelect={handleOriginSelect}
-                  placeholder="Digite sua rua, avenida ou bairro"
-                  iconColor="text-green-600"
-                  maxSuggestions={6}
-                  required
-                />
-              </div>
-
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={swapLocations}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  title="Trocar origem e destino"
-                >
-                  <Navigation className="size-5 text-gray-600 rotate-90" />
-                </button>
-              </div>
-
+          <>
+            <div className="flex-1 p-6 space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Destino
-                </label>
-                <AddressAutocomplete
-                  value={formData.destination}
-                  onChange={handleDestinationChange}
-                  onSelect={handleDestinationSelect}
-                  placeholder="Para onde voce quer ir?"
-                  iconColor="text-red-600"
-                  maxSuggestions={6}
-                  required
-                />
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                  {userType === 'passenger' ? 'Solicitar Viagem' : 'Disponivel para Viagens'}
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  {userType === 'passenger'
+                    ? 'Para onde voce quer ir?'
+                    : 'Sua localizacao atual esta sendo compartilhada'}
+                </p>
               </div>
 
-              {userType === 'passenger' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Tipo de Corrida
-                    </label>
-                    <select
-                      value={formData.rideType}
-                      onChange={(e) =>
-                        setFormData((current) => ({
-                          ...current,
-                          rideType: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
-                    >
-                      <option value="Convencional">Convencional</option>
-                      <option value="Premium">Premium</option>
-                      <option value="EconoComigo">EconoComigo</option>
-                    </select>
-                  </div>
+              <form onSubmit={handleRequestRide} className="space-y-4">
+                <div className="relative">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Origem
+                  </label>
+                  <AddressAutocomplete
+                    value={formData.origin}
+                    onChange={handleOriginChange}
+                    onSelect={handleOriginSelect}
+                    placeholder="Digite sua rua, avenida ou bairro"
+                    iconColor="text-green-600"
+                    maxSuggestions={6}
+                    required
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Numero de Passageiros
-                    </label>
-                    <select
-                      value={formData.passengers}
-                      onChange={(e) =>
-                        setFormData((current) => ({
-                          ...current,
-                          passengers: Number.parseInt(e.target.value, 10),
-                        }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
-                    >
-                      {[1, 2, 3, 4, 5, 6].map((num) => (
-                        <option key={num} value={num}>
-                          {num} {num === 1 ? 'Passageiro' : 'Passageiros'}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={swapLocations}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    title="Trocar origem e destino"
+                  >
+                    <Navigation className="size-5 text-gray-600 rotate-90" />
+                  </button>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Observacoes (opcional)
-                    </label>
-                    <textarea
-                      value={formData.notes}
-                      onChange={(e) =>
-                        setFormData((current) => ({ ...current, notes: e.target.value }))
-                      }
-                      placeholder="Ex: Tenho muitas malas, precisamos de carro grande..."
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors resize-none h-20"
-                    />
-                  </div>
-                </>
-              )}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Destino
+                  </label>
+                  <AddressAutocomplete
+                    value={formData.destination}
+                    onChange={handleDestinationChange}
+                    onSelect={handleDestinationSelect}
+                    placeholder="Para onde voce quer ir?"
+                    iconColor="text-red-600"
+                    maxSuggestions={6}
+                    required
+                  />
+                </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {loading && <Loader2 className="size-5 animate-spin" />}
-                {loading
-                  ? 'Solicitando...'
-                  : userType === 'passenger'
-                    ? 'Solicitar Viagem'
-                    : 'Ativar Modo Online'}
-              </button>
-            </form>
+                {userType === 'passenger' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Tipo de Corrida
+                      </label>
+                      <select
+                        value={formData.rideType}
+                        onChange={(e) =>
+                          setFormData((current) => ({
+                            ...current,
+                            rideType: e.target.value,
+                          }))
+                        }
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                      >
+                        <option value="Convencional">Convencional</option>
+                        <option value="Premium">Premium</option>
+                        <option value="EconoComigo">EconoComigo</option>
+                      </select>
+                    </div>
 
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-600 font-semibold mb-3">ATALHOS</p>
-              <div className="space-y-2">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Numero de Passageiros
+                      </label>
+                      <select
+                        value={formData.passengers}
+                        onChange={(e) =>
+                          setFormData((current) => ({
+                            ...current,
+                            passengers: Number.parseInt(e.target.value, 10),
+                          }))
+                        }
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                      >
+                        {[1, 2, 3, 4, 5, 6].map((num) => (
+                          <option key={num} value={num}>
+                            {num} {num === 1 ? 'Passageiro' : 'Passageiros'}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Observacoes (opcional)
+                      </label>
+                      <textarea
+                        value={formData.notes}
+                        onChange={(e) =>
+                          setFormData((current) => ({ ...current, notes: e.target.value }))
+                        }
+                        placeholder="Ex: Tenho muitas malas, precisamos de carro grande..."
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors resize-none h-20"
+                      />
+                    </div>
+                  </>
+                )}
+
                 <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((current) => ({
-                      ...current,
-                      origin: 'Av. Paulista, 1000, Sao Paulo',
-                    }))
-                  }
-                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  <MapPin className="size-5 text-gray-400" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-700">Av. Paulista</p>
-                    <p className="text-xs text-gray-500 truncate">
-                      Av. Paulista, 1000 - Bela Vista, SP
-                    </p>
-                  </div>
+                  {loading && <Loader2 className="size-5 animate-spin" />}
+                  {loading
+                    ? 'Solicitando...'
+                    : userType === 'passenger'
+                      ? 'Solicitar Viagem'
+                      : 'Ativar Modo Online'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((current) => ({
-                      ...current,
-                      destination: 'Shopping Ibirapuera, Sao Paulo',
-                    }))
-                  }
-                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
-                >
-                  <MapPin className="size-5 text-gray-400" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-700">Shopping Ibirapuera</p>
-                    <p className="text-xs text-gray-500 truncate">
-                      Av. Ibirapuera, 3103 - SP
-                    </p>
-                  </div>
-                </button>
+              </form>
+
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-600 font-semibold mb-3">ATALHOS</p>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((current) => ({
+                        ...current,
+                        origin: 'Av. Paulista, 1000, Sao Paulo',
+                      }))
+                    }
+                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                  >
+                    <MapPin className="size-5 text-gray-400" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-700">Av. Paulista</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        Av. Paulista, 1000 - Bela Vista, SP
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((current) => ({
+                        ...current,
+                        destination: 'Shopping Ibirapuera, Sao Paulo',
+                      }))
+                    }
+                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                  >
+                    <MapPin className="size-5 text-gray-400" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-700">Shopping Ibirapuera</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        Av. Ibirapuera, 3103 - SP
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+
+
+          </>
         )}
       </div>
 
@@ -723,30 +729,59 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         />
 
         {userType === 'passenger' && formData.destination && (
-          <div className="absolute bottom-6 left-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4 max-w-xs">
-            <div className="flex items-start justify-between mb-3">
+          <div className="absolute left-6 top-6 z-10 w-[min(290px,calc(100%-3rem))] overflow-hidden rounded-2xl border border-[#e6ddf7] bg-white/92 shadow-[0_16px_40px_rgba(90,52,161,0.16)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/92 dark:shadow-[0_18px_45px_rgba(15,23,42,0.45)]">
+            <div className="bg-gradient-to-r from-[#f6f1ff] via-white to-[#fbf8ff] px-4 py-2.5 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7b65aa] dark:text-slate-300">
+                Resumo da corrida
+              </p>
+            </div>
+
+            <div className="p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs text-gray-500 font-semibold mb-1">PRECO ESTIMADO</p>
-                <p className="text-2xl font-bold text-[#5a34a1]">
+                <p className="mb-1 text-[11px] font-semibold text-gray-500 dark:text-slate-400">
+                  PRECO ESTIMADO
+                </p>
+                <p className="text-2xl font-bold text-[#5a34a1] dark:text-[#c7b5f3]">
                   {estimatedPrice !== null ? `R$ ${estimatedPrice.toFixed(2)}` : 'R$ --,--'}
                 </p>
               </div>
-              <DollarSign className="size-5 text-green-600" />
+              <div className="rounded-xl bg-[#f3edff] p-2.5 text-[#5a34a1] dark:bg-slate-800 dark:text-[#c7b5f3]">
+                <DollarSign className="size-4.5" />
+              </div>
             </div>
-            <div className="border-t border-gray-200 pt-3 text-sm text-gray-600">
-              {isRouteLoading ? (
-                <p className="text-gray-400">Calculando rota...</p>
-              ) : routeData ? (
-                <>
-                  <p>Tempo: ~{MapRequests.formatDuration(routeData.duration)}</p>
-                  <p>Distancia: {MapRequests.formatDistance(routeData.distance)}</p>
-                </>
-              ) : (
-                <>
-                  <p>Tempo: {estimatedTime ? `~${estimatedTime}` : '--'}</p>
-                  <p>Distancia: {estimatedDistance ? `~${estimatedDistance}` : '--'}</p>
-                </>
-              )}
+
+              <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 text-sm dark:border-slate-800">
+                <div className="rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-slate-800/80">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-slate-500">
+                    Tempo
+                  </p>
+                  <p className="mt-1 font-semibold text-gray-700 dark:text-slate-200">
+                    {isRouteLoading
+                      ? 'Calculando...'
+                      : routeData
+                        ? `~${MapRequests.formatDuration(routeData.duration)}`
+                        : estimatedTime
+                          ? `~${estimatedTime}`
+                          : '--'}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-slate-800/80">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-slate-500">
+                    Distancia
+                  </p>
+                  <p className="mt-1 font-semibold text-gray-700 dark:text-slate-200">
+                    {isRouteLoading
+                      ? 'Calculando...'
+                      : routeData
+                        ? MapRequests.formatDistance(routeData.distance)
+                        : estimatedDistance
+                          ? `~${estimatedDistance}`
+                          : '--'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}

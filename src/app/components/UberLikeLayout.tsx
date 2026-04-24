@@ -1,15 +1,15 @@
 import { DollarSign, Loader2, MapPin, Navigation, X } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { SERVER_CFG } from '../../appConfig';
 import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import { AguardandoMotorista } from './AguardandoMotorista';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
-} from './AutocompleteEndereco';
+} from './AddressAutocomplete';
 import { MapComponent, type MapPoint } from './MapComponent';
-import { AguardandoMotorista } from './AguardandoMotorista';
 
 interface UberLikeLayoutProps {
   userType: 'passenger' | 'driver';
@@ -26,6 +26,14 @@ export interface RideRequestData {
   rideType?: string;
 }
 
+interface AguardandoCorridaState {
+  ativo: boolean;
+  id: number | null;
+  origem: string;
+  destino: string;
+  preco: number;
+}
+
 const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 
 function toLatLngTuple(lat: number, lng: number): LatLngTuple {
@@ -35,6 +43,14 @@ function toLatLngTuple(lat: number, lng: number): LatLngTuple {
 function toRoutePoint(position: LatLngTuple): [number, number] {
   return [position[0], position[1]];
 }
+
+const AGUARDANDO_CORRIDA_INICIAL: AguardandoCorridaState = {
+  ativo: false,
+  id: null,
+  origem: '',
+  destino: '',
+  preco: 0,
+};
 
 export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -56,46 +72,22 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
   const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
   const [estimatedDistance, setEstimatedDistance] = useState<string | null>(null);
-  const [aguardandoCorrida, setAguardandoCorrida] = useState<{
-    ativo: boolean;
-    id: number | null;
-  }>({ ativo: false, id: null });
-  const [pollingInterval, setPollingInterval] = useState<number | null>(null);
+  const [aguardandoCorrida, setAguardandoCorrida] = useState<AguardandoCorridaState>(
+    AGUARDANDO_CORRIDA_INICIAL,
+  );
 
   const token = localStorage.getItem('token');
+  const pollingIntervalRef = useRef<number | null>(null);
 
-  // Limpar intervalo ao desmontar
-  useEffect(() => {
-    return () => {
-      if (pollingInterval) clearInterval(pollingInterval);
-    };
-  }, [pollingInterval]);
-
-  // Verificar status da corrida
-  const verificarStatusCorrida = async (corridaId: number) => {
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${corridaId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.statusCorrida === 'Aceito' || data.statusCorrida === 'Em andamento') {
-          if (pollingInterval) clearInterval(pollingInterval);
-          setAguardandoCorrida({ ativo: false, id: null });
-          alert(`🎉 Corrida aceita! O motorista ${data.motorista?.nome || 'está'} a caminho.`);
-        }
-        
-        if (data.statusCorrida === 'Cancelada') {
-          if (pollingInterval) clearInterval(pollingInterval);
-          setAguardandoCorrida({ ativo: false, id: null });
-          alert('❌ Sua solicitação foi cancelada.');
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao verificar status:', error);
+  const clearPollingInterval = () => {
+    if (pollingIntervalRef.current !== null) {
+      window.clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
     }
+  };
+
+  const resetAguardandoCorrida = () => {
+    setAguardandoCorrida(AGUARDANDO_CORRIDA_INICIAL);
   };
 
   const handleOriginChange = (value: string) => {
@@ -122,6 +114,83 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const handleDestinationSelect = (address: AutocompleteAddress) => {
     setSelectedDestinationAddress(address);
     setDestinationPosition(toLatLngTuple(address.lat, address.lon));
+  };
+
+  useEffect(() => {
+    return () => {
+      clearPollingInterval();
+    };
+  }, []);
+
+  const verificarStatusCorrida = async (corridaId: number) => {
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${corridaId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.statusCorrida === 'Aceito' || data.statusCorrida === 'Em andamento') {
+        clearPollingInterval();
+        resetAguardandoCorrida();
+        alert(`Corrida aceita! O motorista ${data.motorista?.nome || 'esta'} a caminho.`);
+      }
+
+      if (data.statusCorrida === 'Cancelada') {
+        clearPollingInterval();
+        resetAguardandoCorrida();
+        alert('Sua solicitacao foi cancelada.');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar status da corrida:', error);
+    }
+  };
+
+  const iniciarPollingCorrida = (corridaId: number) => {
+    clearPollingInterval();
+    pollingIntervalRef.current = window.setInterval(() => {
+      void verificarStatusCorrida(corridaId);
+    }, 5000);
+  };
+
+  const handleCancelarAguardando = async () => {
+    const corridaId = aguardandoCorrida.id;
+    clearPollingInterval();
+
+    if (!corridaId) {
+      resetAguardandoCorrida();
+      return;
+    }
+
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${corridaId}/cancelar`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          motivoCancelamento: 'Passageiro cancelou a solicitacao',
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.mensagem || 'Erro ao cancelar solicitacao');
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Erro ao cancelar solicitacao';
+      alert(message);
+    } finally {
+      resetAguardandoCorrida();
+    }
   };
 
   useEffect(() => {
@@ -177,7 +246,9 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           resolvedOrigin ? toLatLngTuple(resolvedOrigin.lat, resolvedOrigin.lng) : null,
         );
         setDestinationPosition(
-          resolvedDestination ? toLatLngTuple(resolvedDestination.lat, resolvedDestination.lng) : null,
+          resolvedDestination
+            ? toLatLngTuple(resolvedDestination.lat, resolvedDestination.lng)
+            : null,
         );
 
         if (resolvedOrigin && resolvedDestination && userType === 'passenger') {
@@ -334,14 +405,16 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         throw new Error(data.mensagem || 'Erro ao solicitar viagem');
       }
 
-      // Mostrar modal de aguardando motorista
+      setAguardandoCorrida({
+        ativo: true,
+        id: data.idCorrida ?? null,
+        origem: formData.origin,
+        destino: formData.destination,
+        preco: data.preco ?? estimatedPrice ?? 0,
+      });
+
       if (data.idCorrida) {
-        setAguardandoCorrida({ ativo: true, id: data.idCorrida });
-        
-        const interval = setInterval(() => {
-          verificarStatusCorrida(data.idCorrida);
-        }, 5000);
-        setPollingInterval(interval);
+        iniciarPollingCorrida(data.idCorrida);
       }
 
       onRequestRide?.({
@@ -498,9 +571,9 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                       }
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
                     >
-                      <option value="Convencional">🚗 Convencional</option>
-                      <option value="EconoComigo">💰 EconoComigo (mais barato)</option>
-                      <option value="Premium">⭐ Premium (mais conforto)</option>
+                      <option value="Convencional">Convencional</option>
+                      <option value="Premium">Premium</option>
+                      <option value="EconoComigo">EconoComigo</option>
                     </select>
                   </div>
 
@@ -656,17 +729,13 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         )}
       </div>
 
-      {/* Modal de Aguardando Motorista */}
       {aguardandoCorrida.ativo && aguardandoCorrida.id && (
         <AguardandoMotorista
           corridaId={aguardandoCorrida.id}
-          origem={formData.origin}
-          destino={formData.destination}
-          preco={estimatedPrice ?? 0}
-          onCancelar={() => {
-            if (pollingInterval) clearInterval(pollingInterval);
-            setAguardandoCorrida({ ativo: false, id: null });
-          }}
+          origem={aguardandoCorrida.origem}
+          destino={aguardandoCorrida.destino}
+          preco={aguardandoCorrida.preco}
+          onCancelar={handleCancelarAguardando}
         />
       )}
     </div>

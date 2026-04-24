@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
-} from '../../app/components/AutocompleteEndereco';
+} from '../../app/components/AddressAutocomplete';
 
 interface TripFormData {
   origin: string;

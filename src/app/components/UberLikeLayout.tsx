@@ -2,7 +2,7 @@ import { MapPin, Navigation, X, DollarSign, Loader2 } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests from '../../fetch/MapRequest';
+import MapRequests, { type RouteData } from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
 import { SERVER_CFG } from '../../appConfig';
 
@@ -205,10 +205,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     });
   }
 
-  const tripRoute =
-    originPosition && destinationPosition
-      ? [originPosition, destinationPosition]
-      : undefined;
+  const tripRoute = routeData?.coordinates;
   const mapCenter = destinationPosition ?? originPosition ?? DEFAULT_CENTER;
 
   return (

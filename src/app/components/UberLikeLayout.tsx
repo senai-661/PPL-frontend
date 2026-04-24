@@ -690,30 +690,51 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         />
 
         {userType === 'passenger' && formData.destination && (
-          <div className="absolute bottom-6 left-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4 max-w-xs">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-xs text-gray-500 font-semibold mb-1">PRECO ESTIMADO</p>
-                <p className="text-2xl font-bold text-[#5a34a1]">
-                  {estimatedPrice !== null ? `R$ ${estimatedPrice.toFixed(2)}` : 'R$ --,--'}
-                </p>
+          <div className="absolute left-4 right-4 top-4 z-10 sm:left-6 sm:right-auto sm:top-6">
+            <div className="w-full max-w-sm rounded-2xl border border-white/60 bg-white/92 p-4 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/88 dark:shadow-black/35">
+              <div className="mb-3 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="mb-1 text-[11px] font-semibold tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                    PRECO ESTIMADO
+                  </p>
+                  <p className="text-2xl font-bold text-[#5a34a1] dark:text-indigo-300">
+                    {estimatedPrice !== null ? `R$ ${estimatedPrice.toFixed(2)}` : 'R$ --,--'}
+                  </p>
+                </div>
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/12 dark:text-emerald-300">
+                  <DollarSign className="size-5" />
+                </div>
               </div>
-              <DollarSign className="size-5 text-green-600" />
-            </div>
-            <div className="border-t border-gray-200 pt-3 text-sm text-gray-600">
-              {isRouteLoading ? (
-                <p className="text-gray-400">Calculando rota...</p>
-              ) : routeData ? (
-                <>
-                  <p>Tempo: ~{MapRequests.formatDuration(routeData.duration)}</p>
-                  <p>Distancia: {MapRequests.formatDistance(routeData.distance)}</p>
-                </>
-              ) : (
-                <>
-                  <p>Tempo: {estimatedTime ? `~${estimatedTime}` : '--'}</p>
-                  <p>Distancia: {estimatedDistance ? `~${estimatedDistance}` : '--'}</p>
-                </>
-              )}
+
+              <div className="grid grid-cols-2 gap-3 border-t border-slate-200/80 pt-3 text-sm dark:border-slate-700/80">
+                <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800/70">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                    Tempo
+                  </p>
+                  <p className="mt-1 font-medium text-slate-700 dark:text-slate-200">
+                    {isRouteLoading
+                      ? 'Calculando...'
+                      : routeData
+                        ? `~${MapRequests.formatDuration(routeData.duration)}`
+                        : estimatedTime
+                          ? `~${estimatedTime}`
+                          : '--'}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800/70">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                    Distancia
+                  </p>
+                  <p className="mt-1 font-medium text-slate-700 dark:text-slate-200">
+                    {routeData
+                      ? MapRequests.formatDistance(routeData.distance)
+                      : estimatedDistance
+                        ? `~${estimatedDistance}`
+                        : '--'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}

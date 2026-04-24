@@ -3,6 +3,14 @@ import { User, Mail, Phone, FileText, Lock, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SERVER_CFG } from '../../appConfig';
 
+const formatCelular = (valor: string) => {
+  const digits = valor.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+  }
+  return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+};
+
 export function PassengerRegistration() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -19,14 +27,6 @@ export function PassengerRegistration() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Formatar celular automaticamente
-  const formatarCelular = (valor: string): string => {
-    const numeros = valor.replace(/\D/g, '');
-    if (numeros.length <= 2) return `(${numeros}`;
-    if (numeros.length <= 7) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7, 11)}`;
-  };
-
   // Validação de celular
   const validarCelular = (celular: string): boolean => {
     const regex = /^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$/;
@@ -36,7 +36,7 @@ export function PassengerRegistration() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === 'celular') {
-      setFormData({ ...formData, [name]: formatarCelular(value) });
+      setFormData({ ...formData, [name]: formatCelular(value) });
     } else {
       setFormData({ ...formData, [name]: value });
     }

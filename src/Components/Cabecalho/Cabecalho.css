@@ -54,10 +54,114 @@
   gap: 1rem;
 }
 
+.header-leading {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  margin-left: auto;
+}
+
+.profile-menu {
+  position: relative;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .profile-menu {
+    display: block;
+  }
+}
+
+.profile-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  transition: transform 0.24s ease, background-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.profile-button:hover,
+.profile-menu:focus-within .profile-button {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -18px rgba(7, 10, 30, 0.8);
+}
+
+.profile-card {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  min-width: 16rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1rem;
+  background: rgba(24, 16, 49, 0.96);
+  color: white;
+  text-align: left;
+  text-decoration: none;
+  box-shadow: 0 24px 40px -26px rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  pointer-events: none;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: -0.35rem;
+  right: 1rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: rgba(24, 16, 49, 0.96);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(45deg);
+}
+
+.profile-menu:hover .profile-card,
+.profile-menu:focus-within .profile-card {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.profile-card-label {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.profile-card-name {
+  display: block;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.profile-card-email {
+  display: block;
+  margin-top: 0.3rem;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.85rem;
+  word-break: break-word;
 }
 
 .profile-menu {

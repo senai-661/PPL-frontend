@@ -46,7 +46,8 @@ export function Login() {
       }
 
       // Mapeia o tipo que veio do backend para o formato do frontend
-      const tipoBackend = data?.usuario?.tipo;
+      const usuarioLogado = data?.usuario ?? data?.passageiro ?? data?.motorista ?? data?.admin ?? null;
+      const tipoBackend = usuarioLogado?.tipo ?? data?.tipo ?? null;
       let userType: UserType | null = null;
       
       if (tipoBackend === 'passageiro') userType = 'passenger';
@@ -57,9 +58,15 @@ export function Login() {
         throw new Error('Perfil de usuário inválido retornado pelo servidor.');
       }
 
+      const normalizedUser = {
+        ...usuarioLogado,
+        email: usuarioLogado?.email ?? formData.email,
+      };
+
       localStorage.setItem('token', data.token);
       localStorage.setItem('userType', userType);
-      localStorage.setItem('user', JSON.stringify(data.usuario || data.admin || {}));
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+      localStorage.setItem('userEmail', normalizedUser.email ?? formData.email);
 
       navigate(dashboardByUserType[userType]);
     } catch (err: any) {

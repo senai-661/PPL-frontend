@@ -67,23 +67,26 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
 
   // Buscar corridas pendentes
   const fetchPendingRides = async () => {
-    if (!isOnline) return;
-    
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
-      if (response.ok) {
-        const data = await response.json();
-        // Garante que cada corrida tenha um ID válido (fallback para id_corrida)
-        const corridasComId = data.map((corrida: any) => ({
-          ...corrida,
-          id: corrida.id_corrida ?? corrida.id
-        }));
-        setRideNotifications(corridasComId);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar corridas:', error);
+  if (!isOnline) return;
+  
+  try {
+    const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
+    if (response.ok) {
+      const data = await response.json();
+      console.log('[DEBUG] Estrutura completa da resposta:', data);
+      console.log('[DEBUG] Primeiro objeto ride:', data[0]);
+      console.log('[DEBUG] Todas as chaves do primeiro objeto:', data[0] ? Object.keys(data[0]) : 'nenhum');
+      
+      const corridasComId = data.map((corrida: any) => ({
+        ...corrida,
+        id: corrida.id_corrida ?? corrida.id ?? corrida.corridaId
+      }));
+      setRideNotifications(corridasComId);
     }
-  };
+  } catch (error) {
+    console.error('Erro ao buscar corridas:', error);
+  }
+};
 
   // Buscar stats do dia
   const fetchDailyStats = async () => {
@@ -214,29 +217,35 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
 
   // Aceitar corrida
   const handleAcceptRide = async (rideId: number) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/aceitar`, {
-        method: 'PATCH',
-        headers,
-      });
+  console.log('[FRONTEND] rideId recebido:', rideId, 'tipo:', typeof rideId);
+  console.log('[FRONTEND] URL completa:', `${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/aceitar`);
+  
+  setLoading(true);
+  try {
+    const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/aceitar`, {
+      method: 'PATCH',
+      headers,
+    });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao aceitar corrida');
-      }
+    console.log('[FRONTEND] Resposta status:', response.status);
 
-      alert(`Corrida aceita! Navegando para o passageiro...`);
-      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
-      setSelectedRide(null);
-      fetchDailyStats();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao aceitar corrida');
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const error = await response.json();
+      console.log('[FRONTEND] Erro resposta:', error);
+      throw new Error(error.mensagem || 'Erro ao aceitar corrida');
     }
-  };
 
+    alert(`Corrida aceita! Navegando para o passageiro...`);
+    setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
+    setSelectedRide(null);
+    fetchDailyStats();
+  } catch (err: any) {
+    console.log('[FRONTEND] Catch error:', err);
+    alert(err.message || 'Erro ao aceitar corrida');
+  } finally {
+    setLoading(false);
+  }
+};
   // Recusar corrida (cancelar)
   const handleRejectRide = async (rideId: number) => {
     setLoading(true);

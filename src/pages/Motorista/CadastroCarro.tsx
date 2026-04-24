@@ -15,14 +15,11 @@ export function CarRegistration() {
 
   const token = localStorage.getItem('token');
 
-  // ✅ Validação da placa (antiga e Mercosul)
+  // Validação da placa (antiga e Mercosul)
   const validarPlaca = (placa: string): boolean => {
     const placaUpper = placa.toUpperCase();
-    // Formato antigo: ABC-1234
     const regexAntigo = /^[A-Z]{3}-[0-9]{4}$/;
-    // Formato Mercosul: ABC1D23
     const regexMercosul = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
-    
     return regexAntigo.test(placaUpper) || regexMercosul.test(placaUpper);
   };
 
@@ -31,7 +28,6 @@ export function CarRegistration() {
     setError(null);
     setLoading(true);
 
-    // ✅ Validação da placa
     if (!formData.placa || !validarPlaca(formData.placa)) {
       setError('Placa inválida. Use o formato ABC-1234 ou ABC1D23');
       setLoading(false);
@@ -84,8 +80,8 @@ export function CarRegistration() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-8">
           <Car className="size-16 text-[#5a34a1] mx-auto mb-4" />
-          <h1 className="text-4xl mb-4">Cadastrar Veiculo</h1>
-          <p className="text-gray-600">Adicione um veiculo a sua conta de motorista</p>
+          <h1 className="text-4xl mb-4">Cadastrar Veículo</h1>
+          <p className="text-gray-600">Adicione um veículo à sua conta de motorista</p>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-md">
@@ -139,8 +135,8 @@ export function CarRegistration() {
 
             <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
               <p className="text-blue-800 text-sm">
-                <strong>Importante:</strong> O veiculo deve estar em boas condicoes e possuir
-                adaptacoes de acessibilidade (rampa ou elevador) para ser aprovado na plataforma OpenLine.
+                <strong>Importante:</strong> O veículo deve estar em boas condições e possuir 
+                adaptações de acessibilidade (rampa ou elevador) para ser aprovado na plataforma OpenLine.
               </p>
             </div>
 

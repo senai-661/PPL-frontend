@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import MapRequests from '../../fetch/MapRequest';
 import { SERVER_CFG } from '../../appConfig';
 import { MapComponent, type MapPoint } from './MapComponent';
+import { useToast } from '../../hooks/useToast';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;
@@ -64,6 +65,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   };
+  const { success, error: showError } = useToast();
 
   // Buscar corridas pendentes
   const fetchPendingRides = async () => {
@@ -221,12 +223,12 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
         throw new Error(error.mensagem || 'Erro ao aceitar corrida');
       }
 
-      alert(`Corrida aceita! Navegando para o passageiro...`);
+      success('Corrida aceita! Navegando para o passageiro...');
       setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
       setSelectedRide(null);
       fetchDailyStats();
     } catch (err: any) {
-      alert(err.message || 'Erro ao aceitar corrida');
+      showError(err.message || 'Erro ao aceitar corrida');
     } finally {
       setLoading(false);
     }
@@ -250,7 +252,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
       setSelectedRide(null);
     } catch (err: any) {
-      alert(err.message || 'Erro ao recusar corrida');
+      showError(err.message || 'Erro ao recusar corrida');
     } finally {
       setLoading(false);
     }

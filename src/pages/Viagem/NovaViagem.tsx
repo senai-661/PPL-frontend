@@ -5,6 +5,7 @@ import {
   AddressAutocomplete,
   type AutocompleteAddress,
 } from '../../app/components/AddressAutocomplete';
+import { useToast } from '../../hooks/useToast';
 
 interface TripFormData {
   origin: string;
@@ -20,6 +21,7 @@ interface TripFormData {
 
 export function NewTrip() {
   const navigate = useNavigate();
+  const { success } = useToast();
   const [tripData, setTripData] = useState<TripFormData>({
     origin: '',
     destination: '',
@@ -51,7 +53,7 @@ export function NewTrip() {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Simulação de criação de viagem
-    alert('Viagem solicitada com sucesso!');
+    success('Viagem solicitada com sucesso!');
     navigate('/viagem/painel');
   };
 

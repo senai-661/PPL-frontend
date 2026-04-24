@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { SERVER_CFG } from '../../appConfig';
 import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import { useToast } from '../../hooks/useToast';
 import { AguardandoMotorista } from './AguardandoMotorista';
 import {
   AddressAutocomplete,
@@ -78,6 +79,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
   const token = localStorage.getItem('token');
   const pollingIntervalRef = useRef<number | null>(null);
+  const { success, error: showError, info, warning } = useToast();
 
   const clearPollingInterval = () => {
     if (pollingIntervalRef.current !== null) {
@@ -139,13 +141,13 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       if (data.statusCorrida === 'Aceito' || data.statusCorrida === 'Em andamento') {
         clearPollingInterval();
         resetAguardandoCorrida();
-        alert(`Corrida aceita! O motorista ${data.motorista?.nome || 'esta'} a caminho.`);
+        success(`Corrida aceita! O motorista ${data.motorista?.nome || 'esta'} a caminho.`);
       }
 
       if (data.statusCorrida === 'Cancelada') {
         clearPollingInterval();
         resetAguardandoCorrida();
-        alert('Sua solicitacao foi cancelada.');
+        info('Sua solicitacao foi cancelada.');
       }
     } catch (error) {
       console.error('Erro ao verificar status da corrida:', error);
@@ -187,7 +189,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Erro ao cancelar solicitacao';
-      alert(message);
+      showError(message);
     } finally {
       resetAguardandoCorrida();
     }
@@ -359,12 +361,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     e.preventDefault();
 
     if (!formData.origin || !formData.destination) {
-      alert('Por favor, preencha a origem e o destino');
+      warning('Por favor, preencha a origem e o destino');
       return;
     }
 
     if (!originPosition || !destinationPosition) {
-      alert('Aguardando localizacao dos enderecos. Tente novamente.');
+      info('Aguardando localizacao dos enderecos. Tente novamente.');
       return;
     }
 
@@ -440,7 +442,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       setEstimatedDistance(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao solicitar viagem';
-      alert(message);
+      showError(message);
     } finally {
       setLoading(false);
     }

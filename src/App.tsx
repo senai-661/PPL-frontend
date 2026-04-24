@@ -43,7 +43,7 @@ import { TripDashboard } from './pages/Viagem/PainelViagem';
 import { TripList } from './pages/Viagem/ListaViagens';
 import { NewTrip } from './pages/Viagem/NovaViagem';
 import { GuestRoute } from './app/components/ProtectedRoute';
-import { useToast } from './hooks/useToast';
+import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './app/components/ToastContainer';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
@@ -200,7 +200,9 @@ function AppContent() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </BrowserRouter>
   );
 }

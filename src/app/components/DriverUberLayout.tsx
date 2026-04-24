@@ -12,8 +12,8 @@ import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
 import MapRequests from '../../fetch/MapRequest';
-import { MapComponent, type MapPoint } from './MapComponent';
 import { SERVER_CFG } from '../../appConfig';
+import { MapComponent, type MapPoint } from './MapComponent';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;

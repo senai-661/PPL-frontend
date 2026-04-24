@@ -17,6 +17,7 @@ export interface RideRequestData {
   destination: string;
   passengers?: number;
   notes?: string;
+  rideType?: string;
 }
 
 const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
@@ -29,6 +30,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     destination: '',
     passengers: 1,
     notes: '',
+    rideType: 'Convencional',
   });
   const [originPosition, setOriginPosition] = useState<LatLngTuple | null>(null);
   const [destinationPosition, setDestinationPosition] = useState<LatLngTuple | null>(null);
@@ -40,7 +42,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     ativo: boolean;
     id: number | null;
   }>({ ativo: false, id: null });
-const [pollingInterval, setPollingInterval] = useState<number | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<number | null>(null);
 
   const token = localStorage.getItem('token');
 
@@ -124,7 +126,7 @@ const [pollingInterval, setPollingInterval] = useState<number | null>(null);
               lngOrigem: resolvedOrigin.lng,
               latDestino: resolvedDestination.lat,
               lngDestino: resolvedDestination.lng,
-              tipoCorrida: 'Convencional',
+              tipoCorrida: formData.rideType ?? 'Convencional',
             }),
           });
 
@@ -146,7 +148,7 @@ const [pollingInterval, setPollingInterval] = useState<number | null>(null);
       isMounted = false;
       window.clearTimeout(timerId);
     };
-  }, [formData.destination, formData.origin, userType]);
+  }, [formData.destination, formData.origin, formData.rideType, userType]);
 
   const handleRequestRide = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,7 +179,7 @@ const [pollingInterval, setPollingInterval] = useState<number | null>(null);
           lngOrigem: originPosition[1],
           latDestino: destinationPosition[0],
           lngDestino: destinationPosition[1],
-          tipoCorrida: 'Convencional',
+          tipoCorrida: formData.rideType ?? 'Convencional',
           numPassageiros: formData.passengers ?? 1,
           observacoes: formData.notes ?? null,
         }),
@@ -209,6 +211,7 @@ const [pollingInterval, setPollingInterval] = useState<number | null>(null);
         destination: '',
         passengers: 1,
         notes: '',
+        rideType: 'Convencional',
       });
       setOriginPosition(null);
       setDestinationPosition(null);
@@ -341,6 +344,23 @@ const [pollingInterval, setPollingInterval] = useState<number | null>(null);
 
               {userType === 'passenger' && (
                 <>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Tipo de Corrida
+                    </label>
+                    <select
+                      value={formData.rideType}
+                      onChange={(e) =>
+                        setFormData({ ...formData, rideType: e.target.value })
+                      }
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                    >
+                      <option value="Convencional">🚗 Convencional</option>
+                      <option value="EconoComigo">💰 EconoComigo (mais barato)</option>
+                      <option value="Premium">⭐ Premium (mais conforto)</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Número de Passageiros

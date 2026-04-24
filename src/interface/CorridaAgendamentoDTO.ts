@@ -1,9 +1,11 @@
 export interface CorridaAgendamentoDTO {
+  idAgendamento?: number;
   idPassageiro: number;
   origemCorrida: string;
   destinoCorrida: string;
   tipoCorrida: string;
-  dataAgendada: string | null;
-  statusAgendamento: string | null;
+  dataAgendada: Date | string;
+  statusAgendamento: string;
   preco: number;
+  criadoEm?: Date;
 }

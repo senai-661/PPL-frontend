@@ -2,7 +2,7 @@ import { MapPin, Navigation, X, DollarSign } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests from '../../fetch/MapRequest';
+import MapRequests, { type RouteData } from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
 
 interface UberLikeLayoutProps {
@@ -30,6 +30,8 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [originPosition, setOriginPosition] = useState<LatLngTuple | null>(null);
   const [destinationPosition, setDestinationPosition] = useState<LatLngTuple | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(false);
+  const [routeData, setRouteData] = useState<RouteData | null>(null);
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -76,6 +78,37 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     };
   }, [formData.destination, formData.origin]);
 
+  // Calcular rota real quando origem e destino estiverem disponíveis
+  useEffect(() => {
+    let isMounted = true;
+
+    const calculateRoute = async () => {
+      if (!originPosition || !destinationPosition) {
+        setRouteData(null);
+        return;
+      }
+
+      setIsRouteLoading(true);
+
+      try {
+        const route = await MapRequests.calculateRoute(originPosition, destinationPosition);
+        if (isMounted) {
+          setRouteData(route);
+        }
+      } finally {
+        if (isMounted) {
+          setIsRouteLoading(false);
+        }
+      }
+    };
+
+    calculateRoute();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [originPosition, destinationPosition]);
+
   const handleRequestRide = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.origin || !formData.destination) {
@@ -117,10 +150,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     });
   }
 
-  const tripRoute =
-    originPosition && destinationPosition
-      ? [originPosition, destinationPosition]
-      : undefined;
+  const tripRoute = routeData?.coordinates;
   const mapCenter = destinationPosition ?? originPosition ?? DEFAULT_CENTER;
 
   return (
@@ -293,8 +323,19 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
               <DollarSign className="size-5 text-green-600" />
             </div>
             <div className="border-t border-gray-200 pt-3 text-sm text-gray-600">
-              <p>Tempo: ~12 min</p>
-              <p>Distancia: ~3.2 km</p>
+              {isRouteLoading ? (
+                <p className="text-gray-400">Calculando rota...</p>
+              ) : routeData ? (
+                <>
+                  <p>Tempo: ~{MapRequests.formatDuration(routeData.duration)}</p>
+                  <p>Distancia: {MapRequests.formatDistance(routeData.distance)}</p>
+                </>
+              ) : (
+                <>
+                  <p>Tempo: --</p>
+                  <p>Distancia: --</p>
+                </>
+              )}
             </div>
           </div>
         )}

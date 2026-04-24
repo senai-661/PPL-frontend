@@ -2,6 +2,7 @@
 import { User, Mail, Phone, FileText, Lock, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SERVER_CFG } from '../../appConfig';
+import { useToast } from '../../hooks/useToast';
 
 const formatCelular = (valor: string) => {
   const digits = valor.replace(/\D/g, '').slice(0, 11);
@@ -13,6 +14,7 @@ const formatCelular = (valor: string) => {
 
 export function PassengerRegistration() {
   const navigate = useNavigate();
+  const { success, error: showError } = useToast();
   const [formData, setFormData] = useState({
     nome: '',
     sobrenome: '',
@@ -97,10 +99,10 @@ export function PassengerRegistration() {
         throw new Error(data.mensagem || 'Erro ao cadastrar');
       }
 
-      alert('Cadastro realizado com sucesso! Faça login para continuar.');
+      success('Cadastro realizado com sucesso! Faça login para continuar.');
       navigate('/login');
     } catch (err: any) {
-      setError(err.message || 'Erro ao cadastrar passageiro');
+      showError(err.message || 'Erro ao cadastrar passageiro');
     } finally {
       setLoading(false);
     }

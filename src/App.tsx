@@ -43,6 +43,8 @@ import { TripDashboard } from './pages/Viagem/PainelViagem';
 import { TripList } from './pages/Viagem/ListaViagens';
 import { NewTrip } from './pages/Viagem/NovaViagem';
 import { GuestRoute } from './app/components/ProtectedRoute';
+import { useToast } from './hooks/useToast';
+import { ToastContainer } from './app/components/ToastContainer';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -77,6 +79,7 @@ function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/administrador');
   const isLoginRoute = location.pathname === '/login';
+  const { toasts, removeToast } = useToast();
 
   return (
     <div className="app-shell min-h-screen flex flex-col">
@@ -189,6 +192,7 @@ function AppContent() {
         </Routes>
       </main>
       {!isAdminRoute && <Footer />}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

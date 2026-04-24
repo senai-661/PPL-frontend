@@ -12,8 +12,9 @@ import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
 import MapRequests from '../../fetch/MapRequest';
-import { MapComponent, type MapPoint } from './MapComponent';
 import { SERVER_CFG } from '../../appConfig';
+import { MapComponent, type MapPoint } from './MapComponent';
+import { useToast } from '../../hooks/useToast';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;
@@ -64,9 +65,11 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   };
+  const { success, error: showError } = useToast();
 
   // Buscar corridas pendentes
-  const fetchPendingRides = async () => {
+// Buscar corridas pendentes
+const fetchPendingRides = async () => {
   if (!isOnline) return;
   
   try {
@@ -74,13 +77,14 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     if (response.ok) {
       const data = await response.json();
       console.log('[DEBUG] Estrutura completa da resposta:', data);
-      console.log('[DEBUG] Primeiro objeto ride:', data[0]);
-      console.log('[DEBUG] Todas as chaves do primeiro objeto:', data[0] ? Object.keys(data[0]) : 'nenhum');
       
+      // Mapeia idCorrida para id
       const corridasComId = data.map((corrida: any) => ({
         ...corrida,
-        id: corrida.id_corrida ?? corrida.id ?? corrida.corridaId
+        id: corrida.idCorrida // corrigido: usa idCorrida em vez de id_corrida
       }));
+      
+      console.log('[DEBUG] Corridas com id mapeado:', corridasComId);
       setRideNotifications(corridasComId);
     }
   } catch (error) {
@@ -264,7 +268,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
       setSelectedRide(null);
     } catch (err: any) {
-      alert(err.message || 'Erro ao recusar corrida');
+      showError(err.message || 'Erro ao recusar corrida');
     } finally {
       setLoading(false);
     }

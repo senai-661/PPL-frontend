@@ -7,7 +7,7 @@ import MapRequests, { type RouteData } from '../../fetch/MapRequest';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
-} from './AddressAutocomplete';
+} from './AutocompleteEndereco';
 import { MapComponent, type MapPoint } from './MapComponent';
 import { AguardandoMotorista } from './AguardandoMotorista';
 

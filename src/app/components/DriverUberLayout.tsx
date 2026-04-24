@@ -1,343 +1,216 @@
-import {
-  Clock,
-  DollarSign,
-  MapPin,
-  Navigation2,
-  Phone,
-  Search,
-  X,
-  Loader2,
-} from 'lucide-react';
+import { MapPin, Navigation, X, DollarSign, Loader2 } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import MapRequests from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
 import { SERVER_CFG } from '../../appConfig';
 
-interface DriverUberLayoutProps {
-  onToggleOnline?: (isOnline: boolean) => void;
+interface UberLikeLayoutProps {
+  userType: 'passenger' | 'driver';
+  onRequestRide?: (data: RideRequestData) => void;
 }
 
-interface RideNotification {
-  id: number;
-  passageiro: {
-    nome: string;
-    sobrenome: string;
-    celular: string;
-    necessidades: string[] | null;
-  };
-  origemCorrida: string;
-  destinoCorrida: string;
-  preco: number;
-  dataCorrida: string;
-  statusCorrida: string;
+export interface RideRequestData {
+  origin: string;
+  destination: string;
+  passengers?: number;
+  notes?: string;
 }
-
-type RideMapLookup = Record<
-  number,
-  {
-    origin: LatLngTuple | null;
-    destination: LatLngTuple | null;
-    routeToPassenger: RouteData | null;
-    routeToDestination: RouteData | null;
-  }
->;
 
 const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 
-export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
+export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isOnline, setIsOnline] = useState(false);
-  const [selectedRide, setSelectedRide] = useState<number | null>(null);
-  const [driverPosition, setDriverPosition] = useState<LatLngTuple>(DEFAULT_CENTER);
-  const [rideMapLookup, setRideMapLookup] = useState<RideMapLookup>({});
-  const [isMapLoading, setIsMapLoading] = useState(false);
-  const [rideNotifications, setRideNotifications] = useState<RideNotification[]>([]);
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({
-    ganhosDia: 0,
-    viagensDia: 0,
-    mediaAvaliacao: null as number | null,
+  const [formData, setFormData] = useState<RideRequestData>({
+    origin: '',
+    destination: '',
+    passengers: 1,
+    notes: '',
   });
-  const [togglingOnline, setTogglingOnline] = useState(false);
+  const [originPosition, setOriginPosition] = useState<LatLngTuple | null>(null);
+  const [destinationPosition, setDestinationPosition] = useState<LatLngTuple | null>(null);
+  const [isMapLoading, setIsMapLoading] = useState(false);
+  const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
+  const [estimatedDistance, setEstimatedDistance] = useState<string | null>(null);
 
   const token = localStorage.getItem('token');
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
 
-  // Buscar corridas pendentes
-  const fetchPendingRides = async () => {
-    if (!isOnline) return;
-    
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
-      if (response.ok) {
-        const data = await response.json();
-        setRideNotifications(data);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar corridas:', error);
-    }
-  };
-
-  // Buscar stats do dia
-  const fetchDailyStats = async () => {
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/resumo-dia`, { headers });
-      if (response.ok) {
-        const data = await response.json();
-        setStats({
-          ganhosDia: data.totalGanho || 0,
-          viagensDia: data.corridasFinalizadas || 0,
-          mediaAvaliacao: null,
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao buscar stats:', error);
-    }
-  };
-
-  // Alternar disponibilidade
-  const handleToggleOnline = async () => {
-    setTogglingOnline(true);
-    const novoStatus = !isOnline;
-    
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/disponibilidade`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ disponivel: novoStatus }),
-      });
-      
-      if (response.ok) {
-        setIsOnline(novoStatus);
-        onToggleOnline?.(novoStatus);
-        if (novoStatus) {
-          fetchPendingRides();
-          fetchDailyStats();
-        } else {
-          setRideNotifications([]);
-          setRideMapLookup({});
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao alterar disponibilidade:', error);
-    } finally {
-      setTogglingOnline(false);
-    }
-  };
-
-  // Buscar corridas a cada 10 segundos quando online
-  useEffect(() => {
-    if (!isOnline) return;
-    
-    fetchPendingRides();
-    const interval = setInterval(fetchPendingRides, 10000);
-    return () => clearInterval(interval);
-  }, [isOnline]);
-
-  // Buscar stats quando online
-  useEffect(() => {
-    if (isOnline) {
-      fetchDailyStats();
-    }
-  }, [isOnline]);
-
-  // Geolocalização do motorista
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-
-    const watchId = navigator.geolocation.watchPosition(
-      ({ coords }) => {
-        setDriverPosition([coords.latitude, coords.longitude]);
-      },
-      () => {
-        setDriverPosition(DEFAULT_CENTER);
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 15000,
-        timeout: 10000,
-      },
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
-
-  // Geocodificar endereços das corridas
   useEffect(() => {
     let isMounted = true;
 
-    if (!isOnline || rideNotifications.length === 0) {
-      setRideMapLookup({});
-      setIsMapLoading(false);
-      return;
-    }
+    const timerId = window.setTimeout(async () => {
+      const origin = formData.origin.trim();
+      const destination = formData.destination.trim();
 
-    const loadRideCoordinates = async () => {
+      if (!origin && !destination) {
+        setOriginPosition(null);
+        setDestinationPosition(null);
+        setIsMapLoading(false);
+        setEstimatedPrice(null);
+        setEstimatedTime(null);
+        setEstimatedDistance(null);
+        return;
+      }
+
       setIsMapLoading(true);
 
       try {
-        const entries = await Promise.all(
-          rideNotifications.map(async (ride) => {
-            const [origin, destination] = await Promise.all([
-              MapRequests.geocodeAddress(ride.origemCorrida),
-              MapRequests.geocodeAddress(ride.destinoCorrida),
-            ]);
+        const [resolvedOrigin, resolvedDestination] = await Promise.all([
+          MapRequests.geocodeAddress(origin),
+          MapRequests.geocodeAddress(destination),
+        ]);
 
-            const originCoords = origin ? ([origin.lat, origin.lng] as LatLngTuple) : null;
-            const destinationCoords = destination
-              ? ([destination.lat, destination.lng] as LatLngTuple)
-              : null;
+        if (!isMounted) {
+          return;
+        }
 
-            // Calcular rotas reais
-            let routeToPassenger: RouteData | null = null;
-            let routeToDestination: RouteData | null = null;
-
-            if (originCoords) {
-              routeToPassenger = await MapRequests.calculateRoute(driverPosition, originCoords);
-            }
-
-            if (originCoords && destinationCoords) {
-              routeToDestination = await MapRequests.calculateRoute(originCoords, destinationCoords);
-            }
-
-            return [
-              ride.id,
-              {
-                origin: originCoords,
-                destination: destinationCoords,
-                routeToPassenger,
-                routeToDestination,
-              },
-            ] as const;
-          }),
+        setOriginPosition(
+          resolvedOrigin ? [resolvedOrigin.lat, resolvedOrigin.lng] : null,
+        );
+        setDestinationPosition(
+          resolvedDestination ? [resolvedDestination.lat, resolvedDestination.lng] : null,
         );
 
-        if (!isMounted) return;
-        setRideMapLookup(Object.fromEntries(entries));
+        // Calcular preço estimado se tiver os dois pontos
+        if (resolvedOrigin && resolvedDestination && userType === 'passenger') {
+          const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/preco-estimado`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              latOrigem: resolvedOrigin.lat,
+              lngOrigem: resolvedOrigin.lng,
+              latDestino: resolvedDestination.lat,
+              lngDestino: resolvedDestination.lng,
+              tipoCorrida: 'Convencional',
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setEstimatedPrice(data.preco);
+            setEstimatedTime(`${data.duracaoEstimadaMin} min`);
+            setEstimatedDistance(`${data.distanciaKm.toFixed(1)} km`);
+          }
+        }
       } finally {
-        if (isMounted) setIsMapLoading(false);
+        if (isMounted) {
+          setIsMapLoading(false);
+        }
       }
+    }, 800);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timerId);
     };
+  }, [formData.destination, formData.origin, userType]);
 
-    loadRideCoordinates();
-    return () => { isMounted = false; };
-  }, [isOnline, rideNotifications]);
+  const handleRequestRide = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.origin || !formData.destination) {
+      alert('Por favor, preencha a origem e o destino');
+      return;
+    }
 
-  // Aceitar corrida
-  const handleAcceptRide = async (rideId: number) => {
+    if (!originPosition || !destinationPosition) {
+      alert('Aguardando localização dos endereços... Tente novamente');
+      return;
+    }
+
     setLoading(true);
+
     try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/aceitar`, {
-        method: 'PATCH',
-        headers,
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          origemCorrida: formData.origin,
+          destinoCorrida: formData.destination,
+          latOrigem: originPosition[0],
+          lngOrigem: originPosition[1],
+          latDestino: destinationPosition[0],
+          lngDestino: destinationPosition[1],
+          tipoCorrida: 'Convencional',
+          numPassageiros: formData.passengers ?? 1,
+          observacoes: formData.notes ?? null,
+        }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao aceitar corrida');
+        throw new Error(data.mensagem || 'Erro ao solicitar viagem');
       }
 
-      alert(`Corrida aceita! Navegando para o passageiro...`);
-      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
-      setSelectedRide(null);
-      fetchDailyStats();
+      alert(`Viagem solicitada com sucesso! ID: ${data.idCorrida}\nPreço: R$ ${data.preco.toFixed(2)}\nDistância: ${data.distanciaKm.toFixed(1)} km\nTempo estimado: ${data.duracaoEstimadaMin} min`);
+
+      if (onRequestRide) {
+        onRequestRide(formData);
+      }
+
+      // Limpar formulário
+      setFormData({
+        origin: '',
+        destination: '',
+        passengers: 1,
+        notes: '',
+      });
+      setOriginPosition(null);
+      setDestinationPosition(null);
+      setEstimatedPrice(null);
+      setEstimatedTime(null);
+      setEstimatedDistance(null);
+
     } catch (err: any) {
-      alert(err.message || 'Erro ao aceitar corrida');
+      alert(err.message || 'Erro ao solicitar viagem');
     } finally {
       setLoading(false);
     }
   };
 
-  // Recusar corrida (cancelar)
-  const handleRejectRide = async (rideId: number) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/cancelar`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ motivoCancelamento: 'Motorista recusou a corrida' }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao recusar corrida');
-      }
-
-      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
-      setSelectedRide(null);
-    } catch (err: any) {
-      alert(err.message || 'Erro ao recusar corrida');
-    } finally {
-      setLoading(false);
-    }
+  const swapLocations = () => {
+    setFormData({
+      ...formData,
+      origin: formData.destination,
+      destination: formData.origin,
+    });
   };
 
-  const getRideTypeColor = (necessidades: string[] | null) => {
-    if (necessidades && necessidades.length > 0) return 'bg-amber-600';
-    return 'bg-[#5a34a1]';
-  };
+  const mapPoints: MapPoint[] = [];
 
-  function formatarMoeda(valor: number) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  if (originPosition) {
+    mapPoints.push({
+      id: 'origin',
+      label: 'Origem',
+      position: originPosition,
+      color: '#16a34a',
+      description: formData.origin,
+    });
   }
 
-  const mapPoints: MapPoint[] = [
-    {
-      id: 'driver-position',
-      label: isOnline ? 'Sua localização' : 'Posição estimada',
-      position: driverPosition,
-      color: isOnline ? '#16a34a' : '#64748b',
-      description: isOnline
-        ? 'Sua posição atual está sendo compartilhada.'
-        : 'Ative o modo online para compartilhar sua localização.',
-      radius: 10,
-    },
-  ];
-
-  for (const ride of rideNotifications) {
-    const rideCoordinates = rideMapLookup[ride.id];
-
-    if (rideCoordinates?.origin) {
-      mapPoints.push({
-        id: `ride-origin-${ride.id}`,
-        label: `Coleta: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
-        position: rideCoordinates.origin,
-        color: selectedRide === ride.id ? '#2563eb' : '#f59e0b',
-        description: ride.origemCorrida,
-      });
-    }
-
-    if (selectedRide === ride.id && rideCoordinates?.destination) {
-      mapPoints.push({
-        id: `ride-destination-${ride.id}`,
-        label: `Destino: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
-        position: rideCoordinates.destination,
-        color: '#dc2626',
-        description: ride.destinoCorrida,
-      });
-    }
+  if (destinationPosition) {
+    mapPoints.push({
+      id: 'destination',
+      label: 'Destino',
+      position: destinationPosition,
+      color: '#dc2626',
+      description: formData.destination,
+    });
   }
 
-  const selectedRideCoordinates = selectedRide ? rideMapLookup[selectedRide] : undefined;
-  
-  // Construir rota combinada: motorista -> passageiro -> destino
-  let selectedRideRoute: LatLngTuple[] | undefined;
-  if (selectedRideCoordinates?.routeToPassenger && selectedRideCoordinates?.routeToDestination) {
-    // Combinar as rotas
-    selectedRideRoute = [
-      ...selectedRideCoordinates.routeToPassenger.coordinates,
-      ...selectedRideCoordinates.routeToDestination.coordinates.slice(1), // Evitar duplicar o ponto de origem
-    ];
-  } else if (selectedRideCoordinates?.routeToPassenger) {
-    selectedRideRoute = selectedRideCoordinates.routeToPassenger.coordinates;
-  }
-
-  const mapCenter = selectedRideCoordinates?.origin ?? driverPosition;
+  // ✅ CORRIGIDO: rota direta entre origem e destino
+  const tripRoute = originPosition && destinationPosition
+    ? [originPosition, destinationPosition]
+    : undefined;
+    
+  const mapCenter = destinationPosition ?? originPosition ?? DEFAULT_CENTER;
 
   return (
     <div className="min-h-screen flex bg-gray-100 overflow-hidden">
@@ -352,213 +225,190 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            {isExpanded ? <X className="size-5" /> : <Navigation2 className="size-5" />}
+            {isExpanded ? <X className="size-5" /> : <Navigation className="size-5" />}
           </button>
         </div>
 
         {isExpanded && (
-          <>
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Modo Motorista</h3>
-
-              <button
-                onClick={handleToggleOnline}
-                disabled={togglingOnline}
-                className={`w-full py-4 px-6 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 ${
-                  isOnline
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-gray-400 hover:bg-gray-500'
-                } disabled:opacity-50`}
-              >
-                {togglingOnline && <Loader2 className="size-5 animate-spin" />}
-                {togglingOnline ? (isOnline ? 'Ficando Offline...' : 'Ficando Online...') : (isOnline ? 'Online' : 'Offline')}
-              </button>
-
-              {isOnline && (
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-800">
-                    Você está disponível para receber solicitações.
-                  </p>
-                </div>
-              )}
-
-              {!isOnline && (
-                <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                  <p className="text-sm text-gray-600">
-                    Clique no botão acima para ativar o modo online.
-                  </p>
-                </div>
-              )}
+          <div className="flex-1 p-6 space-y-6">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                {userType === 'passenger' ? 'Solicitar Viagem' : 'Disponivel para Viagens'}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {userType === 'passenger'
+                  ? 'Para onde voce quer ir?'
+                  : 'Sua localizacao atual esta sendo compartilhada'}
+              </p>
             </div>
 
-            {isOnline && (
-              <div className="p-6 border-b border-gray-200 space-y-3">
-                <p className="text-xs text-gray-600 font-semibold mb-3">HOJE</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Ganhos:</span>
-                  <span className="font-bold text-green-600 text-lg">
-                    {formatarMoeda(stats.ganhosDia)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Viagens:</span>
-                  <span className="font-bold text-[#5a34a1] text-lg">{stats.viagensDia}</span>
+            <form onSubmit={handleRequestRide} className="space-y-4">
+              <div className="relative">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Origem
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 size-5 text-green-600" />
+                  <input
+                    type="text"
+                    value={formData.origin}
+                    onChange={(e) =>
+                      setFormData({ ...formData, origin: e.target.value })
+                    }
+                    placeholder="Onde voce esta?"
+                    required
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                  />
                 </div>
               </div>
-            )}
 
-            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={swapLocations}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  title="Trocar origem e destino"
+                >
+                  <Navigation className="size-5 text-gray-600 rotate-90" />
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Destino
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 size-5 text-red-600" />
+                  <input
+                    type="text"
+                    value={formData.destination}
+                    onChange={(e) =>
+                      setFormData({ ...formData, destination: e.target.value })
+                    }
+                    placeholder="Para onde quer ir?"
+                    required
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                  />
+                </div>
+              </div>
+
+              {userType === 'passenger' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Número de Passageiros
+                    </label>
+                    <select
+                      value={formData.passengers}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          passengers: Number.parseInt(e.target.value, 10),
+                        })
+                      }
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'Passageiro' : 'Passageiros'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Observações (opcional)
+                    </label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      placeholder="Ex: Tenho muitas malas, precisamos de carro grande..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors resize-none h-20"
+                    />
+                  </div>
+                </>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading && <Loader2 className="size-5 animate-spin" />}
+                {loading ? 'Solicitando...' : userType === 'passenger' ? 'Solicitar Viagem' : 'Ativar Modo Online'}
+              </button>
+            </form>
+
+            <div className="pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-600 font-semibold mb-3">ATALHOS</p>
               <div className="space-y-2">
-                <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left">
-                  <Phone className="size-5 text-blue-600" />
-                  <span className="text-sm font-semibold">Suporte 24/7</span>
+                <button 
+                  onClick={() => setFormData({ ...formData, origin: 'Av. Paulista, 1000, São Paulo' })}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                >
+                  <MapPin className="size-5 text-gray-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-700">Av. Paulista</p>
+                    <p className="text-xs text-gray-500 truncate">Av. Paulista, 1000 - Bela Vista, SP</p>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => setFormData({ ...formData, destination: 'Shopping Ibirapuera, São Paulo' })}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                >
+                  <MapPin className="size-5 text-gray-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-700">Shopping Ibirapuera</p>
+                    <p className="text-xs text-gray-500 truncate">Av. Ibirapuera, 3103 - SP</p>
+                  </div>
                 </button>
               </div>
             </div>
-
-            {isOnline && rideNotifications.length === 0 && (
-              <div className="flex-1 flex items-center justify-center p-6 text-center">
-                <div>
-                  <Search className="size-12 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-600 text-sm">
-                    Aguardando solicitações próximas...
-                  </p>
-                </div>
-              </div>
-            )}
-          </>
+          </div>
         )}
       </div>
 
-      <div className="flex-1 relative bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500 overflow-hidden flex flex-col">
+      <div className="flex-1 relative bg-gray-300 overflow-hidden">
         <MapComponent
           center={mapCenter}
           zoom={12}
           points={mapPoints}
-          route={selectedRideRoute}
+          route={tripRoute}
           loading={isMapLoading}
-          emptyTitle="Mapa do motorista"
-          emptySubtitle="Sua localização e as próximas corridas aparecerão aqui."
+          emptyTitle="Mapa da viagem"
+          emptySubtitle={
+            userType === 'passenger'
+              ? 'Digite origem e destino para visualizar o trajeto no mapa.'
+              : 'Sua area de atuacao aparecera aqui quando houver localizacao.'
+          }
         />
 
-        {isOnline && rideNotifications.length > 0 && (
-          <div className="absolute inset-0 z-10 pointer-events-none">
-            <div className="absolute top-6 right-6 max-w-md pointer-events-auto">
-              {rideNotifications.slice(0, 3).map((ride, index) => (
-                <div
-                  key={ride.id}
-                  className={`bg-white rounded-lg shadow-2xl p-4 mb-4 transform transition-all cursor-pointer border-l-4 ${
-                    getRideTypeColor(ride.passageiro.necessidades)
-                  } ${
-                    selectedRide === ride.id ? 'ring-2 ring-blue-400' : ''
-                  }`}
-                  onClick={() => setSelectedRide(selectedRide === ride.id ? null : ride.id)}
-                  style={{
-                    transform: `translateY(${index * 8}px)`,
-                  }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="font-bold text-gray-800">
-                        {ride.passageiro.nome} {ride.passageiro.sobrenome}
-                      </p>
-                      {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 && (
-                        <span className="text-xs text-amber-600">
-                          🦽 Necessidades especiais
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-white text-xs font-bold ${getRideTypeColor(ride.passageiro.necessidades)}`}
-                    >
-                      {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 ? 'ADAPTADO' : 'CONVENCIONAL'}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex gap-3">
-                      <MapPin className="size-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-gray-600">Origem</p>
-                        <p className="text-sm font-semibold text-gray-800">{ride.origemCorrida}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <MapPin className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-gray-600">Destino</p>
-                        <p className="text-sm font-semibold text-gray-800">{ride.destinoCorrida}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 mb-4 p-3 bg-gray-50 rounded">
-                    <div className="text-center">
-                      <DollarSign className="size-4 text-green-600 mx-auto mb-1" />
-                      <p className="text-xs text-gray-600">Preço</p>
-                      <p className="text-sm font-bold text-gray-800">{formatarMoeda(ride.preco)}</p>
-                    </div>
-                    <div className="text-center">
-                      <Clock className="size-4 text-blue-600 mx-auto mb-1" />
-                      <p className="text-xs text-gray-600">Solicitada</p>
-                      <p className="text-sm font-bold text-gray-800">
-                        {new Date(ride.dataCorrida).toLocaleTimeString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  {selectedRide === ride.id && (
-                    <div className="flex gap-2 pt-4 border-t border-gray-200">
-                      <button
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleAcceptRide(ride.id);
-                        }}
-                        disabled={loading}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
-                      >
-                        Aceitar
-                      </button>
-                      <button
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleRejectRide(ride.id);
-                        }}
-                        disabled={loading}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
-                      >
-                        Recusar
-                      </button>
-                    </div>
-                  )}
-
-                  {selectedRide !== ride.id && (
-                    <p className="text-xs text-gray-500 text-center pt-2">
-                      Clique para detalhes
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {rideNotifications.length > 3 && (
-              <div className="absolute top-6 right-6 mt-96 bg-red-600 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center font-bold shadow-lg pointer-events-auto">
-                +{rideNotifications.length - 3}
+        {userType === 'passenger' && estimatedPrice && (
+          <div className="absolute bottom-6 left-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4 max-w-xs">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-xs text-gray-500 font-semibold mb-1">PREÇO ESTIMADO</p>
+                <p className="text-2xl font-bold text-[#5a34a1]">
+                  R$ {estimatedPrice.toFixed(2)}
+                </p>
               </div>
-            )}
+              <DollarSign className="size-5 text-green-600" />
+            </div>
+            <div className="border-t border-gray-200 pt-3 text-sm text-gray-600">
+              <p>Tempo: ~{estimatedTime}</p>
+              <p>Distância: ~{estimatedDistance}</p>
+            </div>
           </div>
         )}
 
-        {!isOnline && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20">
-            <div className="text-center text-white">
-              <Navigation2 className="size-20 mx-auto mb-4 opacity-75" />
-              <h2 className="text-3xl font-bold mb-2">Você está Offline</h2>
-              <p className="text-lg opacity-90">
-                Ative o modo online para receber solicitações
-              </p>
+        {userType === 'driver' && (
+          <div className="absolute top-6 right-6 z-10 bg-white rounded-lg shadow-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="size-3 bg-green-600 rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-gray-700">Você está online</span>
             </div>
+            <p className="text-xs text-gray-600">Aguardando solicitações próximas...</p>
           </div>
         )}
       </div>

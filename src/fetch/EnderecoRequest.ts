@@ -1,32 +1,61 @@
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "";
+const ENDERECO_SUGESTOES_PATH = "/api/autocomplete/enderecos";
+
+export interface EnderecoSugestaoResponse {
+  display_name: string;
+  titulo: string;
+  subtitulo: string;
+  categoria: string;
+  lat: number;
+  lon: number;
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    municipality?: string;
+    state?: string;
+  };
+}
+
+interface BuscarSugestoesResponse {
+  sugestoes?: EnderecoSugestaoResponse[];
+}
 
 export class EnderecoRequest {
-  static async buscarSugestoes(query: string): Promise<any[]> {
+  static async buscarSugestoes(
+    query: string,
+    limit: number = 5,
+  ): Promise<EnderecoSugestaoResponse[]> {
     try {
-      const searchUrl = new URL(NOMINATIM_URL);
-      searchUrl.searchParams.set('q', query);
-      searchUrl.searchParams.set('format', 'jsonv2');
-      searchUrl.searchParams.set('addressdetails', '1');
-      searchUrl.searchParams.set('limit', '5');
-      searchUrl.searchParams.set('countrycodes', 'br');
+      const termo = query.trim();
 
-      const response = await fetch(searchUrl.toString(), {
-        headers: {
-          'Accept-Language': 'pt-BR',
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Erro ao buscar sugestões");
+      if (termo.length < 2) {
+        return [];
       }
-      const data = await response.json();
-      return data.map((item: any) => ({
-        display_name: item.display_name,
-        lat: item.lat,
-        lon: item.lon,
-        address: item.address,
-      }));
+
+      const searchParams = new URLSearchParams();
+      searchParams.set("q", termo);
+      searchParams.set("limit", limit.toString());
+
+      const response = await fetch(
+        `${API_BASE_URL}${ENDERECO_SUGESTOES_PATH}?${searchParams.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        console.error(`Erro ao buscar sugestoes: ${response.status}`);
+        return [];
+      }
+
+      const data = (await response.json()) as BuscarSugestoesResponse;
+      return data.sugestoes || [];
     } catch (error) {
-      console.error("Erro na busca de sugestões:", error);
+      console.error("Erro na busca de sugestoes:", error);
       return [];
     }
   }

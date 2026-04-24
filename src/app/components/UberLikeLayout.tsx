@@ -1,7 +1,11 @@
-import { MapPin, Navigation, X, DollarSign } from 'lucide-react';
+import { DollarSign, MapPin, Navigation, X } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
+import {
+  AddressAutocomplete,
+  type AutocompleteAddress,
+} from './AddressAutocomplete';
 import MapRequests, { type RouteData } from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
 
@@ -13,6 +17,8 @@ interface UberLikeLayoutProps {
 export interface RideRequestData {
   origin: string;
   destination: string;
+  originCoords?: LatLngTuple | null;
+  destinationCoords?: LatLngTuple | null;
   passengers?: number;
   notes?: string;
 }
@@ -32,6 +38,34 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [routeData, setRouteData] = useState<RouteData | null>(null);
   const [isRouteLoading, setIsRouteLoading] = useState(false);
+  const [selectedOriginAddress, setSelectedOriginAddress] = useState<AutocompleteAddress | null>(null);
+  const [selectedDestinationAddress, setSelectedDestinationAddress] = useState<AutocompleteAddress | null>(null);
+
+  const handleOriginChange = (value: string) => {
+    setFormData((current) => ({ ...current, origin: value }));
+
+    if (selectedOriginAddress?.display_name !== value) {
+      setSelectedOriginAddress(null);
+    }
+  };
+
+  const handleDestinationChange = (value: string) => {
+    setFormData((current) => ({ ...current, destination: value }));
+
+    if (selectedDestinationAddress?.display_name !== value) {
+      setSelectedDestinationAddress(null);
+    }
+  };
+
+  const handleOriginSelect = (address: AutocompleteAddress) => {
+    setSelectedOriginAddress(address);
+    setOriginPosition([address.lat, address.lon]);
+  };
+
+  const handleDestinationSelect = (address: AutocompleteAddress) => {
+    setSelectedDestinationAddress(address);
+    setDestinationPosition([address.lat, address.lon]);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -50,9 +84,29 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       setIsMapLoading(true);
 
       try {
+        const originPromise = origin
+          ? selectedOriginAddress?.display_name === origin
+            ? Promise.resolve({
+                lat: selectedOriginAddress.lat,
+                lng: selectedOriginAddress.lon,
+                label: selectedOriginAddress.display_name,
+              })
+            : MapRequests.geocodeAddress(origin)
+          : Promise.resolve(null);
+
+        const destinationPromise = destination
+          ? selectedDestinationAddress?.display_name === destination
+            ? Promise.resolve({
+                lat: selectedDestinationAddress.lat,
+                lng: selectedDestinationAddress.lon,
+                label: selectedDestinationAddress.display_name,
+              })
+            : MapRequests.geocodeAddress(destination)
+          : Promise.resolve(null);
+
         const [resolvedOrigin, resolvedDestination] = await Promise.all([
-          MapRequests.geocodeAddress(origin),
-          MapRequests.geocodeAddress(destination),
+          originPromise,
+          destinationPromise,
         ]);
 
         if (!isMounted) {
@@ -76,7 +130,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       isMounted = false;
       window.clearTimeout(timerId);
     };
-  }, [formData.destination, formData.origin]);
+  }, [
+    formData.destination,
+    formData.origin,
+    selectedDestinationAddress,
+    selectedOriginAddress,
+  ]);
 
   // Calcular rota real quando origem e destino estiverem disponíveis
   useEffect(() => {
@@ -116,16 +175,24 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       return;
     }
     if (onRequestRide) {
-      onRequestRide(formData);
+      onRequestRide({
+        ...formData,
+        originCoords: originPosition,
+        destinationCoords: destinationPosition,
+      });
     }
   };
 
   const swapLocations = () => {
-    setFormData({
-      ...formData,
-      origin: formData.destination,
-      destination: formData.origin,
-    });
+    setFormData((current) => ({
+      ...current,
+      origin: current.destination,
+      destination: current.origin,
+    }));
+    setSelectedOriginAddress(selectedDestinationAddress);
+    setSelectedDestinationAddress(selectedOriginAddress);
+    setOriginPosition(destinationPosition);
+    setDestinationPosition(originPosition);
   };
 
   const mapPoints: MapPoint[] = [];
@@ -188,18 +255,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Origem
                 </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 size-5 text-green-600" />
-                  <input
-                    type="text"
-                    value={formData.origin}
-                    onChange={(e) =>
-                      setFormData({ ...formData, origin: e.target.value })
-                    }
-                    placeholder="Onde voce esta?"
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
-                  />
-                </div>
+                <AddressAutocomplete
+                  value={formData.origin}
+                  onChange={handleOriginChange}
+                  onSelect={handleOriginSelect}
+                  placeholder="Digite sua rua, avenida ou bairro"
+                  iconColor="text-green-600"
+                  maxSuggestions={6}
+                  required
+                />
               </div>
 
               <div className="flex justify-center">
@@ -217,18 +281,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Destino
                 </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 size-5 text-red-600" />
-                  <input
-                    type="text"
-                    value={formData.destination}
-                    onChange={(e) =>
-                      setFormData({ ...formData, destination: e.target.value })
-                    }
-                    placeholder="Para onde quer ir?"
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
-                  />
-                </div>
+                <AddressAutocomplete
+                  value={formData.destination}
+                  onChange={handleDestinationChange}
+                  onSelect={handleDestinationSelect}
+                  placeholder="Para onde voce quer ir?"
+                  iconColor="text-red-600"
+                  maxSuggestions={6}
+                  required
+                />
               </div>
 
               {userType === 'passenger' && (

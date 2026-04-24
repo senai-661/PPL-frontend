@@ -178,11 +178,11 @@ export function DriverProfile() {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  function formatarData(iso?: string) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  }
+function formatarData(iso?: string) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.getFullYear().toString(); // Retorna só o ano
+}
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {

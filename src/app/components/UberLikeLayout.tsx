@@ -1,6 +1,7 @@
 import { MapPin, Navigation, X, DollarSign, Loader2 } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
+import { AguardandoMotorista } from './AguardandoMotorista';
 
 import MapRequests from '../../fetch/MapRequest';
 import { MapComponent, type MapPoint } from './MapComponent';
@@ -35,8 +36,47 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
   const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
   const [estimatedDistance, setEstimatedDistance] = useState<string | null>(null);
+  const [aguardandoCorrida, setAguardandoCorrida] = useState<{
+    ativo: boolean;
+    id: number | null;
+  }>({ ativo: false, id: null });
+const [pollingInterval, setPollingInterval] = useState<number | null>(null);
 
   const token = localStorage.getItem('token');
+
+  // Limpar intervalo ao desmontar
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
+  }, [pollingInterval]);
+
+  // Verificar status da corrida
+  const verificarStatusCorrida = async (corridaId: number) => {
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${corridaId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.statusCorrida === 'Aceito' || data.statusCorrida === 'Em andamento') {
+          if (pollingInterval) clearInterval(pollingInterval);
+          setAguardandoCorrida({ ativo: false, id: null });
+          alert(`🎉 Corrida aceita! O motorista ${data.motorista?.nome || 'está'} a caminho.`);
+        }
+        
+        if (data.statusCorrida === 'Cancelada') {
+          if (pollingInterval) clearInterval(pollingInterval);
+          setAguardandoCorrida({ ativo: false, id: null });
+          alert('❌ Sua solicitação foi cancelada.');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao verificar status:', error);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -149,7 +189,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         throw new Error(data.mensagem || 'Erro ao solicitar viagem');
       }
 
-      alert(`Viagem solicitada com sucesso! ID: ${data.idCorrida}\nPreço: R$ ${data.preco.toFixed(2)}\nDistância: ${data.distanciaKm.toFixed(1)} km\nTempo estimado: ${data.duracaoEstimadaMin} min`);
+      // Mostrar modal de aguardando motorista
+      if (data.idCorrida) {
+        setAguardandoCorrida({ ativo: true, id: data.idCorrida });
+        
+        const interval = setInterval(() => {
+          verificarStatusCorrida(data.idCorrida);
+        }, 5000);
+        setPollingInterval(interval);
+      }
 
       if (onRequestRide) {
         onRequestRide(formData);
@@ -205,7 +253,6 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     });
   }
 
-  // ✅ CORRIGIDO: rota direta entre origem e destino
   const tripRoute = originPosition && destinationPosition
     ? [originPosition, destinationPosition]
     : undefined;
@@ -412,6 +459,20 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           </div>
         )}
       </div>
+
+      {/* Modal de Aguardando Motorista */}
+      {aguardandoCorrida.ativo && aguardandoCorrida.id && (
+        <AguardandoMotorista
+          corridaId={aguardandoCorrida.id}
+          origem={formData.origin}
+          destino={formData.destination}
+          preco={estimatedPrice ?? 0}
+          onCancelar={() => {
+            if (pollingInterval) clearInterval(pollingInterval);
+            setAguardandoCorrida({ ativo: false, id: null });
+          }}
+        />
+      )}
     </div>
   );
 }

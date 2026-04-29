@@ -88,15 +88,11 @@ export function DriverRegistration() {
     };
 
     try {
-      const ok = await MotoristaRequest.enviaFormularioMotorista(JSON.stringify(payload));
-      if (ok) {
-        success('Cadastro realizado com sucesso!');
-        navigate('/motorista/painel');
-      } else {
-        showError('Erro ao cadastrar motorista. Tente novamente.');
-      }
+      await MotoristaRequest.enviaFormularioMotorista(JSON.stringify(payload));
+      success('Cadastro realizado com sucesso!');
+      navigate('/motorista/painel');
     } catch (err: any) {
-      showError('Erro ao cadastrar motorista.');
+      showError(err.message || 'Erro ao cadastrar motorista.');
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,11 @@
 ﻿import { Star, ThumbsUp, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../hooks/useToast';
 
 export function TripRating() {
   const navigate = useNavigate();
+  const { success } = useToast();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -36,7 +38,7 @@ export function TripRating() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Avaliação enviada com sucesso!');
+    success('Avaliação enviada com sucesso!');
     navigate('/passageiro/painel');
   };
 

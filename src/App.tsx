@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-// ...existing code...
 import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodapé/Rodape';
 import { Home } from './Components/Inicio/Inicio';
@@ -43,6 +42,9 @@ import { TripRating } from './pages/Viagem/AvaliacaoViagem';
 import { TripDashboard } from './pages/Viagem/PainelViagem';
 import { TripList } from './pages/Viagem/ListaViagens';
 import { NewTrip } from './pages/Viagem/NovaViagem';
+import { GuestRoute } from './app/components/ProtectedRoute';
+import { ToastProvider, useToast } from './context/ToastContext';
+import { ToastContainer } from './app/components/ToastContainer';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -52,7 +54,7 @@ const dashboardByUserType: Record<AuthenticatedUserType, string> = {
   admin: '/administrador/painel',
 };
 
-function ProtectedRoute({
+function AuthProtectedRouteWithType({
   allowedUserType,
   children,
 }: {
@@ -77,6 +79,7 @@ function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/administrador');
   const isLoginRoute = location.pathname === '/login';
+  const { toasts, removeToast } = useToast();
 
   return (
     <div className="app-shell min-h-screen flex flex-col">
@@ -111,9 +114,9 @@ function AppContent() {
           <Route
             path="/administrador"
             element={(
-              <ProtectedRoute allowedUserType="admin">
+              <AuthProtectedRouteWithType allowedUserType="admin">
                 <AdminLayout />
-              </ProtectedRoute>
+              </AuthProtectedRouteWithType>
             )}
           >
             <Route index element={<AdminDashboard />} />
@@ -123,43 +126,61 @@ function AppContent() {
             <Route path="tabela-passageiros" element={<PassengersTable />} />
           </Route>
 
-          {/* Driver Pages */}
-          <Route path="/motorista/cadastro-carro" element={<CarRegistration />} />
-          <Route path="/motorista/cadastro-dirigir" element={<DriveRegistration />} />
-          <Route path="/motorista/cadastro" element={<DriverRegistration />} />
-          <Route
-            path="/motorista/painel"
-            element={(
-              <ProtectedRoute allowedUserType="driver">
-                <DriverDashboard />
-              </ProtectedRoute>
-            )}
-          />
-          <Route
-            path="/motorista/perfil"
-            element={(
-              <ProtectedRoute allowedUserType="driver">
-                <DriverProfile />
-              </ProtectedRoute>
-            )}
-          />
-
           {/* Passenger Pages */}
-          <Route path="/passageiro/cadastro" element={<PassengerRegistration />} />
+          <Route path="/passageiro/cadastro" element={
+            <GuestRoute>
+              <PassengerRegistration />
+            </GuestRoute>
+          } />
+
           <Route
             path="/passageiro/painel"
             element={(
-              <ProtectedRoute allowedUserType="passenger">
+              <AuthProtectedRouteWithType allowedUserType="passenger">
                 <PassengerDashboard />
-              </ProtectedRoute>
+              </AuthProtectedRouteWithType>
             )}
           />
+
           <Route
             path="/passageiro/perfil"
             element={(
-              <ProtectedRoute allowedUserType="passenger">
+              <AuthProtectedRouteWithType allowedUserType="passenger">
                 <PassengerProfile />
-              </ProtectedRoute>
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          {/* Driver Pages */}
+          <Route path="/motorista/cadastro" element={
+            <GuestRoute>
+              <DriverRegistration />
+            </GuestRoute>
+          } />
+
+          <Route path="/motorista/cadastro-carro" element={
+            <AuthProtectedRouteWithType allowedUserType="driver">
+              <CarRegistration />
+            </AuthProtectedRouteWithType>
+          } />
+          
+          <Route path="/motorista/cadastro-dirigir" element={<DriveRegistration />} />
+
+          <Route
+            path="/motorista/painel"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <DriverDashboard />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/motorista/perfil"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <DriverProfile />
+              </AuthProtectedRouteWithType>
             )}
           />
 
@@ -171,6 +192,7 @@ function AppContent() {
         </Routes>
       </main>
       {!isAdminRoute && <Footer />}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }
@@ -178,7 +200,9 @@ function AppContent() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </BrowserRouter>
   );
 }

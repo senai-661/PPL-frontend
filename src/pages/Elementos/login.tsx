@@ -46,7 +46,8 @@ export function Login() {
       }
 
       // Mapeia o tipo que veio do backend para o formato do frontend
-      const tipoBackend = data?.usuario?.tipo;
+      const usuarioLogado = data?.usuario ?? data?.passageiro ?? data?.motorista ?? data?.admin ?? null;
+      const tipoBackend = usuarioLogado?.tipo ?? data?.tipo ?? null;
       let userType: UserType | null = null;
       
       if (tipoBackend === 'passageiro') userType = 'passenger';
@@ -57,9 +58,15 @@ export function Login() {
         throw new Error('Perfil de usuário inválido retornado pelo servidor.');
       }
 
+      const normalizedUser = {
+        ...usuarioLogado,
+        email: usuarioLogado?.email ?? formData.email,
+      };
+
       localStorage.setItem('token', data.token);
       localStorage.setItem('userType', userType);
-      localStorage.setItem('user', JSON.stringify(data.usuario || data.admin || {}));
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+      localStorage.setItem('userEmail', normalizedUser.email ?? formData.email);
 
       navigate(dashboardByUserType[userType]);
     } catch (err: any) {
@@ -96,7 +103,7 @@ export function Login() {
             Informe e-mail e senha para acessar sua área.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5" autoComplete="on">
             {error && (
               <div className="mb-2 rounded border border-red-300 bg-red-100 px-3 py-2 text-sm text-red-700 dark:border-red-500/60 dark:bg-red-950/40 dark:text-red-300">
                 {error}
@@ -111,7 +118,9 @@ export function Login() {
                 <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(event) => setFormData({ ...formData, email: event.target.value })}
                   required
@@ -129,7 +138,9 @@ export function Login() {
                 <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={(event) => setFormData({ ...formData, password: event.target.value })}
                   required
@@ -169,7 +180,7 @@ export function Login() {
           <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
             Não possui conta?{' '}
             <Link
-              to="/cadastro"
+              to="/"
               className="lift-on-hover inline-flex items-center rounded-md bg-[#ede7ff] px-2.5 py-1 font-semibold text-[#4a2c86] dark:bg-[#2a1e48] dark:text-[#d8cfff]"
             >
               Criar conta

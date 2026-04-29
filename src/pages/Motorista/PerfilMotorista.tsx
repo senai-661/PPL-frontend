@@ -18,9 +18,8 @@ interface PerfilData {
 interface VeiculoData {
   idVeiculo: number;
   placa: string;
-  modelo: string;
-  ano: number;
-  cor: string;
+  tipoVeiculo: string;
+  modeloVeiculo: string;
 }
 
 interface StatsData {
@@ -113,8 +112,8 @@ export function DriverProfile() {
       return;
     }
 
-    // Regex celular: (XX) 9XXXX-XXXX ou (XX) XXXX-XXXX
-    const regexCelular = /^\(\d{2}\)\s?9?\d{4}-\d{4}$/;
+    // Regex celular: (XX) 9XXXX-XXXX
+    const regexCelular = /^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$/;
     if (form.celular && !regexCelular.test(form.celular)) {
       setErro('Celular inválido. Use o formato (XX) 9XXXX-XXXX.');
       return;
@@ -179,11 +178,11 @@ export function DriverProfile() {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  function formatarData(iso?: string) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  }
+function formatarData(iso?: string) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.getFullYear().toString(); // Retorna só o ano
+}
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
@@ -335,7 +334,7 @@ export function DriverProfile() {
                     <input
                       type="tel"
                       value={form.celular}
-                      placeholder="(XX) 9XXXX-XXXX"
+                      placeholder="(11) 91234-5678"
                       onChange={(e) => setForm({ ...form, celular: e.target.value })}
                       className="border border-gray-300 rounded px-2 py-1 mt-1 w-full"
                     />
@@ -419,22 +418,18 @@ export function DriverProfile() {
               Veículo Cadastrado
             </h2>
             {veiculo ? (
-              <div className="bg-gray-50 p-6 rounded-lg grid md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 p-6 rounded-lg grid md:grid-cols-3 gap-6">
                 <div>
                   <p className="text-sm text-gray-500">Placa</p>
                   <p className="text-gray-900 text-lg">{veiculo.placa}</p>
                 </div>
                 <div>
+                  <p className="text-sm text-gray-500">Tipo</p>
+                  <p className="text-gray-900 text-lg">{veiculo.tipoVeiculo}</p>
+                </div>
+                <div>
                   <p className="text-sm text-gray-500">Modelo</p>
-                  <p className="text-gray-900 text-lg">{veiculo.modelo}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Ano</p>
-                  <p className="text-gray-900 text-lg">{veiculo.ano}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Cor</p>
-                  <p className="text-gray-900 text-lg">{veiculo.cor}</p>
+                  <p className="text-gray-900 text-lg">{veiculo.modeloVeiculo}</p>
                 </div>
               </div>
             ) : (

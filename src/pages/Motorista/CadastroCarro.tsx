@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Car, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SERVER_CFG } from '../../appConfig';
+import { useToast } from '../../hooks/useToast';
 
 export function CarRegistration() {
   const navigate = useNavigate();
+  const { success, error: showError } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -15,14 +17,11 @@ export function CarRegistration() {
 
   const token = localStorage.getItem('token');
 
-  // ✅ Validação da placa (antiga e Mercosul)
+  // Validação da placa (antiga e Mercosul)
   const validarPlaca = (placa: string): boolean => {
     const placaUpper = placa.toUpperCase();
-    // Formato antigo: ABC-1234
     const regexAntigo = /^[A-Z]{3}-[0-9]{4}$/;
-    // Formato Mercosul: ABC1D23
     const regexMercosul = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
-    
     return regexAntigo.test(placaUpper) || regexMercosul.test(placaUpper);
   };
 
@@ -31,7 +30,6 @@ export function CarRegistration() {
     setError(null);
     setLoading(true);
 
-    // ✅ Validação da placa
     if (!formData.placa || !validarPlaca(formData.placa)) {
       setError('Placa inválida. Use o formato ABC-1234 ou ABC1D23');
       setLoading(false);
@@ -70,7 +68,7 @@ export function CarRegistration() {
         throw new Error(data.mensagem || 'Erro ao cadastrar veículo');
       }
 
-      alert('Veículo cadastrado com sucesso!');
+      success('Veículo cadastrado com sucesso!');
       navigate('/motorista/painel');
     } catch (err: any) {
       setError(err.message || 'Erro ao cadastrar veículo');

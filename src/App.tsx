@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodapé/Rodape';
-import { Home } from './Components/Inicio/Inicio';
+import Home from './Components/Inicio/Inicio';
 
 // Importacoes temporarias das paginas antigas (serao migradas gradualmente)
 import { About } from './pages/Elementos/Sobre';

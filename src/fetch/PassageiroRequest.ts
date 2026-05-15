@@ -1,5 +1,5 @@
 import { SERVER_CFG } from '../appConfig';
-import { PassageiroDTO } from '../interface/PassageiroDTO';
+import { PassageiroDTO } from '../dto/PassageiroDTO';
 
 class PassageiroRequests {
 
@@ -127,6 +127,28 @@ class PassageiroRequests {
         } catch (error) {
             console.error(`Erro ao enviar requisição. ${error}`);
             return false;
+        }
+    }
+
+    async obterPassageiroPorId(idPassageiro: number): Promise<PassageiroDTO | undefined> {
+        try {
+            const token = localStorage.getItem('token');
+            const respostaAPI = await fetch(`${this.serverURL}${this.enviaFormularioPassageiro}/${idPassageiro}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-access-token': `${token}`
+                }
+            });
+
+            if (respostaAPI.ok) {
+                const passageiro: PassageiroDTO = await respostaAPI.json();
+                return passageiro;
+            } else {
+                throw new Error("Não foi possível buscar o passageiro.");
+            }
+        } catch (error) {
+            console.error(`Erro ao fazer a consulta de passageiro por ID. ${error}`);
+            return;
         }
     }
 }

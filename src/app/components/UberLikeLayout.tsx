@@ -124,6 +124,36 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     };
   }, []);
 
+  useEffect(() => {
+    if (userType !== 'passenger') return;
+
+    const verificarCorridaPendente = async () => {
+      try {
+        const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/passageiro/corrida-atual`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data && data.idCorrida && data.statusCorrida === 'Pendente') {
+          setAguardandoCorrida({
+            ativo: true,
+            id: data.idCorrida,
+            origem: data.origemCorrida,
+            destino: data.destinoCorrida,
+            preco: data.preco,
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar corrida pendente:', error);
+      }
+    };
+
+    verificarCorridaPendente();
+  }, [userType, token]);
+
   const verificarStatusCorrida = async (corridaId: number) => {
     try {
       const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${corridaId}`, {
@@ -171,15 +201,11 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     }
 
     try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${corridaId}/cancelar`, {
-        method: 'PATCH',
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/atual`, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          motivoCancelamento: 'Passageiro cancelou a solicitacao',
-        }),
       });
 
       if (!response.ok) {
@@ -442,7 +468,14 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       setEstimatedDistance(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao solicitar viagem';
-      showError(message);
+      
+      if (message.includes('corrida em andamento')) {
+        alert(message);
+        setLoading(false);
+        return;
+      }
+      
+      alert(message);
     } finally {
       setLoading(false);
     }

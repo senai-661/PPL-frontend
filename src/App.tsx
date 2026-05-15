@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Header } from './Components/Cabecalho/Cabecalho';
-import { Footer } from './Components/Rodapé/Rodape';
+import { Footer } from './Components/Rodape/Rodape';
 import { Home } from './Components/Inicio/Inicio';
 
 // Importacoes temporarias das paginas antigas (serao migradas gradualmente)
@@ -45,6 +45,7 @@ import { NewTrip } from './pages/Viagem/NovaViagem';
 import { GuestRoute } from './app/components/ProtectedRoute';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './app/components/ToastContainer';
+import PDetalhesPassageiro from './pages/PDetalhes/PDetalhesPassageiro/PDetalhesPassageiro';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -109,6 +110,7 @@ function AppContent() {
           <Route path="/recursos-seguranca" element={<SafetyResources />} />
           <Route path="/seguranca" element={<Safety />} />
           <Route path="/sobre-nos" element={<About />} />
+          <Route path="/passageiro/detalhes/:id_passageiro" element={<PDetalhesPassageiro />} />
 
           {/* Admin Pages */}
           <Route

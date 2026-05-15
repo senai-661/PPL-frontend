@@ -6,6 +6,7 @@ import {
   AddressAutocomplete,
   type AutocompleteAddress,
 } from '../../app/components/AddressAutocomplete';
+import { useToast } from '../../hooks/useToast';
 
 interface TripFormData {
   origin: string;
@@ -21,7 +22,7 @@ interface TripFormData {
 
 export function NewTrip() {
   const navigate = useNavigate();
-
+  const { success } = useToast();
   const [tripData, setTripData] = useState<TripFormData>({
     origin: '',
     destination: '',
@@ -73,7 +74,7 @@ export function NewTrip() {
         payload
       );
 
-      alert(
+      success(
         isScheduled
           ? 'Viagem agendada com sucesso!'
           : 'Viagem solicitada com sucesso!'

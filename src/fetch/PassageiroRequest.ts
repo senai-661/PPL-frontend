@@ -1,5 +1,5 @@
 import { SERVER_CFG } from '../appConfig';
-import { PassageiroDTO } from '../interface/PassageiroDTO';
+import { PassageiroDTO } from '../dto/PassageiroDTO';
 
 class PassageiroRequests {
 

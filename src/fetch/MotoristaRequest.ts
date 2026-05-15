@@ -1,5 +1,5 @@
 import { SERVER_CFG } from '../appConfig';
-import { MotoristaDTO } from '../interface/MotoristaDTO';
+import { MotoristaDTO } from '../dto/MotoristaDTO';
 
 class MotoristaRequests {
   private serverURL: string;

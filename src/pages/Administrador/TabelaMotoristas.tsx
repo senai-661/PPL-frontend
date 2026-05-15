@@ -105,12 +105,13 @@ const TabelaMotoristas: React.FC = () => {
                   <th className="px-4 py-3 text-left font-semibold">CNH</th>
                   <th className="px-4 py-3 text-left font-semibold">Email</th>
                   <th className="px-4 py-3 text-left font-semibold">Celular</th>
+                  <th className="px-4 py-3 text-left font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredMotoristas.length === 0 && (
                   <tr>
-                    <td className="px-4 py-10 text-center text-gray-500" colSpan={6}>
+                    <td className="px-4 py-10 text-center text-gray-500" colSpan={7}>
                       {searchQuery.trim()
                         ? `Nenhum motorista encontrado para "${searchQuery.trim()}".`
                         : 'Nenhum motorista encontrado.'}
@@ -138,6 +139,31 @@ const TabelaMotoristas: React.FC = () => {
                       <td className="px-4 py-3 text-gray-700">{m.cnh || '-'}</td>
                       <td className="px-4 py-3 text-gray-700">{m.email || '-'}</td>
                       <td className="px-4 py-3 text-gray-700">{m.celular || '-'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => window.alert(`Detalhes do motorista ${m.idMotorista ?? '-'} ainda não implementados.`)}
+                            className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
+                          >
+                            Detalhes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.alert(`Atualizar motorista ${m.idMotorista ?? '-'} ainda não implementado.`)}
+                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                          >
+                            Atualizar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.alert(`Excluir motorista ${m.idMotorista ?? '-'} ainda não implementado.`)}
+                            className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}

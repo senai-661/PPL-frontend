@@ -103,12 +103,13 @@ const TabelaCarros: React.FC = () => {
                   <th className="px-4 py-3 text-left font-semibold">Tipo</th>
                   <th className="px-4 py-3 text-left font-semibold">Modelo</th>
                   <th className="px-4 py-3 text-left font-semibold">ID Motorista</th>
+                  <th className="px-4 py-3 text-left font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCarros.length === 0 && (
                   <tr>
-                    <td className="px-4 py-10 text-center text-gray-500" colSpan={5}>
+                    <td className="px-4 py-10 text-center text-gray-500" colSpan={6}>
                       {searchQuery.trim()
                         ? `Nenhum carro encontrado para "${searchQuery.trim()}".`
                         : 'Nenhum carro encontrado.'}
@@ -127,6 +128,31 @@ const TabelaCarros: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-gray-700">{c.modeloVeiculo || '-'}</td>
                     <td className="px-4 py-3 text-gray-700">{c.idMotorista ?? '-'}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => window.alert(`Detalhes do carro ${c.idVeiculo ?? '-'} ainda não implementados.`)}
+                          className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
+                        >
+                          Detalhes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => window.alert(`Atualizar carro ${c.idVeiculo ?? '-'} ainda não implementado.`)}
+                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                        >
+                          Atualizar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => window.alert(`Excluir carro ${c.idVeiculo ?? '-'} ainda não implementado.`)}
+                          className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -4,44 +4,11 @@ import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodape/Rodape';
 import { Home } from './Components/Inicio/Inicio';
 
-// Importacoes temporarias das paginas antigas (serao migradas gradualmente)
-import { About } from './pages/Elementos/Sobre';
-import { Services } from './pages/Elementos/Servicos';
-import { Accessibility } from './pages/Elementos/Acessibilidade';
-import { Contact } from './pages/Elementos/Contato';
-import { Airports } from './pages/Elementos/aeroportos';
-import { Help } from './pages/Elementos/ajuda';
-import { Careers } from './pages/Elementos/carreiras';
-import { Cities } from './pages/Elementos/cidades';
-import { Food } from './pages/Elementos/comida';
-import { Ride } from './pages/Elementos/corrida';
-import { Guidelines } from './pages/Elementos/diretrizes';
-import { Drive } from './pages/Elementos/dirigir';
-import { Diversity } from './pages/Elementos/diversidade';
-import { Business } from './pages/Elementos/empresas';
-import { Delivery } from './pages/Elementos/entrega';
-import { Press } from './pages/Elementos/imprensa';
-import { Login } from './pages/Elementos/login';
-import { Van } from './pages/Elementos/OpenlineVan';
-import { SafetyResources } from './pages/Elementos/RecursosSeguranca';
-import { Safety } from './pages/Elementos/seguranca';
-import { AdminLayout } from './pages/Administrador/AdminLayout';
-import { AdminDashboard } from './pages/Administrador/PainelAdministrador';
-import CarsTable from './pages/Administrador/TabelaCarros';
-import DriversTable from './pages/Administrador/TabelaMotoristas';
-import PassengersTable from './pages/Administrador/TabelaPassageiros';
-import { DriverRegistration } from './pages/Motorista/CadastroMotorista';
-import { CarRegistration } from './pages/Motorista/CadastroCarro';
-import { DriveRegistration } from './pages/Motorista/CadastroDirigir';
-import { DriverDashboard } from './pages/Motorista/PainelMotorista';
-import { DriverProfile } from './pages/Motorista/PerfilMotorista';
-import { PassengerRegistration } from './pages/Passageiro/CadastroPassageiro';
-import { PassengerDashboard } from './pages/Passageiro/PainelPassageiro';
-import { PassengerProfile } from './pages/Passageiro/PerfilPassageiro';
-import { TripRating } from './pages/Viagem/AvaliacaoViagem';
-import { TripDashboard } from './pages/Viagem/PainelViagem';
-import { TripList } from './pages/Viagem/ListaViagens';
-import { NewTrip } from './pages/Viagem/NovaViagem';
+import { About, Services, Accessibility, Contact, Airports, Help, Careers, Cities, Food, Ride, Guidelines, Drive, Diversity, Business, Delivery, Press, Login, Van, SafetyResources, Safety } from './pages/PElementos';
+import PAdministrador from './pages/PAdministrador';
+import { DriverRegistration, CarRegistration, DriveRegistration, DriverDashboard, DriverProfile } from './pages/PMotorista';
+import { PassengerRegistration, PassengerDashboard, PassengerProfile } from './pages/PPassageiro';
+import { TripRating, TripDashboard, TripList, NewTrip } from './pages/PViagem';
 import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRoute';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './Components/Elementos/ToastContainer';
@@ -112,19 +79,13 @@ function AppContent() {
 
           {/* Admin Pages */}
           <Route
-            path="/administrador"
+            path="/administrador/*"
             element={(
               <AuthProtectedRouteWithType allowedUserType="admin">
-                <AdminLayout />
+                <PAdministrador />
               </AuthProtectedRouteWithType>
             )}
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="painel" element={<AdminDashboard />} />
-            <Route path="tabela-carros" element={<CarsTable />} />
-            <Route path="tabela-motoristas" element={<DriversTable />} />
-            <Route path="tabela-passageiros" element={<PassengersTable />} />
-          </Route>
+          />
 
           {/* Passenger Pages */}
           <Route path="/passageiro/cadastro" element={

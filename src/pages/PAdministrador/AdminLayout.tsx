@@ -1,6 +1,6 @@
 import { Car, Home, LogOut, ShieldCheck, User, Users } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
+import { ThemeToggleButton } from '../../Components/Elementos/ThemeToggleButton';
 
 const footerLinks = [
   { to: '/administrador/tabela-motoristas', label: 'Motoristas', icon: User },

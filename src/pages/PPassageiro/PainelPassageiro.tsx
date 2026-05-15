@@ -1,4 +1,4 @@
-import { UberLikeLayout, RideRequestData } from '../../app/components/UberLikeLayout';
+import { UberLikeLayout, RideRequestData } from '../../Components/Layouts/UberLikeLayout/UberLikeLayout';
 import { useToast } from '../../hooks/useToast';
 
 export function PassengerDashboard() {

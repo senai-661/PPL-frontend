@@ -1,7 +1,7 @@
 import { Plane, Clock, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { ImageWithFallback } from '../../app/components/figma/ImagemComFallback';
+import { ImageWithFallback } from '../../Components/Elementos/figma/ImagemComFallback';
 
 export function Airports() {
   const airports = [

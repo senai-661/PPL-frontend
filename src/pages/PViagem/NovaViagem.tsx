@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
-} from '../../app/components/AddressAutocomplete';
+} from '../../Components/Viagem/AddressAutocomplete/AddressAutocomplete';
 import { useToast } from '../../hooks/useToast';
 
 interface TripFormData {

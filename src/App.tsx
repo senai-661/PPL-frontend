@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Header } from './Components/Cabecalho/Cabecalho';
-import { Footer } from './Components/Rodapé/Rodape';
+import { Footer } from './Components/Rodape/Rodape';
 import { Home } from './Components/Inicio/Inicio';
 
 // Importacoes temporarias das paginas antigas (serao migradas gradualmente)
@@ -42,9 +42,9 @@ import { TripRating } from './pages/Viagem/AvaliacaoViagem';
 import { TripDashboard } from './pages/Viagem/PainelViagem';
 import { TripList } from './pages/Viagem/ListaViagens';
 import { NewTrip } from './pages/Viagem/NovaViagem';
-import { GuestRoute } from './app/components/ProtectedRoute';
+import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRoute';
 import { ToastProvider, useToast } from './context/ToastContext';
-import { ToastContainer } from './app/components/ToastContainer';
+import { ToastContainer } from './Components/Elementos/ToastContainer';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 

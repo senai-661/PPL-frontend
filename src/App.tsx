@@ -4,6 +4,7 @@ import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodape/Rodape';
 import { Home } from './Components/Inicio/Inicio';
 
+<<<<<<< HEAD
 // Importacoes temporarias das paginas antigas (serao migradas gradualmente)
 import { About } from './pages/PElementos/Sobre';
 import { Services } from './pages/PElementos/Servicos';
@@ -43,8 +44,16 @@ import { TripDashboard } from './pages/PViagem/PainelViagem';
 import { TripList } from './pages/PViagem/ListaViagens';
 import { NewTrip } from './pages/PViagem/NovaViagem';
 import { GuestRoute } from './app/components/ProtectedRoute';
+=======
+import { About, Services, Accessibility, Contact, Airports, Help, Careers, Cities, Food, Ride, Guidelines, Drive, Diversity, Business, Delivery, Press, Login, Van, SafetyResources, Safety } from './pages/PElementos';
+import PAdministrador from './pages/PAdministrador';
+import { DriverRegistration, CarRegistration, DriveRegistration, DriverDashboard, DriverProfile } from './pages/PMotorista';
+import { PassengerRegistration, PassengerDashboard, PassengerProfile } from './pages/PPassageiro';
+import { TripRating, TripDashboard, TripList, NewTrip } from './pages/PViagem';
+import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRoute';
+>>>>>>> ea3ca5c20e95d78d463c9be22a5e3ac3b6a09963
 import { ToastProvider, useToast } from './context/ToastContext';
-import { ToastContainer } from './app/components/ToastContainer';
+import { ToastContainer } from './Components/Elementos/ToastContainer';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -112,19 +121,13 @@ function AppContent() {
 
           {/* Admin Pages */}
           <Route
-            path="/administrador"
+            path="/administrador/*"
             element={(
               <AuthProtectedRouteWithType allowedUserType="admin">
-                <AdminLayout />
+                <PAdministrador />
               </AuthProtectedRouteWithType>
             )}
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="painel" element={<AdminDashboard />} />
-            <Route path="tabela-carros" element={<CarsTable />} />
-            <Route path="tabela-motoristas" element={<DriversTable />} />
-            <Route path="tabela-passageiros" element={<PassengersTable />} />
-          </Route>
+          />
 
           {/* Passenger Pages */}
           <Route path="/passageiro/cadastro" element={

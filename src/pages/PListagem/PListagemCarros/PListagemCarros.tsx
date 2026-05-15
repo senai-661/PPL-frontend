@@ -1,7 +1,7 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Car, Loader2, RefreshCw, Search } from 'lucide-react';
-import CarroRequest from '../../fetch/CarroRequest';
-import { VeiculoDTO } from '../../dto/VeiculoDTO';
+import CarroRequest from '../../../fetch/CarroRequest';
+import { VeiculoDTO } from '../../../dto/VeiculoDTO';
 
 const TabelaCarros: React.FC = () => {
   const [carros, setCarros] = useState<VeiculoDTO[]>([]);

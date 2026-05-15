@@ -1,7 +1,7 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Loader2, RefreshCw, Search, Users } from 'lucide-react';
-import PassageiroRequest from '../../fetch/PassageiroRequest';
-import { PassageiroDTO } from '../../dto/PassageiroDTO';
+import PassageiroRequest from '../../../fetch/PassageiroRequest';
+import { PassageiroDTO } from '../../../dto/PassageiroDTO';
 
 const TabelaPassageiros: React.FC = () => {
   const [passageiros, setPassageiros] = useState<PassageiroDTO[]>([]);

@@ -130,6 +130,25 @@ class PassageiroRequests {
         }
     }
 
+    async atualizarPassageiroPorAdmin(idPassageiro: number, dados: Partial<PassageiroDTO>): Promise<boolean> {
+        try {
+            const respostaAPI = await fetch(`${this.serverURL}/api/admin/passageiros/${idPassageiro}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
+                },
+                body: JSON.stringify(dados)
+            });
+
+            if (!respostaAPI.ok) throw new Error('Erro ao atualizar passageiro por admin.');
+            return true;
+        } catch (error) {
+            console.error(`Erro ao atualizar passageiro por admin: ${error}`);
+            return false;
+        }
+    }
+
     async obterPassageiroPorId(idPassageiro: number): Promise<PassageiroDTO | undefined> {
         try {
             const token = localStorage.getItem('token');

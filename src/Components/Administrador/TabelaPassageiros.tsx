@@ -1,9 +1,11 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Loader2, RefreshCw, Search, Users } from 'lucide-react';
-import PassageiroRequest from '../../../fetch/PassageiroRequest';
-import { PassageiroDTO } from '../../../dto/PassageiroDTO';
+import PassageiroRequest from '../../fetch/PassageiroRequest';
+import { PassageiroDTO } from '../../dto/PassageiroDTO';
 
 const TabelaPassageiros: React.FC = () => {
+  const navigate = useNavigate();
   const [passageiros, setPassageiros] = useState<PassageiroDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -141,7 +143,7 @@ const TabelaPassageiros: React.FC = () => {
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => window.alert(`Detalhes do passageiro ${p.idPassageiro ?? '-'} ainda não implementados.`)}
+                            onClick={() => navigate(`/administrador/tabela-passageiros/${p.idPassageiro}`, { state: p })}
                             className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
                           >
                             Detalhes

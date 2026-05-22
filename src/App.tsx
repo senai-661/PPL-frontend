@@ -4,7 +4,6 @@ import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodape/Rodape';
 import { Home } from './Components/Inicio/Inicio';
 
-<<<<<<< HEAD
 // Importacoes temporarias das paginas antigas (serao migradas gradualmente)
 import { About } from './pages/PElementos/Sobre';
 import { Services } from './pages/PElementos/Servicos';
@@ -26,11 +25,7 @@ import { Login } from './pages/PElementos/login';
 import { Van } from './pages/PElementos/OpenlineVan';
 import { SafetyResources } from './pages/PElementos/RecursosSeguranca';
 import { Safety } from './pages/PElementos/seguranca';
-import { AdminLayout } from './pages/PAdministrador/AdminLayout';
-import { AdminDashboard } from './pages/PAdministrador/PainelAdministrador';
-import CarsTable from './pages/PListagem/PListagemCarros/PListagemCarros';
-import DriversTable from './pages/PListagem/PListagemMotoristas/PListagemMotoristas';
-import PassengersTable from './pages/PListagem/PListagemPassageiros/PListagemPassageiros';
+import PAdministrador from './pages/PAdministrador';
 import { DriverRegistration } from './pages/PMotorista/CadastroMotorista';
 import { CarRegistration } from './pages/PMotorista/CadastroCarro';
 import { DriveRegistration } from './pages/PMotorista/CadastroDirigir';
@@ -43,15 +38,7 @@ import { TripRating } from './pages/PViagem/AvaliacaoViagem';
 import { TripDashboard } from './pages/PViagem/PainelViagem';
 import { TripList } from './pages/PViagem/ListaViagens';
 import { NewTrip } from './pages/PViagem/NovaViagem';
-import { GuestRoute } from './app/components/ProtectedRoute';
-=======
-import { About, Services, Accessibility, Contact, Airports, Help, Careers, Cities, Food, Ride, Guidelines, Drive, Diversity, Business, Delivery, Press, Login, Van, SafetyResources, Safety } from './pages/PElementos';
-import PAdministrador from './pages/PAdministrador';
-import { DriverRegistration, CarRegistration, DriveRegistration, DriverDashboard, DriverProfile } from './pages/PMotorista';
-import { PassengerRegistration, PassengerDashboard, PassengerProfile } from './pages/PPassageiro';
-import { TripRating, TripDashboard, TripList, NewTrip } from './pages/PViagem';
 import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRoute';
->>>>>>> ea3ca5c20e95d78d463c9be22a5e3ac3b6a09963
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './Components/Elementos/ToastContainer';
 

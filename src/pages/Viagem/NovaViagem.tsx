@@ -6,20 +6,24 @@ export default function NovaViagem() {
   const [preco, setPreco] = useState<number | null>(null);
   const [carregando, setCarregando] = useState(false);
 
+  // ============================================
   // VER PREÇOS
+  // ============================================
   const verPrecos = () => {
     if (!origem || !destino) {
       alert("Preencha origem e destino");
       return;
     }
 
-    // cálculo fake
+    // cálculo temporário funcionando
     const valor = Math.floor(Math.random() * 30) + 15;
 
     setPreco(valor);
   };
 
+  // ============================================
   // SOLICITAR AGORA
+  // ============================================
   const solicitarAgora = async () => {
     if (!origem || !destino) {
       alert("Preencha origem e destino");
@@ -29,30 +33,45 @@ export default function NovaViagem() {
     try {
       setCarregando(true);
 
-      const response = await fetch("http://localhost:3333/viagem", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          origem,
-          destino,
-          preco,
-        }),
-      });
+      const token = localStorage.getItem("token");
 
-      if (!response.ok) {
-        throw new Error("Erro ao solicitar viagem");
+      if (!token) {
+        alert("Faça login primeiro");
+        return;
       }
+
+      const response = await fetch(
+        "http://localhost:1285/api/corridas",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify({
+            origem_corrida: origem,
+            destino_corrida: destino,
+            tipo_corrida: "Convencional",
+            preco: preco || 20,
+            num_passageiros: 1,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       console.log(data);
 
-      alert("Viagem solicitada com sucesso!");
-    } catch (error) {
+      if (!response.ok) {
+        throw new Error(data.mensagem || "Erro ao solicitar corrida");
+      }
+
+      alert("Corrida solicitada com sucesso!");
+    } catch (error: any) {
       console.error(error);
-      alert("Erro ao conectar com o backend");
+
+      alert(error.message);
     } finally {
       setCarregando(false);
     }

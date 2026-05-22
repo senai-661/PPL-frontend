@@ -1,5 +1,5 @@
 import { SERVER_CFG } from '../appConfig';
-import { MotoristaDTO } from '../interface/MotoristaDTO';
+import { MotoristaDTO } from '../dto/MotoristaDTO';
 
 class MotoristaRequests {
   private serverURL: string;
@@ -23,15 +23,15 @@ class MotoristaRequests {
 
   private mapMotorista(m: any): MotoristaDTO {
     return {
-      idMotorista: m.id,
+      idMotorista: m.idMotorista ?? m.id ?? m.id_motorista,
       nome: m.nome,
       sobrenome: m.sobrenome,
       cpf: m.cpf,
       cnh: m.cnh,
-      dataNascimento: m.dataNascimento,
+      dataNascimento: m.dataNascimento ?? m.data_nascimento,
       celular: m.celular,
       email: m.email,
-      antecedentesCriminais: m.antecedentes,
+      antecedentesCriminais: m.antecedentes ?? m.antecedentes_criminais,
       especializacao: m.especializacao,
       senha: '',
     };
@@ -141,6 +141,27 @@ class MotoristaRequests {
       return true;
     } catch (error) {
       console.error(`Erro ao enviar requisição. ${error}`);
+      return false;
+    }
+  }
+
+  async atualizarMotoristaPorAdmin(idMotorista: number, dados: Partial<MotoristaDTO>): Promise<boolean> {
+    try {
+      const respostaAPI = await fetch(`${this.serverURL}/api/admin/motoristas/${idMotorista}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
+        },
+        body: JSON.stringify(dados),
+      });
+
+      if (!respostaAPI.ok) {
+        throw new Error('Erro ao atualizar motorista por admin.');
+      }
+      return true;
+    } catch (error) {
+      console.error(`Erro ao atualizar motorista por admin: ${error}`);
       return false;
     }
   }

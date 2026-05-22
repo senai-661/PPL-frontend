@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Accessibility as AccessibilityIcon, LogOut, Menu, UserCircle2, X } from 'lucide-react';
-import { ThemeToggleButton } from '../../app/components/ThemeToggleButton';
+import { ThemeToggleButton } from '../Elementos/ThemeToggleButton';
 import { SERVER_CFG } from '../../appConfig';
 import './Cabecalho.css';
 

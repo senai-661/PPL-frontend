@@ -4,8 +4,8 @@ import { Fragment, useEffect, useId, useRef, useState } from 'react';
 import {
   EnderecoRequest,
   type EnderecoSugestaoResponse,
-} from '../../fetch/EnderecoRequest';
-import { useDebounce } from '../../hooks/useDebounce';
+} from '../../../fetch/EnderecoRequest';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 export interface AutocompleteAddress extends EnderecoSugestaoResponse {}
 

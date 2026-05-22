@@ -25,11 +25,7 @@ import { Login } from './pages/PElementos/login';
 import { Van } from './pages/PElementos/OpenlineVan';
 import { SafetyResources } from './pages/PElementos/RecursosSeguranca';
 import { Safety } from './pages/PElementos/seguranca';
-import { AdminLayout } from './pages/PAdministrador/AdminLayout';
-import { AdminDashboard } from './pages/PAdministrador/PainelAdministrador';
-import CarsTable from './pages/PListagem/PListagemCarros/TabelaCarros';
-import DriversTable from './pages/PListagem/PListagemMotoristas/TabelaMotoristas';
-import PassengersTable from './pages/PListagem/PListagemPassageiros/TabelaPassageiros';
+import PAdministrador from './pages/PAdministrador';
 import { DriverRegistration } from './pages/PMotorista/CadastroMotorista';
 import { CarRegistration } from './pages/PMotorista/CadastroCarro';
 import { DriveRegistration } from './pages/PMotorista/CadastroDirigir';
@@ -42,9 +38,9 @@ import { TripRating } from './pages/PViagem/AvaliacaoViagem';
 import { TripDashboard } from './pages/PViagem/PainelViagem';
 import { TripList } from './pages/PViagem/ListaViagens';
 import { NewTrip } from './pages/PViagem/NovaViagem';
-import { GuestRoute } from './app/components/ProtectedRoute';
+import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRoute';
 import { ToastProvider, useToast } from './context/ToastContext';
-import { ToastContainer } from './app/components/ToastContainer';
+import { ToastContainer } from './Components/Elementos/ToastContainer';
 import PDetalhesPassageiro from './pages/PDetalhes/PDetalhesPassageiro/PDetalhesPassageiro';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
@@ -110,23 +106,17 @@ function AppContent() {
           <Route path="/recursos-seguranca" element={<SafetyResources />} />
           <Route path="/seguranca" element={<Safety />} />
           <Route path="/sobre-nos" element={<About />} />
-          <Route path='/detalhes/passageiro/:id_passageiro' element={<PDetalhesPassageiro />} />
+          <Route path='/detalhes/passageiro/:id_passageiro' element={<PDetalhesPassageiro/>} />
 
           {/* Admin Pages */}
           <Route
-            path="/administrador"
+            path="/administrador/*"
             element={(
               <AuthProtectedRouteWithType allowedUserType="admin">
-                <AdminLayout />
+                <PAdministrador />
               </AuthProtectedRouteWithType>
             )}
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="painel" element={<AdminDashboard />} />
-            <Route path="tabela-carros" element={<CarsTable />} />
-            <Route path="tabela-motoristas" element={<DriversTable />} />
-            <Route path="tabela-passageiros" element={<PassengersTable />} />
-          </Route>
+          />
 
           {/* Passenger Pages */}
           <Route path="/passageiro/cadastro" element={

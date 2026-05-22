@@ -19,7 +19,15 @@ const sectionTitles: Record<string, string> = {
 export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentSection = sectionTitles[location.pathname] ?? 'Administracao';
+  const currentSection =
+    sectionTitles[location.pathname] ??
+    (location.pathname.startsWith('/administrador/tabela-carros/')
+      ? 'Detalhes do Carro'
+      : location.pathname.startsWith('/administrador/tabela-motoristas/')
+      ? 'Detalhes do Motorista'
+      : location.pathname.startsWith('/administrador/tabela-passageiros/')
+      ? 'Detalhes do Passageiro'
+      : 'Administracao');
 
   const handleLogout = () => {
     localStorage.removeItem('token');

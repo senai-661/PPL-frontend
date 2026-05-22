@@ -11,10 +11,10 @@ import {
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests from '../../fetch/MapRequest';
-import { SERVER_CFG } from '../../appConfig';
-import { MapComponent, type MapPoint } from './MapComponent';
-import { useToast } from '../../hooks/useToast';
+import MapRequests from '../../../fetch/MapRequest';
+import { SERVER_CFG } from '../../../appConfig';
+import { MapComponent, type MapPoint } from '../../Viagem/MapComponent/MapComponent';
+import { useToast } from '../../../hooks/useToast';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;

@@ -1,9 +1,11 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Car, Loader2, RefreshCw, Search } from 'lucide-react';
-import CarroRequest from '../../../fetch/CarroRequest';
-import { VeiculoDTO } from '../../../dto/VeiculoDTO';
+import CarroRequest from '../../fetch/CarroRequest';
+import { VeiculoDTO } from '../../dto/VeiculoDTO';
 
 const TabelaCarros: React.FC = () => {
+  const navigate = useNavigate();
   const [carros, setCarros] = useState<VeiculoDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -132,7 +134,7 @@ const TabelaCarros: React.FC = () => {
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => window.alert(`Detalhes do carro ${c.idVeiculo ?? '-'} ainda não implementados.`)}
+                          onClick={() => navigate(`/administrador/tabela-carros/${c.idVeiculo}`, { state: c })}
                           className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
                         >
                           Detalhes

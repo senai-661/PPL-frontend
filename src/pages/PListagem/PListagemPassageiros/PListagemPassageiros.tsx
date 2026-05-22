@@ -1,7 +1,7 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Loader2, RefreshCw, Search, Users } from 'lucide-react';
-import PassageiroRequest from '../../fetch/PassageiroRequest';
-import { PassageiroDTO } from '../../dto/PassageiroDTO';
+import PassageiroRequest from '../../../fetch/PassageiroRequest';
+import { PassageiroDTO } from '../../../dto/PassageiroDTO';
 
 const TabelaPassageiros: React.FC = () => {
   const [passageiros, setPassageiros] = useState<PassageiroDTO[]>([]);
@@ -104,12 +104,13 @@ const TabelaPassageiros: React.FC = () => {
                   <th className="px-4 py-3 text-left font-semibold">CPF</th>
                   <th className="px-4 py-3 text-left font-semibold">Email</th>
                   <th className="px-4 py-3 text-left font-semibold">Celular</th>
+                  <th className="px-4 py-3 text-left font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPassageiros.length === 0 && (
                   <tr>
-                    <td className="px-4 py-10 text-center text-gray-500" colSpan={5}>
+                    <td className="px-4 py-10 text-center text-gray-500" colSpan={6}>
                       {searchQuery.trim()
                         ? `Nenhum passageiro encontrado para "${searchQuery.trim()}".`
                         : 'Nenhum passageiro encontrado.'}
@@ -136,6 +137,31 @@ const TabelaPassageiros: React.FC = () => {
                       <td className="px-4 py-3 text-gray-700">{p.cpf || '-'}</td>
                       <td className="px-4 py-3 text-gray-700">{p.email || '-'}</td>
                       <td className="px-4 py-3 text-gray-700">{p.celular || '-'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => window.alert(`Detalhes do passageiro ${p.idPassageiro ?? '-'} ainda não implementados.`)}
+                            className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
+                          >
+                            Detalhes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.alert(`Atualizar passageiro ${p.idPassageiro ?? '-'} ainda não implementado.`)}
+                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                          >
+                            Atualizar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.alert(`Excluir passageiro ${p.idPassageiro ?? '-'} ainda não implementado.`)}
+                            className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}

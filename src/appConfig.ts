@@ -28,7 +28,8 @@ export const APP_ROUTES = {
  */
 export const SERVER_CFG = {
     // endereço do servidor da API
-    SERVER_URL: 'http://localhost:1285',
+    // Ajustado para a porta padrão do backend (consistente com outras chamadas no projeto)
+    SERVER_URL: 'http://localhost:3333',
 
     // endpoints de PASSAGEIRO
     ENDPOINT_LISTAR_PASSAGEIRO: '/api/passageiros',

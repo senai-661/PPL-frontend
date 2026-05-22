@@ -4,6 +4,7 @@
  * Essas rotas serão refenciadas no componente AppRoutes que está no arquivo routes.tsx
  * e em qualquer página que tenha um link que faça o direcionamento para outra página ou componente
  */
+
 export const APP_ROUTES = {
     ROUTE_HOME: '/',
     ROUTE_LOGIN: '/login',
@@ -12,9 +13,9 @@ export const APP_ROUTES = {
     ROUTE_LISTAGEM_CARROS: '/api/veiculos',
     ROUTE_LISTAGEM_MOTORISTA: '/api/motoristas',
 
-    ROUTE_CADASTRO_PASSAGEIRO: '/api/registrar',  // ✅ rota unificada
+    ROUTE_CADASTRO_PASSAGEIRO: '/api/registrar',
     ROUTE_CADASTRO_CARROS: '/api/cadastro/veiculos',
-    ROUTE_CADASTRO_MOTORISTA: '/api/registrar',   // ✅ rota unificada
+    ROUTE_CADASTRO_MOTORISTA: '/api/registrar',
 
     ROUTE_ATUALIZACAO_PASSAGEIRO: '/api/passageiro/perfil',
     ROUTE_ATUALIZACAO_MOTORISTA: '/api/motorista/perfil',
@@ -22,35 +23,42 @@ export const APP_ROUTES = {
 
 /**
  * Configurações referente ao servidor da API
- * Todas as configurações referentes aos servidor web devem ser inseridas em SERVER_CFG
- * Todos os endereços configurados aqui são referentes as configurações do servidor web (backend)
- * Qualquer alteração nos endpoints, no endereço do servidor ou porta que forem feitas lá deve ser replicada aqui
  */
+
 export const SERVER_CFG = {
-    // endereço do servidor da API
-    // Ajustado para a porta padrão do backend (consistente com outras chamadas no projeto)
+
+    // URL DO BACKEND
     SERVER_URL: 'http://localhost:3333',
 
-    // endpoints de PASSAGEIRO
+    // GOOGLE MAPS
+    GOOGLE_MAPS_API_KEY: 'SUA_CHAVE_GOOGLE_AQUI',
+
+    // PASSAGEIRO
     ENDPOINT_LISTAR_PASSAGEIRO: '/api/passageiros',
-    ENDPOINT_CADASTRAR_PASSAGEIRO: '/api/registrar',  // ✅ rota unificada
+    ENDPOINT_CADASTRAR_PASSAGEIRO: '/api/registrar',
     ENDPOINT_ATUALIZAR_PASSAGEIRO: '/api/passageiro/perfil',
     ENDPOINT_REMOVER_PASSAGEIRO: '/api/passageiro/delete',
 
-    // endpoints de MOTORISTA
+    // MOTORISTA
     ENDPOINT_LISTAR_MOTORISTA: '/api/motoristas',
-    ENDPOINT_CADASTRAR_MOTORISTA: '/api/registrar',   // ✅ rota unificada
+    ENDPOINT_CADASTRAR_MOTORISTA: '/api/registrar',
     ENDPOINT_ATUALIZAR_MOTORISTA: '/api/motorista/perfil',
     ENDPOINT_REMOVER_MOTORISTA: '/api/motorista/delete',
 
-    // endpoints de CARRO
+    // CARRO
     ENDPOINT_LISTAR_CARRO: '/api/veiculos',
     ENDPOINT_CADASTRAR_CARRO: '/api/cadastro/veiculos',
     ENDPOINT_ATUALIZAR_CARRO: '/api/carro/update',
     ENDPOINT_REMOVER_CARRO: '/api/carro/delete',
 
-    // endpoint de login
+    // LOGIN
     ENDPOINT_AUTH_LOGIN: '/api/login',
+
+    // ENDPOINT DO PREÇO
+    ENDPOINT_CALCULAR_PRECO: '/api/corrida/calcular',
+
+    // ENDPOINT SOLICITAR CORRIDA
+    ENDPOINT_SOLICITAR_CORRIDA: '/api/corrida/solicitar',
 }
 
 /** Enumeração dos status do empréstimo */

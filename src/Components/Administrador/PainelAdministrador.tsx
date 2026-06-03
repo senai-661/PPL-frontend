@@ -82,9 +82,8 @@ export function AdminDashboard() {
             <div key={index} className="flex items-center justify-between p-4 border border-gray-100 bg-gray-50 rounded-xl">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-2 h-2 rounded-full ${
-                    alert.type === 'warning' ? 'bg-yellow-500' : alert.type === 'info' ? 'bg-blue-500' : 'bg-green-500'
-                  }`}
+                  className={`w-2 h-2 rounded-full ${alert.type === 'warning' ? 'bg-yellow-500' : alert.type === 'info' ? 'bg-blue-500' : 'bg-green-500'
+                    }`}
                 />
                 <span className="text-gray-700">{alert.message}</span>
               </div>

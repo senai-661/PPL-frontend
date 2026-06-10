@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Car, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import ToastNotification from '../../Components/Elementos/ToastNotification';
 
 interface Agendamento {
   id: number;
@@ -14,10 +15,25 @@ interface Agendamento {
   passengerPhone?: string;
 }
 
+interface Toast {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+}
+
 const CorridasAgendadasMotorista: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [filter, setFilter] = useState<string>('agendado');
   const [loading, setLoading] = useState(true);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
 
   useEffect(() => {
     carregarAgendamentos();
@@ -49,18 +65,6 @@ const CorridasAgendadasMotorista: React.FC = () => {
           price: "R$ 12,50",
           status: "agendado",
           service: "OpenLine Comfort"
-        },
-        {
-          id: 3,
-          origin: "Rodoviária de São Carlos",
-          destination: "Aeroporto de Ribeirão Preto",
-          date: "2026-06-23",
-          time: "19:00",
-          price: "R$ 45,00",
-          status: "aceito",
-          service: "OpenLine Black",
-          passengerName: "Carlos Alberto",
-          passengerPhone: "(16) 99999-8888"
         }
       ];
       localStorage.setItem('openline_agendamentos', JSON.stringify(exemplos));
@@ -99,29 +103,25 @@ const CorridasAgendadasMotorista: React.FC = () => {
     );
     salvarAgendamentos(novos);
     notificarPassageiro(id, '✅ Sua corrida foi aceita! O motorista está a caminho.');
-    alert('✅ Corrida aceita! O passageiro foi notificado.');
+    showToast('✨ Corrida aceita com sucesso! O passageiro foi notificado e aguarda você.', 'success');
   };
 
   const recusarCorrida = (id: number) => {
-    if (window.confirm('❌ Tem certeza que deseja recusar esta corrida?')) {
-      const novos = agendamentos.map(ag => 
-        ag.id === id ? { ...ag, status: 'recusado' } : ag
-      );
-      salvarAgendamentos(novos);
-      notificarPassageiro(id, '❌ Sua corrida foi recusada. Por favor, tente novamente.');
-      alert('❌ Corrida recusada!');
-    }
+    const novos = agendamentos.map(ag => 
+      ag.id === id ? { ...ag, status: 'recusado' } : ag
+    );
+    salvarAgendamentos(novos);
+    notificarPassageiro(id, '❌ Sua corrida foi recusada. Por favor, tente novamente.');
+    showToast('⚠️ Corrida recusada. O passageiro será notificado e poderá buscar outro motorista.', 'warning');
   };
 
   const concluirCorrida = (id: number) => {
-    if (window.confirm('✅ Confirmar que a corrida foi concluída?')) {
-      const novos = agendamentos.map(ag => 
-        ag.id === id ? { ...ag, status: 'concluido' } : ag
-      );
-      salvarAgendamentos(novos);
-      notificarPassageiro(id, '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
-      alert('✅ Corrida concluída! Pagamento será processado.');
-    }
+    const novos = agendamentos.map(ag => 
+      ag.id === id ? { ...ag, status: 'concluido' } : ag
+    );
+    salvarAgendamentos(novos);
+    notificarPassageiro(id, '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
+    showToast('🏁 Viagem concluída! Pagamento será processado em até 24h. Ótimo trabalho!', 'success');
   };
 
   const getStatusConfig = (status: string) => {
@@ -200,7 +200,15 @@ const CorridasAgendadasMotorista: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
-      {/* Cabeçalho */}
+      {toasts.map(toast => (
+        <ToastNotification
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+        />
+      ))}
+
       <div style={{ 
         background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
         color: 'white', 
@@ -208,24 +216,8 @@ const CorridasAgendadasMotorista: React.FC = () => {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        <div style={{ 
-          position: 'absolute', 
-          top: -50, 
-          right: -50, 
-          width: '200px', 
-          height: '200px', 
-          background: 'rgba(255,255,255,0.05)', 
-          borderRadius: '50%' 
-        }} />
-        <div style={{ 
-          position: 'absolute', 
-          bottom: -80, 
-          left: -80, 
-          width: '300px', 
-          height: '300px', 
-          background: 'rgba(255,255,255,0.03)', 
-          borderRadius: '50%' 
-        }} />
+        <div style={{ position: 'absolute', top: -50, right: -50, width: '200px', height: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', bottom: -80, left: -80, width: '300px', height: '300px', background: 'rgba(255,255,255,0.03)', borderRadius: '50%' }} />
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <h1 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>🚗 Corridas Agendadas</h1>
           <p style={{ opacity: 0.8, fontSize: '16px' }}>Gerencie as corridas solicitadas pelos passageiros</p>
@@ -233,7 +225,6 @@ const CorridasAgendadasMotorista: React.FC = () => {
       </div>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px' }}>
-        {/* Botão atualizar */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
           <button 
             onClick={carregarAgendamentos} 
@@ -258,71 +249,29 @@ const CorridasAgendadasMotorista: React.FC = () => {
           </button>
         </div>
 
-        {/* Cards de estatísticas */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(5, 1fr)', 
-          gap: '16px', 
-          marginBottom: '32px'
-        }}>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '20px', 
-            padding: '20px', 
-            textAlign: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            border: '1px solid #f3f4f6'
-          }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '32px' }}>
+          <div style={{ background: 'white', borderRadius: '20px', padding: '20px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937' }}>{stats.total}</div>
             <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Total</div>
           </div>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '20px', 
-            padding: '20px', 
-            textAlign: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            border: '1px solid #f3f4f6'
-          }}>
+          <div style={{ background: 'white', borderRadius: '20px', padding: '20px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f59e0b' }}>{stats.agendado}</div>
             <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Pendentes</div>
           </div>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '20px', 
-            padding: '20px', 
-            textAlign: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            border: '1px solid #f3f4f6'
-          }}>
+          <div style={{ background: 'white', borderRadius: '20px', padding: '20px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#10b981' }}>{stats.aceito}</div>
             <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Aceitas</div>
           </div>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '20px', 
-            padding: '20px', 
-            textAlign: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            border: '1px solid #f3f4f6'
-          }}>
+          <div style={{ background: 'white', borderRadius: '20px', padding: '20px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#3b82f6' }}>{stats.concluido}</div>
             <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Concluídas</div>
           </div>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '20px', 
-            padding: '20px', 
-            textAlign: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            border: '1px solid #f3f4f6'
-          }}>
+          <div style={{ background: 'white', borderRadius: '20px', padding: '20px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#ef4444' }}>{stats.recusado}</div>
             <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Recusadas</div>
           </div>
         </div>
 
-        {/* Filtros */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap', borderBottom: '1px solid #e5e7eb', paddingBottom: '16px' }}>
           {[
             { id: 'agendado', label: '📋 Pendentes', count: stats.agendado },
@@ -364,18 +313,8 @@ const CorridasAgendadasMotorista: React.FC = () => {
           ))}
         </div>
 
-        {/* Lista de corridas */}
-        <div style={{ 
-          background: 'white', 
-          borderRadius: '24px', 
-          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-          overflow: 'hidden'
-        }}>
-          <div style={{ 
-            padding: '20px 24px', 
-            borderBottom: '1px solid #f3f4f6',
-            background: '#fafafa'
-          }}>
+        <div style={{ background: 'white', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid #f3f4f6', background: '#fafafa' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>🚗</span> Corridas Disponíveis
             </h2>
@@ -386,10 +325,7 @@ const CorridasAgendadasMotorista: React.FC = () => {
               <div style={{ fontSize: '64px', marginBottom: '16px' }}>📭</div>
               <h3 style={{ marginBottom: '8px', fontSize: '18px', fontWeight: '600', color: '#374151' }}>Nenhuma corrida encontrada</h3>
               <p style={{ color: '#6b7280' }}>Não há corridas no momento</p>
-              <button 
-                onClick={carregarAgendamentos}
-                style={{ marginTop: '20px', background: '#7c3aed', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}
-              >
+              <button onClick={carregarAgendamentos} style={{ marginTop: '20px', background: '#7c3aed', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>
                 🔄 Atualizar
               </button>
             </div>
@@ -409,39 +345,18 @@ const CorridasAgendadasMotorista: React.FC = () => {
                     onMouseEnter={(e) => e.currentTarget.style.background = '#fafafa'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
                   >
-                    {/* Cabeçalho */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ 
-                          background: status.bg, 
-                          color: status.color, 
-                          padding: '4px 12px', 
-                          borderRadius: '30px', 
-                          fontSize: '12px', 
-                          fontWeight: '600',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}>
+                        <span style={{ background: status.bg, color: status.color, padding: '4px 12px', borderRadius: '30px', fontSize: '12px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                           {status.icon} {status.label}
                         </span>
                       </div>
                       <span style={{ fontSize: '12px', color: '#9ca3af' }}>ID: #{ag.id}</span>
                     </div>
 
-                    {/* Rotas */}
                     <div style={{ marginBottom: '20px' }}>
                       <div style={{ display: 'flex', gap: '14px', marginBottom: '16px', alignItems: 'flex-start' }}>
-                        <div style={{ 
-                          width: '32px', 
-                          height: '32px', 
-                          background: '#ecfdf5', 
-                          borderRadius: '50%', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}>
+                        <div style={{ width: '32px', height: '32px', background: '#ecfdf5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <MapPin size={16} style={{ color: '#10b981' }} />
                         </div>
                         <div style={{ flex: 1 }}>
@@ -450,16 +365,7 @@ const CorridasAgendadasMotorista: React.FC = () => {
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                        <div style={{ 
-                          width: '32px', 
-                          height: '32px', 
-                          background: '#fef2f2', 
-                          borderRadius: '50%', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}>
+                        <div style={{ width: '32px', height: '32px', background: '#fef2f2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <MapPin size={16} style={{ color: '#ef4444' }} />
                         </div>
                         <div style={{ flex: 1 }}>
@@ -469,130 +375,36 @@ const CorridasAgendadasMotorista: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Detalhes */}
-                    <div style={{ 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: '20px', 
-                      padding: '12px 0',
-                      borderTop: '1px solid #f3f4f6',
-                      borderBottom: '1px solid #f3f4f6',
-                      marginBottom: '16px',
-                      fontSize: '13px',
-                      color: '#6b7280'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Calendar size={14} style={{ color: '#9ca3af' }} />
-                        <span>{formatDate(ag.date)}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Clock size={14} style={{ color: '#9ca3af' }} />
-                        <span>{ag.time}</span>
-                      </div>
-                      {ag.service && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Car size={14} style={{ color: '#9ca3af' }} />
-                          <span>{ag.service}</span>
-                        </div>
-                      )}
-                      <div style={{ marginLeft: 'auto', fontWeight: 'bold', fontSize: '18px', color: '#7c3aed' }}>
-                        {ag.price}
-                      </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', padding: '12px 0', borderTop: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', marginBottom: '16px', fontSize: '13px', color: '#6b7280' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={14} /> {formatDate(ag.date)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={14} /> {ag.time}</div>
+                      {ag.service && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Car size={14} /> {ag.service}</div>}
+                      <div style={{ marginLeft: 'auto', fontWeight: 'bold', fontSize: '18px', color: '#7c3aed' }}>{ag.price}</div>
                     </div>
 
-                    {/* Informações do passageiro */}
                     {ag.status === 'aceito' && ag.passengerName && (
-                      <div style={{ 
-                        background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)', 
-                        padding: '14px 16px', 
-                        borderRadius: '16px', 
-                        marginBottom: '16px',
-                        border: '1px solid #7dd3fc'
-                      }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: '#0369a1', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>👤</span> Informações do Passageiro
-                        </div>
+                      <div style={{ background: '#e0f2fe', padding: '14px 16px', borderRadius: '16px', marginBottom: '16px' }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: '#0369a1' }}>👤 Informações do Passageiro</div>
                         <div style={{ fontSize: '14px', marginBottom: '4px' }}><strong>Nome:</strong> {ag.passengerName}</div>
                         <div style={{ fontSize: '14px' }}><strong>Telefone:</strong> {ag.passengerPhone}</div>
                       </div>
                     )}
 
-                    {/* Botões */}
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                       {ag.status === 'agendado' && (
                         <>
-                          <button 
-                            onClick={() => aceitarCorrida(ag.id)} 
-                            style={{ 
-                              background: '#10b981', 
-                              color: 'white', 
-                              padding: '10px 24px', 
-                              borderRadius: '10px', 
-                              border: 'none', 
-                              cursor: 'pointer', 
-                              fontWeight: '600',
-                              fontSize: '13px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              transition: 'all 0.3s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#059669'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = '#10b981'}
-                          >
+                          <button onClick={() => aceitarCorrida(ag.id)} style={{ background: '#10b981', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <CheckCircle size={16} /> Aceitar
                           </button>
-                          <button 
-                            onClick={() => recusarCorrida(ag.id)} 
-                            style={{ 
-                              background: '#ef4444', 
-                              color: 'white', 
-                              padding: '10px 24px', 
-                              borderRadius: '10px', 
-                              border: 'none', 
-                              cursor: 'pointer', 
-                              fontWeight: '600',
-                              fontSize: '13px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              transition: 'all 0.3s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
-                          >
+                          <button onClick={() => recusarCorrida(ag.id)} style={{ background: '#ef4444', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <XCircle size={16} /> Recusar
                           </button>
                         </>
                       )}
                       {ag.status === 'aceito' && (
-                        <button 
-                          onClick={() => concluirCorrida(ag.id)} 
-                          style={{ 
-                            background: '#3b82f6', 
-                            color: 'white', 
-                            padding: '10px 24px', 
-                            borderRadius: '10px', 
-                            border: 'none', 
-                            cursor: 'pointer', 
-                            fontWeight: '600',
-                            fontSize: '13px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.3s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = '#2563eb'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = '#3b82f6'}
-                        >
+                        <button onClick={() => concluirCorrida(ag.id)} style={{ background: '#3b82f6', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <CheckCircle size={16} /> Concluir Viagem
                         </button>
-                      )}
-                      {ag.status === 'recusado' && (
-                        <span style={{ padding: '10px 24px', background: '#f3f4f6', borderRadius: '10px', color: '#9ca3af' }}>Corrida recusada</span>
-                      )}
-                      {ag.status === 'concluido' && (
-                        <span style={{ padding: '10px 24px', background: '#d1fae5', borderRadius: '10px', color: '#059669', fontWeight: '600' }}>✓ Viagem finalizada</span>
                       )}
                     </div>
                   </div>

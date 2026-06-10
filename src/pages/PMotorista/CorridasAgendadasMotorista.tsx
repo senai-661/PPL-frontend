@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Calendar, Clock, MapPin, Car, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 
 interface Agendamento {
   id: number;
@@ -9,7 +9,7 @@ interface Agendamento {
   time: string;
   price: string;
   status: string;
-  createdAt: string;
+  service?: string;
   passengerName?: string;
   passengerPhone?: string;
 }
@@ -17,16 +17,56 @@ interface Agendamento {
 const CorridasAgendadasMotorista: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [filter, setFilter] = useState<string>('agendado');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     carregarAgendamentos();
   }, []);
 
   const carregarAgendamentos = () => {
+    setLoading(true);
     const saved = localStorage.getItem('openline_agendamentos');
-    if (saved) {
+    if (saved && JSON.parse(saved).length > 0) {
       setAgendamentos(JSON.parse(saved));
+    } else {
+      const exemplos = [
+        {
+          id: 1,
+          origin: "Avenida Coronel Fernando Ferreira Leite, 1540, Jardim California, Ribeirão Preto (SP), CEP 14026-900",
+          destination: "Rua Aprígio de Araújo, 837 - Centro",
+          date: "2026-06-21",
+          time: "08:30",
+          price: "R$ 8,00",
+          status: "agendado",
+          service: "OpenLine Go"
+        },
+        {
+          id: 2,
+          origin: "R. Aprígio de Araújo, 2058 - Centro",
+          destination: "Novo Shopping, Av. Presidente Kennedy, 1500",
+          date: "2026-06-22",
+          time: "14:00",
+          price: "R$ 12,50",
+          status: "agendado",
+          service: "OpenLine Comfort"
+        },
+        {
+          id: 3,
+          origin: "Rodoviária de São Carlos",
+          destination: "Aeroporto de Ribeirão Preto",
+          date: "2026-06-23",
+          time: "19:00",
+          price: "R$ 45,00",
+          status: "aceito",
+          service: "OpenLine Black",
+          passengerName: "Carlos Alberto",
+          passengerPhone: "(16) 99999-8888"
+        }
+      ];
+      localStorage.setItem('openline_agendamentos', JSON.stringify(exemplos));
+      setAgendamentos(exemplos);
     }
+    setLoading(false);
   };
 
   const salvarAgendamentos = (novos: Agendamento[]) => {
@@ -34,11 +74,10 @@ const CorridasAgendadasMotorista: React.FC = () => {
     localStorage.setItem('openline_agendamentos', JSON.stringify(novos));
   };
 
-  const notificarPassageiro = (corridaId: number, status: string, message: string) => {
+  const notificarPassageiro = (corridaId: number, message: string) => {
     const notificacao = {
       id: Date.now(),
       corridaId: corridaId,
-      status: status,
       message: message,
       read: false,
       createdAt: new Date().toISOString(),
@@ -54,61 +93,86 @@ const CorridasAgendadasMotorista: React.FC = () => {
       ag.id === id ? { 
         ...ag, 
         status: 'aceito',
-        passengerName: 'Passageiro ' + Math.floor(Math.random() * 1000),
-        passengerPhone: '(11) 9' + Math.floor(Math.random() * 90000000 + 10000000)
+        passengerName: 'Carlos Silva',
+        passengerPhone: '(11) 98765-4321'
       } : ag
     );
     salvarAgendamentos(novos);
-    notificarPassageiro(id, 'aceito', '✅ Sua corrida foi aceita! O motorista está a caminho.');
-    alert('✅ Corrida aceita!');
+    notificarPassageiro(id, '✅ Sua corrida foi aceita! O motorista está a caminho.');
+    alert('✅ Corrida aceita! O passageiro foi notificado.');
   };
 
   const recusarCorrida = (id: number) => {
-    if (window.confirm('Recusar esta corrida?')) {
+    if (window.confirm('❌ Tem certeza que deseja recusar esta corrida?')) {
       const novos = agendamentos.map(ag => 
         ag.id === id ? { ...ag, status: 'recusado' } : ag
       );
       salvarAgendamentos(novos);
-      notificarPassageiro(id, 'recusado', '❌ Sua corrida foi recusada.');
+      notificarPassageiro(id, '❌ Sua corrida foi recusada. Por favor, tente novamente.');
       alert('❌ Corrida recusada!');
     }
   };
 
   const concluirCorrida = (id: number) => {
-    if (window.confirm('Concluir esta corrida?')) {
+    if (window.confirm('✅ Confirmar que a corrida foi concluída?')) {
       const novos = agendamentos.map(ag => 
         ag.id === id ? { ...ag, status: 'concluido' } : ag
       );
       salvarAgendamentos(novos);
-      notificarPassageiro(id, 'concluido', '✅ Sua viagem foi concluída!');
-      alert('✅ Corrida concluída!');
+      notificarPassageiro(id, '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
+      alert('✅ Corrida concluída! Pagamento será processado.');
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'agendado': return '⏳ Aguardando';
-      case 'aceito': return '✅ Aceita';
-      case 'recusado': return '❌ Recusada';
-      case 'concluido': return '✓ Concluída';
-      default: return status;
+      case 'agendado':
+        return { 
+          label: 'Aguardando', 
+          color: '#f59e0b', 
+          bg: '#fef3c7', 
+          icon: <Clock size={14} />,
+          border: '#fbbf24'
+        };
+      case 'aceito':
+        return { 
+          label: 'Aceita', 
+          color: '#10b981', 
+          bg: '#d1fae5', 
+          icon: <CheckCircle size={14} />,
+          border: '#34d399'
+        };
+      case 'recusado':
+        return { 
+          label: 'Recusada', 
+          color: '#ef4444', 
+          bg: '#fee2e2', 
+          icon: <XCircle size={14} />,
+          border: '#fca5a5'
+        };
+      case 'concluido':
+        return { 
+          label: 'Concluída', 
+          color: '#3b82f6', 
+          bg: '#dbeafe', 
+          icon: <CheckCircle size={14} />,
+          border: '#93c5fd'
+        };
+      default:
+        return { 
+          label: status, 
+          color: '#6b7280', 
+          bg: '#f3f4f6', 
+          icon: null,
+          border: '#d1d5db'
+        };
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'agendado': return '#ed6c02';
-      case 'aceito': return '#2e7d32';
-      case 'recusado': return '#d32f2f';
-      case 'concluido': return '#1976d2';
-      default: return '#666';
-    }
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
-
-  const filtrados = agendamentos.filter(ag => {
-    if (filter === 'todos') return true;
-    return ag.status === filter;
-  });
 
   const stats = {
     total: agendamentos.length,
@@ -118,70 +182,432 @@ const CorridasAgendadasMotorista: React.FC = () => {
     recusado: agendamentos.filter(ag => ag.status === 'recusado').length,
   };
 
+  const filtrados = agendamentos.filter(ag => {
+    if (filter === 'todos') return true;
+    return ag.status === filter;
+  });
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: '48px', height: '48px', border: '3px solid #e5e7eb', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
+          <p style={{ color: '#6b7280' }}>Carregando corridas...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f3f4f6', padding: '40px 20px' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <Link to="/motorista/painel" style={{ color: '#7c3aed', textDecoration: 'none', display: 'inline-block', marginBottom: '20px' }}>← Voltar</Link>
+    <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
+      {/* Cabeçalho */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
+        color: 'white', 
+        padding: '48px 20px',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{ 
+          position: 'absolute', 
+          top: -50, 
+          right: -50, 
+          width: '200px', 
+          height: '200px', 
+          background: 'rgba(255,255,255,0.05)', 
+          borderRadius: '50%' 
+        }} />
+        <div style={{ 
+          position: 'absolute', 
+          bottom: -80, 
+          left: -80, 
+          width: '300px', 
+          height: '300px', 
+          background: 'rgba(255,255,255,0.03)', 
+          borderRadius: '50%' 
+        }} />
+        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <h1 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>🚗 Corridas Agendadas</h1>
+          <p style={{ opacity: 0.8, fontSize: '16px' }}>Gerencie as corridas solicitadas pelos passageiros</p>
+        </div>
+      </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>🚗 Corridas Agendadas</h1>
-          <button onClick={carregarAgendamentos} style={{ background: '#7c3aed', color: 'white', padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>🔄 Atualizar</button>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px' }}>
+        {/* Botão atualizar */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+          <button 
+            onClick={carregarAgendamentos} 
+            style={{ 
+              background: 'white', 
+              color: '#4b5563', 
+              padding: '10px 20px', 
+              borderRadius: '10px', 
+              border: '1px solid #e5e7eb',
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '14px',
+              transition: 'all 0.3s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+          >
+            <RefreshCw size={16} /> Atualizar
+          </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '20px' }}>
-          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong>{stats.total}</strong><br/><small>Total</small></div>
-          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#ed6c02' }}>{stats.agendado}</strong><br/><small>Pendentes</small></div>
-          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#2e7d32' }}>{stats.aceito}</strong><br/><small>Aceitas</small></div>
-          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#1976d2' }}>{stats.concluido}</strong><br/><small>Concluídas</small></div>
-          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#d32f2f' }}>{stats.recusado}</strong><br/><small>Recusadas</small></div>
+        {/* Cards de estatísticas */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(5, 1fr)', 
+          gap: '16px', 
+          marginBottom: '32px'
+        }}>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '20px', 
+            padding: '20px', 
+            textAlign: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            border: '1px solid #f3f4f6'
+          }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#1f2937' }}>{stats.total}</div>
+            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Total</div>
+          </div>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '20px', 
+            padding: '20px', 
+            textAlign: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            border: '1px solid #f3f4f6'
+          }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f59e0b' }}>{stats.agendado}</div>
+            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Pendentes</div>
+          </div>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '20px', 
+            padding: '20px', 
+            textAlign: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            border: '1px solid #f3f4f6'
+          }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#10b981' }}>{stats.aceito}</div>
+            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Aceitas</div>
+          </div>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '20px', 
+            padding: '20px', 
+            textAlign: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            border: '1px solid #f3f4f6'
+          }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#3b82f6' }}>{stats.concluido}</div>
+            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Concluídas</div>
+          </div>
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '20px', 
+            padding: '20px', 
+            textAlign: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            border: '1px solid #f3f4f6'
+          }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#ef4444' }}>{stats.recusado}</div>
+            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Recusadas</div>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          {['agendado', 'aceito', 'concluido', 'recusado', 'todos'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', background: filter === f ? '#7c3aed' : '#e5e7eb', color: filter === f ? 'white' : '#333' }}>
-              {f === 'agendado' ? '📋 Pendentes' : f === 'aceito' ? '✅ Aceitas' : f === 'concluido' ? '🏁 Concluídas' : f === 'recusado' ? '❌ Recusadas' : '📋 Todas'}
+        {/* Filtros */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap', borderBottom: '1px solid #e5e7eb', paddingBottom: '16px' }}>
+          {[
+            { id: 'agendado', label: '📋 Pendentes', count: stats.agendado },
+            { id: 'aceito', label: '✅ Aceitas', count: stats.aceito },
+            { id: 'concluido', label: '🏁 Concluídas', count: stats.concluido },
+            { id: 'recusado', label: '❌ Recusadas', count: stats.recusado },
+            { id: 'todos', label: '📋 Todas', count: stats.total }
+          ].map(f => (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '30px',
+                border: 'none',
+                cursor: 'pointer',
+                background: filter === f.id ? '#7c3aed' : '#f3f4f6',
+                color: filter === f.id ? 'white' : '#4b5563',
+                fontWeight: filter === f.id ? '600' : '500',
+                fontSize: '14px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.3s'
+              }}
+            >
+              {f.label}
+              {f.count > 0 && (
+                <span style={{
+                  background: filter === f.id ? 'rgba(255,255,255,0.2)' : '#d1d5db',
+                  padding: '2px 8px',
+                  borderRadius: '20px',
+                  fontSize: '11px'
+                }}>
+                  {f.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
 
-        {filtrados.length === 0 ? (
-          <div style={{ background: 'white', borderRadius: '16px', padding: '40px', textAlign: 'center' }}>
-            <div style={{ fontSize: '48px' }}>📭</div>
-            <p>Nenhuma corrida encontrada</p>
+        {/* Lista de corridas */}
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '24px', 
+          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+          overflow: 'hidden'
+        }}>
+          <div style={{ 
+            padding: '20px 24px', 
+            borderBottom: '1px solid #f3f4f6',
+            background: '#fafafa'
+          }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>🚗</span> Corridas Disponíveis
+            </h2>
           </div>
-        ) : (
-          filtrados.map(ag => (
-            <div key={ag.id} style={{ background: 'white', borderRadius: '12px', padding: '16px', marginBottom: '12px', borderLeft: `4px solid ${getStatusColor(ag.status)}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ color: getStatusColor(ag.status), fontWeight: 'bold' }}>{getStatusText(ag.status)}</span>
-                <span style={{ fontSize: '12px', color: '#9ca3af' }}>#{ag.id}</span>
-              </div>
-              <div style={{ marginBottom: '8px' }}><strong>📍 Partida:</strong> {ag.origin}</div>
-              <div style={{ marginBottom: '12px' }}><strong>🏁 Destino:</strong> {ag.destination}</div>
-              <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#6b7280', borderTop: '1px solid #e5e7eb', paddingTop: '12px', marginBottom: '16px' }}>
-                <span>📅 {new Date(ag.date).toLocaleDateString('pt-BR')}</span>
-                <span>⏰ {ag.time}</span>
-                <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>{ag.price}</span>
-              </div>
-              {ag.status === 'aceito' && ag.passengerName && (
-                <div style={{ background: '#e0f2fe', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-                  <div><strong>👤 Passageiro:</strong> {ag.passengerName}</div>
-                  <div><strong>📞 Telefone:</strong> {ag.passengerPhone}</div>
-                </div>
-              )}
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                {ag.status === 'agendado' && (
-                  <>
-                    <button onClick={() => aceitarCorrida(ag.id)} style={{ background: '#22c55e', color: 'white', padding: '6px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Aceitar</button>
-                    <button onClick={() => recusarCorrida(ag.id)} style={{ background: '#ef4444', color: 'white', padding: '6px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Recusar</button>
-                  </>
-                )}
-                {ag.status === 'aceito' && <button onClick={() => concluirCorrida(ag.id)} style={{ background: '#3b82f6', color: 'white', padding: '6px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Concluir</button>}
-              </div>
+
+          {filtrados.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+              <div style={{ fontSize: '64px', marginBottom: '16px' }}>📭</div>
+              <h3 style={{ marginBottom: '8px', fontSize: '18px', fontWeight: '600', color: '#374151' }}>Nenhuma corrida encontrada</h3>
+              <p style={{ color: '#6b7280' }}>Não há corridas no momento</p>
+              <button 
+                onClick={carregarAgendamentos}
+                style={{ marginTop: '20px', background: '#7c3aed', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer' }}
+              >
+                🔄 Atualizar
+              </button>
             </div>
-          ))
-        )}
+          ) : (
+            <div>
+              {filtrados.map((ag, index) => {
+                const status = getStatusConfig(ag.status);
+                return (
+                  <div 
+                    key={ag.id} 
+                    style={{ 
+                      padding: '24px 28px', 
+                      borderBottom: index !== filtrados.length - 1 ? '1px solid #f3f4f6' : 'none',
+                      transition: 'all 0.3s',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#fafafa'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                  >
+                    {/* Cabeçalho */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ 
+                          background: status.bg, 
+                          color: status.color, 
+                          padding: '4px 12px', 
+                          borderRadius: '30px', 
+                          fontSize: '12px', 
+                          fontWeight: '600',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          {status.icon} {status.label}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#9ca3af' }}>ID: #{ag.id}</span>
+                    </div>
+
+                    {/* Rotas */}
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{ display: 'flex', gap: '14px', marginBottom: '16px', alignItems: 'flex-start' }}>
+                        <div style={{ 
+                          width: '32px', 
+                          height: '32px', 
+                          background: '#ecfdf5', 
+                          borderRadius: '50%', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <MapPin size={16} style={{ color: '#10b981' }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Partida</div>
+                          <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', lineHeight: '1.4' }}>{ag.origin}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                        <div style={{ 
+                          width: '32px', 
+                          height: '32px', 
+                          background: '#fef2f2', 
+                          borderRadius: '50%', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <MapPin size={16} style={{ color: '#ef4444' }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Destino</div>
+                          <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', lineHeight: '1.4' }}>{ag.destination}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detalhes */}
+                    <div style={{ 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      gap: '20px', 
+                      padding: '12px 0',
+                      borderTop: '1px solid #f3f4f6',
+                      borderBottom: '1px solid #f3f4f6',
+                      marginBottom: '16px',
+                      fontSize: '13px',
+                      color: '#6b7280'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Calendar size={14} style={{ color: '#9ca3af' }} />
+                        <span>{formatDate(ag.date)}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Clock size={14} style={{ color: '#9ca3af' }} />
+                        <span>{ag.time}</span>
+                      </div>
+                      {ag.service && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Car size={14} style={{ color: '#9ca3af' }} />
+                          <span>{ag.service}</span>
+                        </div>
+                      )}
+                      <div style={{ marginLeft: 'auto', fontWeight: 'bold', fontSize: '18px', color: '#7c3aed' }}>
+                        {ag.price}
+                      </div>
+                    </div>
+
+                    {/* Informações do passageiro */}
+                    {ag.status === 'aceito' && ag.passengerName && (
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)', 
+                        padding: '14px 16px', 
+                        borderRadius: '16px', 
+                        marginBottom: '16px',
+                        border: '1px solid #7dd3fc'
+                      }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: '#0369a1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>👤</span> Informações do Passageiro
+                        </div>
+                        <div style={{ fontSize: '14px', marginBottom: '4px' }}><strong>Nome:</strong> {ag.passengerName}</div>
+                        <div style={{ fontSize: '14px' }}><strong>Telefone:</strong> {ag.passengerPhone}</div>
+                      </div>
+                    )}
+
+                    {/* Botões */}
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                      {ag.status === 'agendado' && (
+                        <>
+                          <button 
+                            onClick={() => aceitarCorrida(ag.id)} 
+                            style={{ 
+                              background: '#10b981', 
+                              color: 'white', 
+                              padding: '10px 24px', 
+                              borderRadius: '10px', 
+                              border: 'none', 
+                              cursor: 'pointer', 
+                              fontWeight: '600',
+                              fontSize: '13px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#059669'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = '#10b981'}
+                          >
+                            <CheckCircle size={16} /> Aceitar
+                          </button>
+                          <button 
+                            onClick={() => recusarCorrida(ag.id)} 
+                            style={{ 
+                              background: '#ef4444', 
+                              color: 'white', 
+                              padding: '10px 24px', 
+                              borderRadius: '10px', 
+                              border: 'none', 
+                              cursor: 'pointer', 
+                              fontWeight: '600',
+                              fontSize: '13px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
+                          >
+                            <XCircle size={16} /> Recusar
+                          </button>
+                        </>
+                      )}
+                      {ag.status === 'aceito' && (
+                        <button 
+                          onClick={() => concluirCorrida(ag.id)} 
+                          style={{ 
+                            background: '#3b82f6', 
+                            color: 'white', 
+                            padding: '10px 24px', 
+                            borderRadius: '10px', 
+                            border: 'none', 
+                            cursor: 'pointer', 
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.3s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = '#2563eb'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = '#3b82f6'}
+                        >
+                          <CheckCircle size={16} /> Concluir Viagem
+                        </button>
+                      )}
+                      {ag.status === 'recusado' && (
+                        <span style={{ padding: '10px 24px', background: '#f3f4f6', borderRadius: '10px', color: '#9ca3af' }}>Corrida recusada</span>
+                      )}
+                      {ag.status === 'concluido' && (
+                        <span style={{ padding: '10px 24px', background: '#d1fae5', borderRadius: '10px', color: '#059669', fontWeight: '600' }}>✓ Viagem finalizada</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -9,6 +9,12 @@ interface Trip {
   type: string;
 }
 
+interface Toast {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+}
+
 const cidadesDisponiveis = [
   'São Paulo, BR', 'Rio de Janeiro, BR', 'Belo Horizonte, BR', 'Brasília, BR',
   'Curitiba, BR', 'Porto Alegre, BR', 'Salvador, BR', 'Recife, BR',
@@ -38,12 +44,21 @@ const SecaoCorrida: React.FC = () => {
   const [loginPassword, setLoginPassword] = useState('');
   const [searchCity, setSearchCity] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [toasts, setToasts] = useState<Toast[]>([]);
   
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
   const [scheduleStep, setScheduleStep] = useState<'form' | 'service'>('form');
   const [selectedService, setSelectedService] = useState('');
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -70,32 +85,33 @@ const SecaoCorrida: React.FC = () => {
   };
 
   const checkPrice = () => {
-    if (!origin.trim()) return alert('⚠️ Informe o local de partida');
-    if (!destination.trim()) return alert('⚠️ Informe o local de chegada');
-    if (origin.toLowerCase() === destination.toLowerCase()) return alert('⚠️ Origem e destino não podem ser iguais');
+    if (!origin.trim()) return showToast('Informe o local de partida', 'warning');
+    if (!destination.trim()) return showToast('Informe o local de chegada', 'warning');
+    if (origin.toLowerCase() === destination.toLowerCase()) return showToast('Origem e destino não podem ser iguais', 'warning');
     const calculatedPrice = calculatePrice();
     setPrice(calculatedPrice);
     setShowPrice(true);
     if (isLoggedIn) saveTrip(origin, destination, calculatedPrice);
+    showToast('Preço calculado com sucesso!', 'success');
   };
 
   const handleSchedule = () => {
-    if (!origin.trim()) return alert('⚠️ Informe o local de partida');
-    if (!destination.trim()) return alert('⚠️ Informe o local de chegada');
-    if (origin.toLowerCase() === destination.toLowerCase()) return alert('⚠️ Origem e destino não podem ser iguais');
+    if (!origin.trim()) return showToast('Informe o local de partida', 'warning');
+    if (!destination.trim()) return showToast('Informe o local de chegada', 'warning');
+    if (origin.toLowerCase() === destination.toLowerCase()) return showToast('Origem e destino não podem ser iguais', 'warning');
     if (!showPrice) { setPrice(calculatePrice()); setShowPrice(true); }
     setScheduleStep('form');
     setShowScheduleModal(true);
   };
 
   const confirmSchedule = () => {
-    if (!scheduleDate) return alert('⚠️ Selecione uma data');
-    if (!scheduleTime) return alert('⚠️ Selecione um horário');
+    if (!scheduleDate) return showToast('Selecione uma data', 'warning');
+    if (!scheduleTime) return showToast('Selecione um horário', 'warning');
     setScheduleStep('service');
   };
 
   const finalizarAgendamento = () => {
-    if (!selectedService) return alert('⚠️ Selecione um serviço');
+    if (!selectedService) return showToast('Selecione um serviço', 'warning');
     
     const servico = servicos.find(s => s.id === selectedService);
     
@@ -121,8 +137,12 @@ const SecaoCorrida: React.FC = () => {
     setScheduleTime('');
     setSelectedService('');
     setScheduleStep('form');
-    alert('✅ Viagem agendada com sucesso!');
-    window.location.href = '/passageiro/painel';
+    
+    showToast('✅ Viagem agendada com sucesso!', 'success');
+    
+    setTimeout(() => {
+      window.location.href = '/passageiro/painel';
+    }, 1500);
   };
 
   const handleLogin = () => {
@@ -134,6 +154,7 @@ const SecaoCorrida: React.FC = () => {
     setShowLoginModal(false);
     setLoginUsername('');
     setLoginPassword('');
+    showToast(`Bem-vindo, ${loginUsername}!`, 'success');
   };
 
   const handleLogout = () => {
@@ -141,12 +162,14 @@ const SecaoCorrida: React.FC = () => {
     setCurrentUser(null);
     setRecentTrips([]);
     setShowRecent(false);
+    showToast('Você saiu da sua conta', 'info');
   };
 
   const selectCity = (city: string) => {
     setCurrentCity(city);
     setShowCityModal(false);
     setSearchCity('');
+    showToast(`Cidade alterada para ${city}`, 'info');
   };
 
   const filteredCities = cidadesDisponiveis.filter(city =>
@@ -176,6 +199,28 @@ const SecaoCorrida: React.FC = () => {
 
   return (
     <div className="ride-box">
+      {/* Toasts */}
+      {toasts.map(toast => (
+        <div key={toast.id} style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+          background: toast.type === 'success' ? '#4caf50' : toast.type === 'error' ? '#f44336' : toast.type === 'warning' ? '#ff9800' : '#2196f3',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          animation: 'slideInRight 0.3s ease',
+        }}>
+          <span>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : toast.type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+          <span>{toast.message}</span>
+        </div>
+      ))}
+
       <div className="ride-location">
         <span className="ride-location-icon">📍</span>
         <span>{currentCity}</span>
@@ -364,6 +409,19 @@ const SecaoCorrida: React.FC = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -8,7 +8,7 @@ interface ConfirmModalProps {
   onCancel: () => void;
   confirmText?: string;
   cancelText?: string;
-  type?: 'warning' | 'danger' | 'info';
+  type?: 'warning' | 'danger' | 'info' | 'success';
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -24,6 +24,13 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!isOpen) return null;
 
   const config = {
+    success: {
+      icon: '🎉',
+      color: '#10b981',
+      bg: '#d1fae5',
+      buttonBg: '#10b981',
+      buttonHover: '#059669'
+    },
     warning: {
       icon: '⚠️',
       color: '#f59e0b',

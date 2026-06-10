@@ -30,7 +30,7 @@ const CorridasAgendadasMotorista: React.FC = () => {
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     id: number | null;
-    action: 'recusar' | 'concluir' | null;
+    action: 'aceitar' | 'recusar' | 'concluir' | null;
   }>({ isOpen: false, id: null, action: null });
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
@@ -98,18 +98,8 @@ const CorridasAgendadasMotorista: React.FC = () => {
     localStorage.setItem('openline_notificacoes', JSON.stringify(notificacoes));
   };
 
-  const aceitarCorrida = (id: number) => {
-    const novos = agendamentos.map(ag => 
-      ag.id === id ? { 
-        ...ag, 
-        status: 'aceito',
-        passengerName: 'Carlos Silva',
-        passengerPhone: '(11) 98765-4321'
-      } : ag
-    );
-    salvarAgendamentos(novos);
-    notificarPassageiro(id, '✅ Sua corrida foi aceita! O motorista está a caminho.');
-    showToast('✨ Corrida aceita com sucesso! O passageiro foi notificado.', 'success');
+  const confirmarAceitar = (id: number) => {
+    setConfirmModal({ isOpen: true, id, action: 'aceitar' });
   };
 
   const confirmarRecusar = (id: number) => {
@@ -118,6 +108,23 @@ const CorridasAgendadasMotorista: React.FC = () => {
 
   const confirmarConcluir = (id: number) => {
     setConfirmModal({ isOpen: true, id, action: 'concluir' });
+  };
+
+  const executarAceitar = () => {
+    if (confirmModal.id) {
+      const novos = agendamentos.map(ag => 
+        ag.id === confirmModal.id ? { 
+          ...ag, 
+          status: 'aceito',
+          passengerName: 'Carlos Silva',
+          passengerPhone: '(11) 98765-4321'
+        } : ag
+      );
+      salvarAgendamentos(novos);
+      notificarPassageiro(confirmModal.id, '✅ Sua corrida foi aceita! O motorista está a caminho.');
+      showToast('✨ Corrida aceita com sucesso! O passageiro foi notificado.', 'success');
+    }
+    setConfirmModal({ isOpen: false, id: null, action: null });
   };
 
   const executarRecusar = () => {
@@ -142,6 +149,39 @@ const CorridasAgendadasMotorista: React.FC = () => {
       showToast('🏁 Viagem concluída! Pagamento será processado em até 24h.', 'success');
     }
     setConfirmModal({ isOpen: false, id: null, action: null });
+  };
+
+  const getModalConfig = () => {
+    switch (confirmModal.action) {
+      case 'aceitar':
+        return {
+          title: 'Aceitar Corrida',
+          message: 'Deseja aceitar esta corrida? O passageiro será notificado imediatamente.',
+          confirmText: 'Sim, aceitar',
+          type: 'success' as const
+        };
+      case 'recusar':
+        return {
+          title: 'Recusar Corrida',
+          message: 'Tem certeza que deseja recusar esta corrida? O passageiro será notificado.',
+          confirmText: 'Sim, recusar',
+          type: 'danger' as const
+        };
+      case 'concluir':
+        return {
+          title: 'Concluir Viagem',
+          message: 'Confirmar que a viagem foi concluída com sucesso?',
+          confirmText: 'Sim, concluir',
+          type: 'info' as const
+        };
+      default:
+        return {
+          title: '',
+          message: '',
+          confirmText: 'Confirmar',
+          type: 'info' as const
+        };
+    }
   };
 
   const getStatusConfig = (status: string) => {
@@ -207,6 +247,8 @@ const CorridasAgendadasMotorista: React.FC = () => {
     return ag.status === filter;
   });
 
+  const modalConfig = getModalConfig();
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -231,15 +273,17 @@ const CorridasAgendadasMotorista: React.FC = () => {
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        title={confirmModal.action === 'recusar' ? 'Recusar Corrida' : 'Concluir Viagem'}
-        message={confirmModal.action === 'recusar' 
-          ? 'Tem certeza que deseja recusar esta corrida? O passageiro será notificado.'
-          : 'Confirmar que a viagem foi concluída com sucesso?'}
-        onConfirm={confirmModal.action === 'recusar' ? executarRecusar : executarConcluir}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onConfirm={
+          confirmModal.action === 'aceitar' ? executarAceitar :
+          confirmModal.action === 'recusar' ? executarRecusar :
+          executarConcluir
+        }
         onCancel={() => setConfirmModal({ isOpen: false, id: null, action: null })}
-        confirmText={confirmModal.action === 'recusar' ? 'Sim, recusar' : 'Sim, concluir'}
+        confirmText={modalConfig.confirmText}
         cancelText="Cancelar"
-        type={confirmModal.action === 'recusar' ? 'danger' : 'info'}
+        type={modalConfig.type}
       />
 
       <div style={{ 
@@ -426,7 +470,7 @@ const CorridasAgendadasMotorista: React.FC = () => {
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                       {ag.status === 'agendado' && (
                         <>
-                          <button onClick={() => aceitarCorrida(ag.id)} style={{ background: '#10b981', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button onClick={() => confirmarAceitar(ag.id)} style={{ background: '#10b981', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <CheckCircle size={16} /> Aceitar
                           </button>
                           <button onClick={() => confirmarRecusar(ag.id)} style={{ background: '#ef4444', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>

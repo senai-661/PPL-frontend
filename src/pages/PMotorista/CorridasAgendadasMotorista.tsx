@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, User, Phone } from 'lucide-react';
 
 interface Agendamento {
   id: number;
@@ -9,30 +8,25 @@ interface Agendamento {
   date: string;
   time: string;
   price: string;
-  status: 'agendado' | 'aceito' | 'recusado' | 'concluido';
+  status: string;
   createdAt: string;
   passengerName?: string;
   passengerPhone?: string;
-  passengerId?: string;
 }
 
 const CorridasAgendadasMotorista: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
-  const [filter, setFilter] = useState<'todos' | 'agendado' | 'aceito' | 'recusado' | 'concluido'>('agendado');
-  const [loading, setLoading] = useState(true);
-  const motoristaNome = 'João Silva';
+  const [filter, setFilter] = useState<string>('agendado');
 
   useEffect(() => {
     carregarAgendamentos();
   }, []);
 
   const carregarAgendamentos = () => {
-    setLoading(true);
     const saved = localStorage.getItem('openline_agendamentos');
     if (saved) {
       setAgendamentos(JSON.parse(saved));
     }
-    setLoading(false);
   };
 
   const salvarAgendamentos = (novos: Agendamento[]) => {
@@ -59,45 +53,55 @@ const CorridasAgendadasMotorista: React.FC = () => {
     const novos = agendamentos.map(ag => 
       ag.id === id ? { 
         ...ag, 
-        status: 'aceito' as const,
+        status: 'aceito',
         passengerName: 'Passageiro ' + Math.floor(Math.random() * 1000),
         passengerPhone: '(11) 9' + Math.floor(Math.random() * 90000000 + 10000000)
       } : ag
     );
     salvarAgendamentos(novos);
     notificarPassageiro(id, 'aceito', '✅ Sua corrida foi aceita! O motorista está a caminho.');
-    alert('✅ Corrida aceita! O passageiro foi notificado.');
+    alert('✅ Corrida aceita!');
   };
 
   const recusarCorrida = (id: number) => {
-    if (window.confirm('Tem certeza que deseja recusar esta corrida?')) {
+    if (window.confirm('Recusar esta corrida?')) {
       const novos = agendamentos.map(ag => 
-        ag.id === id ? { ...ag, status: 'recusado' as const } : ag
+        ag.id === id ? { ...ag, status: 'recusado' } : ag
       );
       salvarAgendamentos(novos);
-      notificarPassageiro(id, 'recusado', '❌ Sua corrida foi recusada. Por favor, tente novamente.');
-      alert('❌ Corrida recusada. O passageiro será notificado.');
+      notificarPassageiro(id, 'recusado', '❌ Sua corrida foi recusada.');
+      alert('❌ Corrida recusada!');
     }
   };
 
   const concluirCorrida = (id: number) => {
-    if (window.confirm('Confirmar que a corrida foi concluída?')) {
+    if (window.confirm('Concluir esta corrida?')) {
       const novos = agendamentos.map(ag => 
-        ag.id === id ? { ...ag, status: 'concluido' as const } : ag
+        ag.id === id ? { ...ag, status: 'concluido' } : ag
       );
       salvarAgendamentos(novos);
-      notificarPassageiro(id, 'concluido', '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
-      alert('✅ Corrida concluída! Pagamento será processado.');
+      notificarPassageiro(id, 'concluido', '✅ Sua viagem foi concluída!');
+      alert('✅ Corrida concluída!');
     }
   };
 
-  const getStatusInfo = (status: string) => {
+  const getStatusText = (status: string) => {
     switch (status) {
-      case 'agendado': return { bg: '#fff3e0', color: '#ed6c02', text: 'Aguardando' };
-      case 'aceito': return { bg: '#e8f5e9', color: '#2e7d32', text: 'Aceita' };
-      case 'recusado': return { bg: '#ffebee', color: '#d32f2f', text: 'Recusada' };
-      case 'concluido': return { bg: '#e3f2fd', color: '#1976d2', text: 'Concluída' };
-      default: return { bg: '#f5f5f5', color: '#666', text: status };
+      case 'agendado': return '⏳ Aguardando';
+      case 'aceito': return '✅ Aceita';
+      case 'recusado': return '❌ Recusada';
+      case 'concluido': return '✓ Concluída';
+      default: return status;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'agendado': return '#ed6c02';
+      case 'aceito': return '#2e7d32';
+      case 'recusado': return '#d32f2f';
+      case 'concluido': return '#1976d2';
+      default: return '#666';
     }
   };
 
@@ -106,107 +110,76 @@ const CorridasAgendadasMotorista: React.FC = () => {
     return ag.status === filter;
   });
 
-  const agendamentosPendentes = agendamentos.filter(ag => ag.status === 'agendado').length;
-
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Carregando...</div>;
-  }
+  const stats = {
+    total: agendamentos.length,
+    agendado: agendamentos.filter(ag => ag.status === 'agendado').length,
+    aceito: agendamentos.filter(ag => ag.status === 'aceito').length,
+    concluido: agendamentos.filter(ag => ag.status === 'concluido').length,
+    recusado: agendamentos.filter(ag => ag.status === 'recusado').length,
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-6">
-          <Link to="/motorista/painel" className="text-purple-600 hover:underline flex items-center gap-2 mb-4">
-            <ChevronLeft size={20} /> Voltar para Painel
-          </Link>
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold">🚗 Corridas Agendadas</h1>
-              <p className="text-gray-500">Olá, {motoristaNome} | {agendamentosPendentes} pendente(s)</p>
-            </div>
-            <button onClick={carregarAgendamentos} className="px-4 py-2 bg-purple-600 text-white rounded-lg">🔄 Atualizar</button>
-          </div>
+    <div style={{ minHeight: '100vh', background: '#f3f4f6', padding: '40px 20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <Link to="/motorista/painel" style={{ color: '#7c3aed', textDecoration: 'none', display: 'inline-block', marginBottom: '20px' }}>← Voltar</Link>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>🚗 Corridas Agendadas</h1>
+          <button onClick={carregarAgendamentos} style={{ background: '#7c3aed', color: 'white', padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>🔄 Atualizar</button>
         </div>
 
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {[
-            { id: 'agendado', label: '📋 Pendentes' },
-            { id: 'aceito', label: '✅ Aceitas' },
-            { id: 'recusado', label: '❌ Recusadas' },
-            { id: 'concluido', label: '🏁 Concluídas' },
-            { id: 'todos', label: '📋 Todas' }
-          ].map(f => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id as any)}
-              className={`px-4 py-2 rounded-full text-sm font-medium ${
-                filter === f.id ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              {f.label}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '20px' }}>
+          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong>{stats.total}</strong><br/><small>Total</small></div>
+          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#ed6c02' }}>{stats.agendado}</strong><br/><small>Pendentes</small></div>
+          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#2e7d32' }}>{stats.aceito}</strong><br/><small>Aceitas</small></div>
+          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#1976d2' }}>{stats.concluido}</strong><br/><small>Concluídas</small></div>
+          <div style={{ background: 'white', padding: '8px', borderRadius: '8px', textAlign: 'center' }}><strong style={{ color: '#d32f2f' }}>{stats.recusado}</strong><br/><small>Recusadas</small></div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          {['agendado', 'aceito', 'concluido', 'recusado', 'todos'].map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', background: filter === f ? '#7c3aed' : '#e5e7eb', color: filter === f ? 'white' : '#333' }}>
+              {f === 'agendado' ? '📋 Pendentes' : f === 'aceito' ? '✅ Aceitas' : f === 'concluido' ? '🏁 Concluídas' : f === 'recusado' ? '❌ Recusadas' : '📋 Todas'}
             </button>
           ))}
         </div>
 
         {filtrados.length === 0 ? (
-          <div className="bg-white rounded-xl p-12 text-center">
-            <div className="text-6xl mb-4">📭</div>
-            <p className="text-gray-500">Nenhuma corrida encontrada</p>
+          <div style={{ background: 'white', borderRadius: '16px', padding: '40px', textAlign: 'center' }}>
+            <div style={{ fontSize: '48px' }}>📭</div>
+            <p>Nenhuma corrida encontrada</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filtrados.map((ag) => {
-              const status = getStatusInfo(ag.status);
-              return (
-                <div key={ag.id} className="bg-white rounded-xl p-5 shadow-sm border-l-4" style={{ borderLeftColor: status.color }}>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium`} style={{ background: status.bg, color: status.color }}>
-                      {status.text}
-                    </span>
-                    <span className="text-xs text-gray-400">#{ag.id}</span>
-                  </div>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex gap-2">
-                      <span className="text-green-500">📍</span>
-                      <div><div className="text-xs text-gray-500">Partida</div><div className="text-sm font-medium">{ag.origin}</div></div>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="text-red-500">🏁</span>
-                      <div><div className="text-xs text-gray-500">Destino</div><div className="text-sm font-medium">{ag.destination}</div></div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600 border-t pt-3 mb-4">
-                    <div className="flex items-center gap-1">📅 {new Date(ag.date).toLocaleDateString('pt-BR')}</div>
-                    <div className="flex items-center gap-1">⏰ {ag.time}</div>
-                    <div className="font-bold text-purple-600">{ag.price}</div>
-                  </div>
-
-                  {ag.status === 'aceito' && ag.passengerName && (
-                    <div className="bg-blue-50 rounded-lg p-3 mb-4 flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><User size={20} color="white" /></div>
-                      <div><div className="text-xs text-blue-600 font-medium">Passageiro</div><div className="font-medium">{ag.passengerName}</div><div className="text-xs text-gray-500 flex items-center gap-1"><Phone size={12} /> {ag.passengerPhone}</div></div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3 justify-end">
-                    {ag.status === 'agendado' && (
-                      <>
-                        <button onClick={() => aceitarCorrida(ag.id)} className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium">✅ Aceitar</button>
-                        <button onClick={() => recusarCorrida(ag.id)} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">❌ Recusar</button>
-                      </>
-                    )}
-                    {ag.status === 'aceito' && (
-                      <button onClick={() => concluirCorrida(ag.id)} className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium">✅ Concluir Viagem</button>
-                    )}
-                    {ag.status === 'recusado' && <span className="px-4 py-2 bg-gray-200 text-gray-500 rounded-lg text-sm">Recusada</span>}
-                    {ag.status === 'concluido' && <span className="px-4 py-2 bg-green-100 text-green-600 rounded-lg text-sm">✓ Concluída</span>}
-                  </div>
+          filtrados.map(ag => (
+            <div key={ag.id} style={{ background: 'white', borderRadius: '12px', padding: '16px', marginBottom: '12px', borderLeft: `4px solid ${getStatusColor(ag.status)}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ color: getStatusColor(ag.status), fontWeight: 'bold' }}>{getStatusText(ag.status)}</span>
+                <span style={{ fontSize: '12px', color: '#9ca3af' }}>#{ag.id}</span>
+              </div>
+              <div style={{ marginBottom: '8px' }}><strong>📍 Partida:</strong> {ag.origin}</div>
+              <div style={{ marginBottom: '12px' }}><strong>🏁 Destino:</strong> {ag.destination}</div>
+              <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#6b7280', borderTop: '1px solid #e5e7eb', paddingTop: '12px', marginBottom: '16px' }}>
+                <span>📅 {new Date(ag.date).toLocaleDateString('pt-BR')}</span>
+                <span>⏰ {ag.time}</span>
+                <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>{ag.price}</span>
+              </div>
+              {ag.status === 'aceito' && ag.passengerName && (
+                <div style={{ background: '#e0f2fe', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+                  <div><strong>👤 Passageiro:</strong> {ag.passengerName}</div>
+                  <div><strong>📞 Telefone:</strong> {ag.passengerPhone}</div>
                 </div>
-              );
-            })}
-          </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                {ag.status === 'agendado' && (
+                  <>
+                    <button onClick={() => aceitarCorrida(ag.id)} style={{ background: '#22c55e', color: 'white', padding: '6px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Aceitar</button>
+                    <button onClick={() => recusarCorrida(ag.id)} style={{ background: '#ef4444', color: 'white', padding: '6px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Recusar</button>
+                  </>
+                )}
+                {ag.status === 'aceito' && <button onClick={() => concluirCorrida(ag.id)} style={{ background: '#3b82f6', color: 'white', padding: '6px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Concluir</button>}
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>

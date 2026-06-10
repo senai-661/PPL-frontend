@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ToastNotification from '../../Components/Elementos/ToastNotification';
 
 interface Trip {
   id: number;
@@ -10,16 +9,17 @@ interface Trip {
   type: string;
 }
 
-interface Toast {
-  id: number;
-  message: string;
-  type: 'success' | 'error' | 'info' | 'warning';
-}
-
 const cidadesDisponiveis = [
   'São Paulo, BR', 'Rio de Janeiro, BR', 'Belo Horizonte, BR', 'Brasília, BR',
   'Curitiba, BR', 'Porto Alegre, BR', 'Salvador, BR', 'Recife, BR',
   'Fortaleza, BR', 'São Carlos, BR', 'Campinas, BR', 'Santos, BR',
+];
+
+const servicos = [
+  { id: 'go', nome: 'OpenLine Go', preco: 'R$ 8,00', icon: '🚗', descricao: 'Viagens baratas' },
+  { id: 'share', nome: 'OpenLine Share', preco: 'R$ 4,50', icon: '👥', descricao: 'Viagens compartilhadas' },
+  { id: 'business', nome: 'OpenLine Business', preco: 'Sob consulta', icon: '💼', descricao: 'Solução corporativa' },
+  { id: 'schedule', nome: 'OpenLine Schedule', preco: 'A partir de R$ 10,00', icon: '📅', descricao: 'Viagens agendadas' }
 ];
 
 const SecaoCorrida: React.FC = () => {
@@ -38,19 +38,12 @@ const SecaoCorrida: React.FC = () => {
   const [loginPassword, setLoginPassword] = useState('');
   const [searchCity, setSearchCity] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [toasts, setToasts] = useState<Toast[]>([]);
   
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 4000);
-  };
+  const [scheduleStep, setScheduleStep] = useState<'form' | 'service'>('form');
+  const [selectedService, setSelectedService] = useState('');
 
   useEffect(() => {
     if (currentUser) {
@@ -77,27 +70,34 @@ const SecaoCorrida: React.FC = () => {
   };
 
   const checkPrice = () => {
-    if (!origin.trim()) return showToast('Informe o local de partida', 'warning');
-    if (!destination.trim()) return showToast('Informe o local de chegada', 'warning');
-    if (origin.toLowerCase() === destination.toLowerCase()) return showToast('Origem e destino não podem ser iguais', 'warning');
+    if (!origin.trim()) return alert('⚠️ Informe o local de partida');
+    if (!destination.trim()) return alert('⚠️ Informe o local de chegada');
+    if (origin.toLowerCase() === destination.toLowerCase()) return alert('⚠️ Origem e destino não podem ser iguais');
     const calculatedPrice = calculatePrice();
     setPrice(calculatedPrice);
     setShowPrice(true);
     if (isLoggedIn) saveTrip(origin, destination, calculatedPrice);
-    showToast('Preço calculado com sucesso!', 'success');
   };
 
   const handleSchedule = () => {
-    if (!origin.trim()) return showToast('Informe o local de partida', 'warning');
-    if (!destination.trim()) return showToast('Informe o local de chegada', 'warning');
-    if (origin.toLowerCase() === destination.toLowerCase()) return showToast('Origem e destino não podem ser iguais', 'warning');
+    if (!origin.trim()) return alert('⚠️ Informe o local de partida');
+    if (!destination.trim()) return alert('⚠️ Informe o local de chegada');
+    if (origin.toLowerCase() === destination.toLowerCase()) return alert('⚠️ Origem e destino não podem ser iguais');
     if (!showPrice) { setPrice(calculatePrice()); setShowPrice(true); }
+    setScheduleStep('form');
     setShowScheduleModal(true);
   };
 
   const confirmSchedule = () => {
-    if (!scheduleDate) return showToast('Selecione uma data', 'warning');
-    if (!scheduleTime) return showToast('Selecione um horário', 'warning');
+    if (!scheduleDate) return alert('⚠️ Selecione uma data');
+    if (!scheduleTime) return alert('⚠️ Selecione um horário');
+    setScheduleStep('service');
+  };
+
+  const finalizarAgendamento = () => {
+    if (!selectedService) return alert('⚠️ Selecione um serviço');
+    
+    const servico = servicos.find(s => s.id === selectedService);
     
     const novoAgendamento = {
       id: Date.now(),
@@ -105,7 +105,8 @@ const SecaoCorrida: React.FC = () => {
       destination: destination,
       date: scheduleDate,
       time: scheduleTime,
-      price: price,
+      price: servico?.preco || price,
+      service: servico?.nome,
       status: 'agendado',
       createdAt: new Date().toISOString(),
     };
@@ -118,7 +119,10 @@ const SecaoCorrida: React.FC = () => {
     setShowScheduleModal(false);
     setScheduleDate('');
     setScheduleTime('');
-    showToast('🎉 Viagem agendada com sucesso! Você receberá uma notificação em breve.', 'success');
+    setSelectedService('');
+    setScheduleStep('form');
+    alert('✅ Viagem agendada com sucesso!');
+    window.location.href = '/passageiro/painel';
   };
 
   const handleLogin = () => {
@@ -130,7 +134,6 @@ const SecaoCorrida: React.FC = () => {
     setShowLoginModal(false);
     setLoginUsername('');
     setLoginPassword('');
-    showToast(`Bem-vindo, ${loginUsername}!`, 'success');
   };
 
   const handleLogout = () => {
@@ -138,14 +141,12 @@ const SecaoCorrida: React.FC = () => {
     setCurrentUser(null);
     setRecentTrips([]);
     setShowRecent(false);
-    showToast('Você saiu da sua conta', 'info');
   };
 
   const selectCity = (city: string) => {
     setCurrentCity(city);
     setShowCityModal(false);
     setSearchCity('');
-    showToast(`Cidade alterada para ${city}`, 'info');
   };
 
   const filteredCities = cidadesDisponiveis.filter(city =>
@@ -175,16 +176,6 @@ const SecaoCorrida: React.FC = () => {
 
   return (
     <div className="ride-box">
-      {/* Toasts */}
-      {toasts.map(toast => (
-        <ToastNotification
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
-        />
-      ))}
-
       <div className="ride-location">
         <span className="ride-location-icon">📍</span>
         <span>{currentCity}</span>
@@ -277,8 +268,8 @@ const SecaoCorrida: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Agendamento */}
-      {showScheduleModal && (
+      {/* Modal de Agendamento - Etapa 1 */}
+      {showScheduleModal && scheduleStep === 'form' && (
         <div className="modal-overlay" onClick={() => setShowScheduleModal(false)}>
           <div className="modal-content schedule-modal" onClick={(e) => e.stopPropagation()}>
             <h3>📅 Agendar Viagem</h3>
@@ -327,6 +318,48 @@ const SecaoCorrida: React.FC = () => {
             <div className="modal-buttons">
               <button className="cancel-btn" onClick={() => setShowScheduleModal(false)}>Cancelar</button>
               <button className="confirm-btn" onClick={confirmSchedule}>Continuar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Agendamento - Etapa 2 */}
+      {showScheduleModal && scheduleStep === 'service' && (
+        <div className="modal-overlay" onClick={() => setShowScheduleModal(false)}>
+          <div className="modal-content service-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>🚗 Escolha uma viagem</h3>
+            <p className="modal-subtitle">Preços mais baixos que o normal</p>
+
+            {servicos.map((servico) => (
+              <div 
+                key={servico.id}
+                className={`service-option ${selectedService === servico.id ? 'selected' : ''}`}
+                onClick={() => setSelectedService(servico.id)}
+                style={{
+                  padding: '16px',
+                  marginBottom: '12px',
+                  border: `2px solid ${selectedService === servico.id ? '#4caf50' : '#e5e7eb'}`,
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  background: selectedService === servico.id ? '#e8f5e9' : 'white'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ fontSize: '32px' }}>{servico.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{servico.nome}</span>
+                      <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#2e7d32' }}>{servico.preco}</span>
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>{servico.descricao}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+              <button className="cancel-btn" onClick={() => setScheduleStep('form')}>Voltar</button>
+              <button className="confirm-btn" onClick={finalizarAgendamento}>Confirmar</button>
             </div>
           </div>
         </div>

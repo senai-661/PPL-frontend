@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Car, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import ToastNotification from '../../Components/Elementos/ToastNotification';
+import ConfirmModal from '../../Components/Elementos/ConfirmModal';
 
 interface Agendamento {
   id: number;
@@ -26,6 +27,11 @@ const CorridasAgendadasMotorista: React.FC = () => {
   const [filter, setFilter] = useState<string>('agendado');
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    id: number | null;
+    action: 'recusar' | 'concluir' | null;
+  }>({ isOpen: false, id: null, action: null });
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
     const id = Date.now();
@@ -48,21 +54,21 @@ const CorridasAgendadasMotorista: React.FC = () => {
       const exemplos = [
         {
           id: 1,
-          origin: "Avenida Coronel Fernando Ferreira Leite, 1540, Jardim California, Ribeirão Preto (SP), CEP 14026-900",
-          destination: "Rua Aprígio de Araújo, 837 - Centro",
-          date: "2026-06-21",
+          origin: "campos elíseos",
+          destination: "avenida do Cristo",
+          date: "2026-06-24",
           time: "08:30",
-          price: "R$ 8,00",
+          price: "R$ 10,32",
           status: "agendado",
           service: "OpenLine Go"
         },
         {
           id: 2,
-          origin: "R. Aprígio de Araújo, 2058 - Centro",
-          destination: "Novo Shopping, Av. Presidente Kennedy, 1500",
-          date: "2026-06-22",
+          origin: "Av. Presidente Kennedy, 1500 - Ribeirânia",
+          destination: "Centro",
+          date: "2026-06-25",
           time: "14:00",
-          price: "R$ 12,50",
+          price: "R$ 15,00",
           status: "agendado",
           service: "OpenLine Comfort"
         }
@@ -103,25 +109,39 @@ const CorridasAgendadasMotorista: React.FC = () => {
     );
     salvarAgendamentos(novos);
     notificarPassageiro(id, '✅ Sua corrida foi aceita! O motorista está a caminho.');
-    showToast('✨ Corrida aceita com sucesso! O passageiro foi notificado e aguarda você.', 'success');
+    showToast('✨ Corrida aceita com sucesso! O passageiro foi notificado.', 'success');
   };
 
-  const recusarCorrida = (id: number) => {
-    const novos = agendamentos.map(ag => 
-      ag.id === id ? { ...ag, status: 'recusado' } : ag
-    );
-    salvarAgendamentos(novos);
-    notificarPassageiro(id, '❌ Sua corrida foi recusada. Por favor, tente novamente.');
-    showToast('⚠️ Corrida recusada. O passageiro será notificado e poderá buscar outro motorista.', 'warning');
+  const confirmarRecusar = (id: number) => {
+    setConfirmModal({ isOpen: true, id, action: 'recusar' });
   };
 
-  const concluirCorrida = (id: number) => {
-    const novos = agendamentos.map(ag => 
-      ag.id === id ? { ...ag, status: 'concluido' } : ag
-    );
-    salvarAgendamentos(novos);
-    notificarPassageiro(id, '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
-    showToast('🏁 Viagem concluída! Pagamento será processado em até 24h. Ótimo trabalho!', 'success');
+  const confirmarConcluir = (id: number) => {
+    setConfirmModal({ isOpen: true, id, action: 'concluir' });
+  };
+
+  const executarRecusar = () => {
+    if (confirmModal.id) {
+      const novos = agendamentos.map(ag => 
+        ag.id === confirmModal.id ? { ...ag, status: 'recusado' } : ag
+      );
+      salvarAgendamentos(novos);
+      notificarPassageiro(confirmModal.id, '❌ Sua corrida foi recusada. Por favor, tente novamente.');
+      showToast('⚠️ Corrida recusada. O passageiro será notificado.', 'warning');
+    }
+    setConfirmModal({ isOpen: false, id: null, action: null });
+  };
+
+  const executarConcluir = () => {
+    if (confirmModal.id) {
+      const novos = agendamentos.map(ag => 
+        ag.id === confirmModal.id ? { ...ag, status: 'concluido' } : ag
+      );
+      salvarAgendamentos(novos);
+      notificarPassageiro(confirmModal.id, '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
+      showToast('🏁 Viagem concluída! Pagamento será processado em até 24h.', 'success');
+    }
+    setConfirmModal({ isOpen: false, id: null, action: null });
   };
 
   const getStatusConfig = (status: string) => {
@@ -208,6 +228,19 @@ const CorridasAgendadasMotorista: React.FC = () => {
           onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
         />
       ))}
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.action === 'recusar' ? 'Recusar Corrida' : 'Concluir Viagem'}
+        message={confirmModal.action === 'recusar' 
+          ? 'Tem certeza que deseja recusar esta corrida? O passageiro será notificado.'
+          : 'Confirmar que a viagem foi concluída com sucesso?'}
+        onConfirm={confirmModal.action === 'recusar' ? executarRecusar : executarConcluir}
+        onCancel={() => setConfirmModal({ isOpen: false, id: null, action: null })}
+        confirmText={confirmModal.action === 'recusar' ? 'Sim, recusar' : 'Sim, concluir'}
+        cancelText="Cancelar"
+        type={confirmModal.action === 'recusar' ? 'danger' : 'info'}
+      />
 
       <div style={{ 
         background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
@@ -396,13 +429,13 @@ const CorridasAgendadasMotorista: React.FC = () => {
                           <button onClick={() => aceitarCorrida(ag.id)} style={{ background: '#10b981', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <CheckCircle size={16} /> Aceitar
                           </button>
-                          <button onClick={() => recusarCorrida(ag.id)} style={{ background: '#ef4444', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button onClick={() => confirmarRecusar(ag.id)} style={{ background: '#ef4444', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <XCircle size={16} /> Recusar
                           </button>
                         </>
                       )}
                       {ag.status === 'aceito' && (
-                        <button onClick={() => concluirCorrida(ag.id)} style={{ background: '#3b82f6', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button onClick={() => confirmarConcluir(ag.id)} style={{ background: '#3b82f6', color: 'white', padding: '10px 24px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <CheckCircle size={16} /> Concluir Viagem
                         </button>
                       )}

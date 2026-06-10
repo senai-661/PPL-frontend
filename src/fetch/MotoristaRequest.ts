@@ -144,6 +144,27 @@ class MotoristaRequests {
       return false;
     }
   }
+
+  async atualizarMotoristaPorAdmin(idMotorista: number, dados: Partial<MotoristaDTO>): Promise<boolean> {
+    try {
+      const respostaAPI = await fetch(`${this.serverURL}/api/admin/motoristas/${idMotorista}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
+        },
+        body: JSON.stringify(dados),
+      });
+
+      if (!respostaAPI.ok) {
+        throw new Error('Erro ao atualizar motorista por admin.');
+      }
+      return true;
+    } catch (error) {
+      console.error(`Erro ao atualizar motorista por admin: ${error}`);
+      return false;
+    }
+  }
 }
 
 export default new MotoristaRequests();

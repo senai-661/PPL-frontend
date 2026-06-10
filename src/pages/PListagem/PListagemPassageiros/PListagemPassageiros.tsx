@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Loader2, RefreshCw, Search, Users } from 'lucide-react';
 import PassageiroRequest from '../../../fetch/PassageiroRequest';
 import { PassageiroDTO } from '../../../dto/PassageiroDTO';
@@ -8,6 +8,52 @@ const TabelaPassageiros: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editPassageiro, setEditPassageiro] = useState<PassageiroDTO | null>(null);
+  const [editForm, setEditForm] = useState({
+    nome: '',
+    sobrenome: '',
+    cpf: '',
+    email: '',
+    celular: '',
+    dataNascimento: '',
+    senha: '',
+    necessidades: [] as string[]
+  });
+  const [saving, setSaving] = useState(false);
+
+  const formatarDataInput = (data: Date | string | undefined): string => {
+    if (!data) return '';
+    const d = new Date(data);
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
+  };
+
+  const handleEditClick = (p: PassageiroDTO) => {
+    setEditPassageiro(p);
+    setEditForm({
+      nome: p.nome || '',
+      sobrenome: p.sobrenome || '',
+      cpf: p.cpf || '',
+      email: p.email || '',
+      celular: p.celular || '',
+      dataNascimento: formatarDataInput(p.dataNascimento),
+      senha: '',
+      necessidades: p.necessidades || []
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleNecessidadesChange = (necessidade: string) => {
+    setEditForm(prev => {
+      const existe = prev.necessidades.includes(necessidade);
+      const novas = existe 
+        ? prev.necessidades.filter(n => n !== necessidade)
+        : [...prev.necessidades, necessidade];
+      return { ...prev, necessidades: novas };
+    });
+  };
 
   const fetchPassageiros = useCallback(async () => {
     setLoading(true);
@@ -36,6 +82,36 @@ const TabelaPassageiros: React.FC = () => {
       return nomeCompleto.includes(termo);
     });
   }, [passageiros, searchQuery]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editPassageiro || !editPassageiro.idPassageiro) return;
+    setSaving(true);
+
+    const dadosEnvio: any = {
+      nome: editForm.nome,
+      sobrenome: editForm.sobrenome,
+      cpf: editForm.cpf,
+      email: editForm.email,
+      celular: editForm.celular,
+      dataNascimento: editForm.dataNascimento ? new Date(editForm.dataNascimento) : undefined,
+      necessidades: editForm.necessidades
+    };
+
+    if (editForm.senha) {
+      dadosEnvio.senha = editForm.senha;
+    }
+
+    const sucesso = await PassageiroRequest.atualizarPassageiroPorAdmin(editPassageiro.idPassageiro, dadosEnvio);
+    setSaving(false);
+
+    if (sucesso) {
+      setIsEditModalOpen(false);
+      fetchPassageiros();
+    } else {
+      window.alert("Erro ao atualizar o passageiro.");
+    }
+  };
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -148,7 +224,7 @@ const TabelaPassageiros: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => window.alert(`Atualizar passageiro ${p.idPassageiro ?? '-'} ainda não implementado.`)}
+                            onClick={() => handleEditClick(p)}
                             className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
                           >
                             Atualizar
@@ -170,6 +246,140 @@ const TabelaPassageiros: React.FC = () => {
           </div>
         )}
       </div>
+
+      {isEditModalOpen && editPassageiro && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+              <h3 className="text-xl font-semibold text-slate-800">Atualizar Passageiro</h3>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSave} className="mt-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Nome</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.nome}
+                    onChange={e => setEditForm({ ...editForm, nome: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f6c6a] focus:ring-2 focus:ring-[#1f6c6a]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Sobrenome</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.sobrenome}
+                    onChange={e => setEditForm({ ...editForm, sobrenome: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f6c6a] focus:ring-2 focus:ring-[#1f6c6a]/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 uppercase">E-mail</label>
+                <input
+                  type="email"
+                  required
+                  value={editForm.email}
+                  onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f6c6a] focus:ring-2 focus:ring-[#1f6c6a]/20"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">CPF</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={11}
+                    value={editForm.cpf}
+                    onChange={e => setEditForm({ ...editForm, cpf: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f6c6a] focus:ring-2 focus:ring-[#1f6c6a]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Celular</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.celular}
+                    onChange={e => setEditForm({ ...editForm, celular: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f6c6a] focus:ring-2 focus:ring-[#1f6c6a]/20"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Data de Nascimento</label>
+                  <input
+                    type="date"
+                    required
+                    value={editForm.dataNascimento}
+                    onChange={e => setEditForm({ ...editForm, dataNascimento: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f6c6a] focus:ring-2 focus:ring-[#1f6c6a]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Nova Senha (Opcional)</label>
+                  <input
+                    type="password"
+                    placeholder="Deixe em branco para manter"
+                    value={editForm.senha}
+                    onChange={e => setEditForm({ ...editForm, senha: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f6c6a] focus:ring-2 focus:ring-[#1f6c6a]/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 uppercase mb-2">Necessidades Especiais</label>
+                <div className="flex flex-wrap gap-3">
+                  {['Cadeirante', 'Deficiência Visual', 'Deficiência Auditiva'].map((nec) => (
+                    <label key={nec} className="inline-flex items-center gap-2 text-sm text-gray-700 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-gray-100 transition">
+                      <input
+                        type="checkbox"
+                        checked={editForm.necessidades.includes(nec)}
+                        onChange={() => handleNecessidadesChange(nec)}
+                        className="rounded border-gray-300 text-[#1f6c6a] focus:ring-[#1f6c6a]"
+                      />
+                      {nec}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-gray-200 pt-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1f6c6a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a5b59] disabled:bg-gray-400 transition"
+                >
+                  {saving && <Loader2 className="size-4 animate-spin" />}
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

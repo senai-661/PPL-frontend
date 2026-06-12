@@ -14,7 +14,6 @@ import {
 
 import heroBannerImage from '../../assets/heroBannerImage.png';
 import './Inicio.css';
-import SecaoCorrida from '../../Components/SecaoCorrida/SecaoCorrida';
 
 export function Home() {
   return (
@@ -122,10 +121,6 @@ export function Home() {
               <p className="service-description">Nosso compromisso com a inclusão</p>
             </Link>
           </div>
-
-          {/* SEÇÃO DE CORRIDA */}
-          <SecaoCorrida />
-
         </div>
       </section>
 

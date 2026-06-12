@@ -53,6 +53,40 @@ const AGUARDANDO_CORRIDA_INICIAL: AguardandoCorridaState = {
   preco: 0,
 };
 
+// Função para calcular preço com base nas coordenadas e tipo de serviço
+const calcularPrecoPorCoordenadas = (origin: LatLngTuple | null, destination: LatLngTuple | null, rideType: string): number => {
+  if (!origin || !destination) return 15.0;
+  
+  const R = 6371;
+  const lat1 = origin[0] * Math.PI / 180;
+  const lat2 = destination[0] * Math.PI / 180;
+  const dlat = (destination[0] - origin[0]) * Math.PI / 180;
+  const dlng = (destination[1] - origin[1]) * Math.PI / 180;
+  
+  const a = Math.sin(dlat/2) * Math.sin(dlat/2) +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(dlng/2) * Math.sin(dlng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distancia = R * c;
+  
+  let multiplicador = 1.0;
+  switch (rideType) {
+    case 'Convencional':
+      multiplicador = 1.0;
+      break;
+    case 'Premium':
+      multiplicador = 1.8;
+      break;
+    case 'EconoComigo':
+      multiplicador = 0.7;
+      break;
+    default:
+      multiplicador = 1.0;
+  }
+  
+  return (4.5 + distancia * 1.5) * multiplicador;
+};
+
 export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -70,16 +104,30 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [isRouteLoading, setIsRouteLoading] = useState(false);
   const [selectedOriginAddress, setSelectedOriginAddress] = useState<AutocompleteAddress | null>(null);
   const [selectedDestinationAddress, setSelectedDestinationAddress] = useState<AutocompleteAddress | null>(null);
-  const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
   const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
   const [estimatedDistance, setEstimatedDistance] = useState<string | null>(null);
   const [aguardandoCorrida, setAguardandoCorrida] = useState<AguardandoCorridaState>(
     AGUARDANDO_CORRIDA_INICIAL,
   );
 
+  // Estado para agendamento
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+
   const token = localStorage.getItem('token');
   const pollingIntervalRef = useRef<number | null>(null);
   const { success, error: showError, info, warning } = useToast();
+
+  // Função para obter o preço atual baseado no tipo de serviço
+  const getPrecoAtual = (): number => {
+    return calcularPrecoPorCoordenadas(originPosition, destinationPosition, formData.rideType ?? 'Convencional');
+  };
+
+  const getPrecoFormatado = (): string => {
+    const preco = getPrecoAtual();
+    return `R$ ${preco.toFixed(2)}`;
+  };
 
   const clearPollingInterval = () => {
     if (pollingIntervalRef.current !== null) {
@@ -221,6 +269,81 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     }
   };
 
+  // Funções de agendamento
+  const handleAgendarClick = () => {
+    if (!formData.origin.trim()) {
+      warning('Digite o local de partida');
+      return;
+    }
+    if (!formData.destination.trim()) {
+      warning('Digite o local de destino');
+      return;
+    }
+    if (!originPosition || !destinationPosition) {
+      info('Aguardando localização dos endereços. Tente novamente.');
+      return;
+    }
+    setShowScheduleModal(true);
+  };
+
+  const confirmarAgendamento = () => {
+    if (!scheduleDate) {
+      warning('Selecione uma data');
+      return;
+    }
+    if (!scheduleTime) {
+      warning('Selecione um horário');
+      return;
+    }
+
+    const servicoNome = formData.rideType ?? 'Convencional';
+    const precoFinal = getPrecoFormatado();
+
+    const novoAgendamento = {
+      id: Date.now(),
+      origin: formData.origin,
+      destination: formData.destination,
+      date: scheduleDate,
+      time: scheduleTime,
+      price: precoFinal,
+      service: servicoNome,
+      status: 'agendado',
+      createdAt: new Date().toISOString(),
+    };
+
+    const saved = localStorage.getItem('openline_agendamentos');
+    const agendamentosSalvos = saved ? JSON.parse(saved) : [];
+    agendamentosSalvos.push(novoAgendamento);
+    localStorage.setItem('openline_agendamentos', JSON.stringify(agendamentosSalvos));
+    
+    setShowScheduleModal(false);
+    setScheduleDate('');
+    setScheduleTime('');
+    
+    success(`✅ Viagem agendada com sucesso para ${scheduleDate} às ${scheduleTime}!`);
+  };
+
+  const getAvailableDates = () => {
+    const dates = [];
+    const today = new Date();
+    for (let i = 1; i <= 30; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
+      dates.push({ value: date.toISOString().split('T')[0], label: `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${date.getDate()}/${date.getMonth() + 1}` });
+    }
+    return dates;
+  };
+
+  const getAvailableTimes = () => {
+    const times = [];
+    for (let i = 0; i < 24; i++) {
+      times.push(`${i.toString().padStart(2, '0')}:00`);
+      times.push(`${i.toString().padStart(2, '0')}:30`);
+    }
+    return times;
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -232,7 +355,6 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         setOriginPosition(null);
         setDestinationPosition(null);
         setIsMapLoading(false);
-        setEstimatedPrice(null);
         setEstimatedTime(null);
         setEstimatedDistance(null);
         return;
@@ -299,7 +421,6 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
               return;
             }
 
-            setEstimatedPrice(data.preco ?? null);
             setEstimatedTime(
               typeof data.duracaoEstimadaMin === 'number'
                 ? `${data.duracaoEstimadaMin} min`
@@ -312,13 +433,11 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
             );
           }
         } else if (isMounted) {
-          setEstimatedPrice(null);
           setEstimatedTime(null);
           setEstimatedDistance(null);
         }
       } catch (error) {
         if (isMounted) {
-          setEstimatedPrice(null);
           setEstimatedTime(null);
           setEstimatedDistance(null);
         }
@@ -438,7 +557,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         id: data.idCorrida ?? null,
         origem: formData.origin,
         destino: formData.destination,
-        preco: data.preco ?? estimatedPrice ?? 0,
+        preco: data.preco ?? getPrecoAtual(),
       });
 
       if (data.idCorrida) {
@@ -463,7 +582,6 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       setSelectedOriginAddress(null);
       setSelectedDestinationAddress(null);
       setRouteData(null);
-      setEstimatedPrice(null);
       setEstimatedTime(null);
       setEstimatedDistance(null);
     } catch (error) {
@@ -651,18 +769,30 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                   </>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading && <Loader2 className="size-5 animate-spin" />}
-                  {loading
-                    ? 'Solicitando...'
-                    : userType === 'passenger'
-                      ? 'Solicitar Viagem'
-                      : 'Ativar Modo Online'}
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-[#5a34a1] hover:bg-[#4a2a85] text-white font-bold py-4 rounded-lg transition-colors text-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {loading && <Loader2 className="size-5 animate-spin" />}
+                    {loading
+                      ? 'Solicitando...'
+                      : userType === 'passenger'
+                        ? 'Solicitar Viagem'
+                        : 'Ativar Modo Online'}
+                  </button>
+                  
+                  {userType === 'passenger' && (
+                    <button
+                      type="button"
+                      onClick={handleAgendarClick}
+                      className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg flex items-center justify-center gap-2"
+                    >
+                      📅 Agendar
+                    </button>
+                  )}
+                </div>
               </form>
 
               <div className="pt-4 border-t border-gray-200">
@@ -707,8 +837,6 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                 </div>
               </div>
             </div>
-
-
           </>
         )}
       </div>
@@ -738,18 +866,18 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
             <div className="p-4">
               <div className="mb-3 flex items-start justify-between gap-3">
-              <div>
-                <p className="mb-1 text-[11px] font-semibold text-gray-500 dark:text-slate-400">
-                  PRECO ESTIMADO
-                </p>
-                <p className="text-2xl font-bold text-[#5a34a1] dark:text-[#c7b5f3]">
-                  {estimatedPrice !== null ? `R$ ${estimatedPrice.toFixed(2)}` : 'R$ --,--'}
-                </p>
+                <div>
+                  <p className="mb-1 text-[11px] font-semibold text-gray-500 dark:text-slate-400">
+                    PRECO ESTIMADO
+                  </p>
+                  <p className="text-2xl font-bold text-[#5a34a1] dark:text-[#c7b5f3]">
+                    {getPrecoFormatado()}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-[#f3edff] p-2.5 text-[#5a34a1] dark:bg-slate-800 dark:text-[#c7b5f3]">
+                  <DollarSign className="size-4.5" />
+                </div>
               </div>
-              <div className="rounded-xl bg-[#f3edff] p-2.5 text-[#5a34a1] dark:bg-slate-800 dark:text-[#c7b5f3]">
-                <DollarSign className="size-4.5" />
-              </div>
-            </div>
 
               <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 text-sm dark:border-slate-800">
                 <div className="rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-slate-800/80">
@@ -805,6 +933,106 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           preco={aguardandoCorrida.preco}
           onCancelar={handleCancelarAguardando}
         />
+      )}
+
+      {/* Modal de Agendamento */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000]">
+          <div className="bg-white rounded-3xl max-w-md w-full mx-4 overflow-hidden shadow-2xl">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-5">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <span className="text-2xl">📅</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Agendar Viagem</h3>
+                  <p className="text-purple-100 text-sm">Escolha quando você quer viajar</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-4 mb-6 border border-gray-100">
+                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-dashed border-gray-200">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                    <span className="text-xl">🚗</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500">Sua viagem</p>
+                    <p className="text-sm font-semibold text-gray-800 truncate max-w-[200px]">
+                      {formData.origin || '📍 Origem'} → {formData.destination || '🏁 Destino'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-1">Preço estimado</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {getPrecoFormatado()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <span className="text-lg">📅</span> Data da viagem
+                </label>
+                <select
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors bg-white text-gray-700"
+                >
+                  <option value="">Selecione uma data</option>
+                  {getAvailableDates().map((date) => (
+                    <option key={date.value} value={date.value}>{date.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <span className="text-lg">⏰</span> Horário da viagem
+                </label>
+                <select
+                  value={scheduleTime}
+                  onChange={(e) => setScheduleTime(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors bg-white text-gray-700"
+                >
+                  <option value="">Selecione um horário</option>
+                  {getAvailableTimes().map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-amber-50 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">ℹ️</span>
+                  <p className="text-sm font-semibold text-amber-800">Sobre o agendamento</p>
+                </div>
+                <ul className="text-xs text-amber-700 space-y-2">
+                  <li className="flex items-center gap-2">✓ Agende com até 30 dias de antecedência</li>
+                  <li className="flex items-center gap-2">✓ Tempo de espera extra incluído</li>
+                  <li className="flex items-center gap-2">✓ Cancele sem custo com até 60 minutos de antecedência</li>
+                </ul>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowScheduleModal(false)}
+                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmarAgendamento}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-medium hover:from-purple-700 hover:to-indigo-700 transition-all"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -152,7 +152,7 @@ class PassageiroRequests {
     async obterPassageiroPorId(idPassageiro: number): Promise<PassageiroDTO | undefined> {
         try {
             const token = localStorage.getItem('token');
-            const respostaAPI = await fetch(`${this.serverURL}${this.enviaFormularioPassageiro}/${idPassageiro}`, {
+           const respostaAPI = await fetch(`${this.serverURL}${this.routeListaPassageiros}?idPassageiro=${idPassageiro}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-access-token': `${token}`

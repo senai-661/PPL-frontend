@@ -9,25 +9,25 @@ export function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-5xl mb-6">Sobre a OpenLine</h1>
           <p className="text-xl text-white/90 max-w-3xl">
-            Acreditamos que mobilidade é um direito fundamental. Nossa missão é tornar o transporte urbano verdadeiramente acessível e inclusivo para todos.
+            Acreditamos que mobilidade Ã© um direito fundamental. Nossa missÃ£o Ã© tornar o transporte urbano verdadeiramente acessÃ­vel e inclusivo para todos.
           </p>
         </div>
       </section>
 
-      {/* Nossa História */}
+      {/* Nossa HistÃ³ria */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl mb-6">Nossa História</h2>
+              <h2 className="text-4xl mb-6">Nossa HistÃ³ria</h2>
               <p className="text-lg text-gray-700 mb-4">
-                A OpenLine nasceu da necessidade real de criar um serviço de transporte urbano que verdadeiramente atendesse às necessidades de todas as pessoas, especialmente aquelas que historicamente foram excluídas ou marginalizadas.
+                A OpenLine nasceu da necessidade real de criar um serviÃ§o de transporte urbano que verdadeiramente atendesse Ã s necessidades de todas as pessoas, especialmente aquelas que historicamente foram excluÃ­das ou marginalizadas.
               </p>
               <p className="text-lg text-gray-700 mb-4">
-                Fundada em 2024, rapidamente nos tornamos referência em transporte acessível, oferecendo não apenas veículos adaptados, mas uma experiência completa de respeito, dignidade e inclusão.
+                Fundada em 2024, rapidamente nos tornamos referÃªncia em transporte acessÃ­vel, oferecendo nÃ£o apenas veÃ­culos adaptados, mas uma experiÃªncia completa de respeito, dignidade e inclusÃ£o.
               </p>
               <p className="text-lg text-gray-700">
-                Hoje, operamos em diversas cidades brasileiras, conectando milhares de pessoas aos seus destinos diariamente, sempre com o compromisso de fazer a diferença na vida de cada passageiro.
+                Hoje, operamos em diversas cidades brasileiras, conectando milhares de pessoas aos seus destinos diariamente, sempre com o compromisso de fazer a diferenÃ§a na vida de cada passageiro.
               </p>
             </div>
             <div>
@@ -41,7 +41,7 @@ export function About() {
         </div>
       </section>
 
-      {/* Missão, Visão e Valores */}
+      {/* MissÃ£o, VisÃ£o e Valores */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
@@ -49,9 +49,9 @@ export function About() {
               <div className="bg-[#5a34a1] text-white w-16 h-16 rounded-full flex items-center justify-center mb-4">
                 <Target className="size-8" />
               </div>
-              <h3 className="text-2xl mb-4">Missão</h3>
+              <h3 className="text-2xl mb-4">MissÃ£o</h3>
               <p className="text-gray-700">
-                Promover mobilidade urbana acessível, segura e inclusiva, garantindo que todas as pessoas, independentemente de suas condições físicas, sociais ou econômicas, tenham acesso a transporte digno e de qualidade.
+                Promover mobilidade urbana acessÃ­vel, segura e inclusiva, garantindo que todas as pessoas, independentemente de suas condiÃ§Ãµes fÃ­sicas, sociais ou econÃ´micas, tenham acesso a transporte digno e de qualidade.
               </p>
             </div>
 
@@ -59,9 +59,9 @@ export function About() {
               <div className="bg-[#5a34a1] text-white w-16 h-16 rounded-full flex items-center justify-center mb-4">
                 <Eye className="size-8" />
               </div>
-              <h3 className="text-2xl mb-4">Visão</h3>
+              <h3 className="text-2xl mb-4">VisÃ£o</h3>
               <p className="text-gray-700">
-                Ser a principal referência em transporte urbano acessível no Brasil, transformando a forma como a sociedade pensa e pratica a inclusão e a mobilidade para todos.
+                Ser a principal referÃªncia em transporte urbano acessÃ­vel no Brasil, transformando a forma como a sociedade pensa e pratica a inclusÃ£o e a mobilidade para todos.
               </p>
             </div>
 
@@ -71,11 +71,11 @@ export function About() {
               </div>
               <h3 className="text-2xl mb-4">Valores</h3>
               <ul className="text-gray-700 space-y-2">
-                <li>• Inclusão e Acessibilidade</li>
-                <li>• Respeito e Dignidade</li>
-                <li>• Excelência no Atendimento</li>
-                <li>• Inovação Constante</li>
-                <li>• Responsabilidade Social</li>
+                <li>InclusÃ£o e Acessibilidade</li>
+                <li>Respeito e Dignidade</li>
+                <li>ExcelÃªncia no Atendimento</li>
+                <li>InovaÃ§Ã£o Constante</li>
+                <li>Responsabilidade Social</li>
               </ul>
             </div>
           </div>
@@ -87,50 +87,50 @@ export function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Heart className="size-16 text-[#5a34a1] mx-auto mb-4" />
-            <h2 className="text-4xl mb-4">Nosso Compromisso com Você</h2>
+            <h2 className="text-4xl mb-4">Nosso Compromisso com VocÃª</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Na OpenLine, cada viagem é uma oportunidade de fazer a diferença
+              Na OpenLine, cada viagem Ã© uma oportunidade de fazer a diferenÃ§a.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-gradient-to-br from-[#5a34a1] to-[#7c51c9] text-white p-8 rounded-lg">
-              <h3 className="text-2xl mb-4">Para Pessoas com Deficiência</h3>
+              <h3 className="text-2xl mb-4">Para Pessoas com DeficiÃªncia</h3>
               <p className="mb-4">
-                Oferecemos veículos 100% adaptados, motoristas treinados em acessibilidade e tecnologia assistiva integrada ao nosso aplicativo.
+                Oferecemos veÃ­culos 100% adaptados, motoristas treinados em acessibilidade e tecnologia assistiva integrada ao nosso aplicativo.
               </p>
               <p>
-                Libras, audiodescrição e interface adaptável fazem parte da nossa plataforma.
+                Libras, audiodescriÃ§Ã£o e interface adaptÃ¡vel fazem parte da nossa plataforma.
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#5a34a1] to-[#7c51c9] text-white p-8 rounded-lg">
               <h3 className="text-2xl mb-4">Para Idosos</h3>
               <p className="mb-4">
-                Assistência personalizada, tempo adequado para embarque e desembarque, e motoristas capacitados para atendimento à terceira idade.
+                AssistÃªncia personalizada, tempo adequado para embarque e desembarque, e motoristas capacitados para atendimento Ã  terceira idade.
               </p>
               <p>
-                Interface simplificada e suporte por telefone disponível.
+                Interface simplificada e suporte por telefone disponÃ­vel.
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#5a34a1] to-[#7c51c9] text-white p-8 rounded-lg">
               <h3 className="text-2xl mb-4">Para Comunidade LGBTQIA+</h3>
               <p className="mb-4">
-                Ambiente seguro e respeitoso, com política de tolerância zero contra qualquer tipo de discriminação.
+                Ambiente seguro e respeitoso, com polÃ­tica de tolerÃ¢ncia zero contra qualquer tipo de discriminaÃ§Ã£o.
               </p>
               <p>
-                Treinamento de motoristas em diversidade e inclusão.
+                Treinamento de motoristas em diversidade e inclusÃ£o.
               </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#5a34a1] to-[#7c51c9] text-white p-8 rounded-lg">
               <h3 className="text-2xl mb-4">Para Todos</h3>
               <p className="mb-4">
-                Preços justos, transparência total, e compromisso com a qualidade do serviço prestado a cada pessoa.
+                PreÃ§os justos, transparÃªncia total e compromisso com a qualidade do serviÃ§o prestado a cada pessoa.
               </p>
               <p>
-                Porque mobilidade é direito de todos, sem exceção.
+                Porque mobilidade Ã© direito de todos, sem exceÃ§Ã£o.
               </p>
             </div>
           </div>
@@ -142,13 +142,13 @@ export function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl mb-6">Nossa Equipe</h2>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-            Formada por profissionais apaixonados por inclusão e inovação, nossa equipe trabalha diariamente para transformar a mobilidade urbana em algo verdadeiramente acessível para todos.
+            Formada por profissionais apaixonados por inclusÃ£o e inovaÃ§Ã£o, nossa equipe trabalha diariamente para transformar a mobilidade urbana em algo verdadeiramente acessÃ­vel para todos.
           </p>
           <div className="bg-white p-8 rounded-lg shadow-md inline-block">
             <p className="text-lg text-gray-700">
               Mais de <span className="text-[#5a34a1]">500 motoristas parceiros</span> capacitados<br />
-              <span className="text-[#5a34a1]">50+ colaboradores</span> dedicados à excelência<br />
-              <span className="text-[#5a34a1]">100%</span> comprometidos com a inclusão
+              <span className="text-[#5a34a1]">50+ colaboradores</span> dedicados Ã  excelÃªncia<br />
+              <span className="text-[#5a34a1]">100%</span> comprometidos com a inclusÃ£o
             </p>
           </div>
         </div>

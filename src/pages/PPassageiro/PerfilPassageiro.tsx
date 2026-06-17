@@ -100,7 +100,12 @@ export function PassengerProfile() {
             totalViagens: dadosStats.totalViagens ?? 0,
             totalGasto: dadosStats.totalGasto ?? 0,
             destinoFavorito: dadosStats.destinoFavorito ?? '---',
-            desde: dadosStats.desde ?? new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+            desde: dadosStats.desde
+              ? new Date(dadosStats.desde).toLocaleDateString('pt-BR', {
+                month: 'long',
+                year: 'numeric',
+              })
+              : '',
           });
         }
       } catch (e: any) {
@@ -159,7 +164,7 @@ export function PassengerProfile() {
       setSuccessMsg('Perfil atualizado com sucesso!');
       setIsEditing(false);
       setForm((f) => ({ ...f, senha: '', confirmarSenha: '' }));
-      
+
       // Limpa mensagem de sucesso após 3 segundos
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (e: any) {
@@ -431,7 +436,7 @@ export function PassengerProfile() {
                   Editar
                 </button>
               </div>
-              
+
               <button className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#5a34a1] hover:text-[#5a34a1] transition-colors">
                 + Adicionar Método de Pagamento
               </button>

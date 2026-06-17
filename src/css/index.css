@@ -392,7 +392,7 @@ a {
   box-shadow: 0 0 0 4px rgba(90, 52, 161, 0.15);
 }
 
-.dark .app-main :is(.bg-white, .bg-gray-50, .bg-gray-100, .bg-red-50) {
+.dark .app-main :is(.bg-white, .bg-gray-50, .bg-gray-100, .bg-slate-100, .bg-red-50) {
   background-color: rgba(15, 23, 42, 0.82) !important;
 }
 

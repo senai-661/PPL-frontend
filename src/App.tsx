@@ -39,9 +39,13 @@ import { NewTrip } from './pages/PViagem/NovaViagem';
 import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRoute';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './Components/Elementos/ToastContainer';
+<<<<<<< HEAD
 import HistoricoCorridas from './pages/PPassageiro/HistoricoCorridas';
 import NotificacoesPassageiro from './pages/PPassageiro/NotificacoesPassageiro';
 import CorridasAgendadasMotorista from './pages/PMotorista/CorridasAgendadasMotorista';
+=======
+import PDetalhesPassageiro from './pages/PDetalhes/PDetalhesPassageiro/PDetalhesPassageiro';
+>>>>>>> f8315fb7bb56b3828f5840432f2bf4e0862be902
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -106,6 +110,7 @@ function AppContent() {
           <Route path="/recursos-seguranca" element={<SafetyResources />} />
           <Route path="/seguranca" element={<Safety />} />
           <Route path="/sobre-nos" element={<About />} />
+          <Route path='/detalhes/passageiro/:id_passageiro' element={<PDetalhesPassageiro/>} />
 
           {/* Admin */}
           <Route path="/administrador/*" element={<AuthProtectedRouteWithType allowedUserType="admin"><PAdministrador /></AuthProtectedRouteWithType>} />

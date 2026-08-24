@@ -76,7 +76,7 @@ class MotoristaRequests {
     }
   }
 
-  async enviaFormularioMotorista(formMotorista: string): Promise<void> {
+  async enviaFormularioMotorista(formMotorista: string): Promise<boolean> {
     const respostaAPI = await fetch(`${this.serverURL}${this.routeCadastraMotorista}`, {
       method: 'POST',
       headers: {
@@ -96,6 +96,8 @@ class MotoristaRequests {
     if (!respostaAPI.ok) {
       throw new Error(data?.mensagem || 'Erro ao cadastrar motorista.');
     }
+
+    return true;
   }
 
   async removerMotorista(idMotorista: number): Promise<boolean> {

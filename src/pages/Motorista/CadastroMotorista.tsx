@@ -90,8 +90,8 @@ export function DriverRegistration() {
     try {
       const ok = await MotoristaRequest.enviaFormularioMotorista(JSON.stringify(payload));
       if (ok) {
-        success('Cadastro realizado com sucesso!');
-        navigate('/motorista/painel');
+        success('Cadastro realizado com sucesso! Faça login para continuar.');
+        navigate('/login');
       } else {
         showError('Erro ao cadastrar motorista. Tente novamente.');
       }

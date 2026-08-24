@@ -11,17 +11,18 @@ import {
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests from '../../../fetch/MapRequest';
-import { SERVER_CFG } from '../../../appConfig';
-import { MapComponent, type MapPoint } from '../../Viagem/MapComponent/MapComponent';
-import { useToast } from '../../../hooks/useToast';
+import MapRequests from '../../fetch/MapRequest';
+import { SERVER_CFG } from '../../appConfig';
+import { MapComponent, type MapPoint } from './MapComponent';
+import { useToast } from '../../hooks/useToast';
+import { useNavigate } from 'react-router-dom';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;
 }
 
 interface RideNotification {
-  id: number;
+  idCorrida: number;
   passageiro: {
     nome: string;
     sobrenome: string;
@@ -35,6 +36,8 @@ interface RideNotification {
   statusCorrida: string;
 }
 
+type ActiveRide = RideNotification;
+
 type RideMapLookup = Record<
   number,
   {
@@ -46,6 +49,7 @@ type RideMapLookup = Record<
 const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 
 export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
   const [selectedRide, setSelectedRide] = useState<number | null>(null);
@@ -53,6 +57,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const [rideMapLookup, setRideMapLookup] = useState<RideMapLookup>({});
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [rideNotifications, setRideNotifications] = useState<RideNotification[]>([]);
+  const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     ganhosDia: 0,
@@ -68,24 +73,20 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const { success, error: showError } = useToast();
 
   // Buscar corridas pendentes
-// Buscar corridas pendentes
-const fetchPendingRides = async () => {
-  if (!isOnline) return;
-  
-  try {
-    const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
-    if (response.ok) {
-      const data = await response.json();
-      console.log('[DEBUG] Estrutura completa da resposta:', data);
-      
-      // Mapeia idCorrida para id
-      const corridasComId = data.map((corrida: any) => ({
-        ...corrida,
-        id: corrida.idCorrida // corrigido: usa idCorrida em vez de id_corrida
-      }));
-      
-      console.log('[DEBUG] Corridas com id mapeado:', corridasComId);
-      setRideNotifications(corridasComId);
+  const fetchPendingRides = async (online = isOnline) => {
+    if (!online) return;
+    
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
+      if (response.ok) {
+        const data: RideNotification[] = await response.json();
+        setRideNotifications(data);
+      } else {
+        setRideNotifications([]);
+        console.error('Erro ao buscar corridas:', await response.text());
+      }
+    } catch (error) {
+      console.error('Erro ao buscar corridas:', error);
     }
   } catch (error) {
     console.error('Erro ao buscar corridas:', error);
@@ -124,7 +125,9 @@ const fetchPendingRides = async () => {
         setIsOnline(novoStatus);
         onToggleOnline?.(novoStatus);
         if (novoStatus) {
-          fetchPendingRides();
+          // O estado do React ainda não foi atualizado neste ponto; passa o
+          // novo valor para que a primeira busca não seja ignorada.
+          fetchPendingRides(true);
           fetchDailyStats();
         } else {
           setRideNotifications([]);
@@ -153,6 +156,10 @@ const fetchPendingRides = async () => {
       fetchDailyStats();
     }
   }, [isOnline]);
+
+  useEffect(() => {
+    void fetchActiveRide();
+  }, []);
 
   // Geolocalização do motorista
   useEffect(() => {
@@ -197,7 +204,7 @@ const fetchPendingRides = async () => {
             ]);
 
             return [
-              ride.id,
+              ride.idCorrida,
               {
                 origin: origin ? ([origin.lat, origin.lng] as LatLngTuple) : null,
                 destination: destination
@@ -231,12 +238,29 @@ const fetchPendingRides = async () => {
       headers,
     });
 
-    console.log('[FRONTEND] Resposta status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.semVeiculo || (errorData.mensagem && errorData.mensagem.toLowerCase().includes('veículo'))) {
+          showError('Você precisa cadastrar um veículo antes de aceitar corridas.');
+          navigate('/motorista/cadastro-carro');
+          return;
+        }
+        throw new Error(errorData.mensagem || 'Erro ao aceitar corrida');
+      }
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.log('[FRONTEND] Erro resposta:', error);
-      throw new Error(error.mensagem || 'Erro ao aceitar corrida');
+      success('Corrida aceita! Navegando para o passageiro...');
+      const ride = rideNotifications.find((item) => item.idCorrida === rideId);
+      if (ride) {
+        setActiveRide({ ...ride, statusCorrida: 'Aceito' });
+      }
+      setRideNotifications(prev => prev.filter(ride => ride.idCorrida !== rideId));
+      setSelectedRide(null);
+      setIsOnline(false);
+      fetchDailyStats();
+    } catch (err: any) {
+      showError(err.message || 'Erro ao aceitar corrida');
+    } finally {
+      setLoading(false);
     }
 
     alert(`Corrida aceita! Navegando para o passageiro...`);
@@ -251,26 +275,73 @@ const fetchPendingRides = async () => {
   }
 };
   // Recusar corrida (cancelar)
-  const handleRejectRide = async (rideId: number) => {
+  const handleRejectRide = (rideId: number) => {
+    // A recusa é local: a solicitação deve continuar disponível aos demais motoristas.
+    setRideNotifications(prev => prev.filter(ride => ride.idCorrida !== rideId));
+    setSelectedRide(null);
+  };
+
+  const handleStartRide = async () => {
+    if (!activeRide) return;
+
     setLoading(true);
     try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/cancelar`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ motivoCancelamento: 'Motorista recusou a corrida' }),
-      });
-
+      const response = await fetch(
+        `${SERVER_CFG.SERVER_URL}/api/corridas/${activeRide.idCorrida}/iniciar`,
+        { method: 'PATCH', headers },
+      );
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao recusar corrida');
+        throw new Error(error.mensagem || 'Erro ao iniciar corrida');
       }
 
-      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
-      setSelectedRide(null);
+      setActiveRide((ride) => ride ? { ...ride, statusCorrida: 'Em andamento' } : null);
+      success('Corrida iniciada. Boa viagem!');
     } catch (err: any) {
-      showError(err.message || 'Erro ao recusar corrida');
+      showError(err.message || 'Erro ao iniciar corrida');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFinishRide = async () => {
+    if (!activeRide) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${SERVER_CFG.SERVER_URL}/api/corridas/${activeRide.idCorrida}/finalizar`,
+        { method: 'PATCH', headers },
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.mensagem || 'Erro ao finalizar corrida');
+      }
+
+      setActiveRide(null);
+      setIsOnline(true);
+      fetchPendingRides(true);
+      fetchDailyStats();
+      success('Corrida finalizada com sucesso!');
+    } catch (err: any) {
+      showError(err.message || 'Erro ao finalizar corrida');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchActiveRide = async () => {
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/corrida-atual`, { headers });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (data?.idCorrida) {
+        setActiveRide(data);
+        setIsOnline(false);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar corrida atual:', error);
     }
   };
 
@@ -297,21 +368,21 @@ const fetchPendingRides = async () => {
   ];
 
   for (const ride of rideNotifications) {
-    const rideCoordinates = rideMapLookup[ride.id];
+    const rideCoordinates = rideMapLookup[ride.idCorrida];
 
     if (rideCoordinates?.origin) {
       mapPoints.push({
-        id: `ride-origin-${ride.id}`,
+        id: `ride-origin-${ride.idCorrida}`,
         label: `Coleta: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
         position: rideCoordinates.origin,
-        color: selectedRide === ride.id ? '#2563eb' : '#f59e0b',
+        color: selectedRide === ride.idCorrida ? '#2563eb' : '#f59e0b',
         description: ride.origemCorrida,
       });
     }
 
-    if (selectedRide === ride.id && rideCoordinates?.destination) {
+    if (selectedRide === ride.idCorrida && rideCoordinates?.destination) {
       mapPoints.push({
-        id: `ride-destination-${ride.id}`,
+        id: `ride-destination-${ride.idCorrida}`,
         label: `Destino: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
         position: rideCoordinates.destination,
         color: '#dc2626',
@@ -379,6 +450,26 @@ const fetchPendingRides = async () => {
               )}
             </div>
 
+            {activeRide && (
+              <div className="p-6 border-b border-gray-200 space-y-3">
+                <p className="text-xs text-gray-600 font-semibold">CORRIDA ATUAL</p>
+                <p className="font-bold text-gray-800">
+                  {activeRide.passageiro.nome} {activeRide.passageiro.sobrenome}
+                </p>
+                <p className="text-sm text-gray-600">{activeRide.origemCorrida}</p>
+                <p className="text-sm text-gray-600">Destino: {activeRide.destinoCorrida}</p>
+                {activeRide.statusCorrida === 'Aceito' ? (
+                  <button onClick={handleStartRide} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded disabled:opacity-50">
+                    Iniciar corrida
+                  </button>
+                ) : (
+                  <button onClick={handleFinishRide} disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded disabled:opacity-50">
+                    Finalizar corrida
+                  </button>
+                )}
+              </div>
+            )}
+
             {isOnline && (
               <div className="p-6 border-b border-gray-200 space-y-3">
                 <p className="text-xs text-gray-600 font-semibold mb-3">HOJE</p>
@@ -433,13 +524,13 @@ const fetchPendingRides = async () => {
             <div className="absolute top-6 right-6 max-w-md pointer-events-auto">
               {rideNotifications.slice(0, 3).map((ride, index) => (
                 <div
-                  key={ride.id}
+                  key={ride.idCorrida}
                   className={`bg-white rounded-lg shadow-2xl p-4 mb-4 transform transition-all cursor-pointer border-l-4 ${
                     getRideTypeColor(ride.passageiro.necessidades)
                   } ${
-                    selectedRide === ride.id ? 'ring-2 ring-blue-400' : ''
+                    selectedRide === ride.idCorrida ? 'ring-2 ring-blue-400' : ''
                   }`}
-                  onClick={() => setSelectedRide(selectedRide === ride.id ? null : ride.id)}
+                  onClick={() => setSelectedRide(selectedRide === ride.idCorrida ? null : ride.idCorrida)}
                   style={{
                     transform: `translateY(${index * 8}px)`,
                   }}
@@ -492,12 +583,12 @@ const fetchPendingRides = async () => {
                     </div>
                   </div>
 
-                  {selectedRide === ride.id && (
+                  {selectedRide === ride.idCorrida && (
                     <div className="flex gap-2 pt-4 border-t border-gray-200">
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleAcceptRide(ride.id);
+                          handleAcceptRide(ride.idCorrida);
                         }}
                         disabled={loading}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
@@ -507,7 +598,7 @@ const fetchPendingRides = async () => {
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleRejectRide(ride.id);
+                          handleRejectRide(ride.idCorrida);
                         }}
                         disabled={loading}
                         className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
@@ -517,7 +608,7 @@ const fetchPendingRides = async () => {
                     </div>
                   )}
 
-                  {selectedRide !== ride.id && (
+                  {selectedRide !== ride.idCorrida && (
                     <p className="text-xs text-gray-500 text-center pt-2">
                       Clique para detalhes
                     </p>
@@ -534,7 +625,7 @@ const fetchPendingRides = async () => {
           </div>
         )}
 
-        {!isOnline && (
+        {!isOnline && !activeRide && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20">
             <div className="text-center text-white">
               <Navigation2 className="size-20 mx-auto mb-4 opacity-75" />

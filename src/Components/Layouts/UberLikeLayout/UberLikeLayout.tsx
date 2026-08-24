@@ -2,10 +2,10 @@ import { DollarSign, Loader2, MapPin, Navigation, X } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
-import { SERVER_CFG } from '../../../appConfig';
-import MapRequests, { type RouteData } from '../../../fetch/MapRequest';
-import { useToast } from '../../../hooks/useToast';
-import { AguardandoMotorista } from '../../Viagem/AguardandoMotorista/AguardandoMotorista';
+import { SERVER_CFG } from '../../appConfig';
+import MapRequests, { type RouteData } from '../../fetch/MapRequest';
+import { useToast } from '../../hooks/useToast';
+import { PainelCorridaPassageiro } from './PainelCorridaPassageiro';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
@@ -33,6 +33,10 @@ interface AguardandoCorridaState {
   origem: string;
   destino: string;
   preco: number;
+  statusCorrida: 'Pendente' | 'Aceito' | 'Em andamento' | 'Finalizada' | 'Cancelada';
+  motorista?: any;
+  veiculo?: any;
+  dataInicioCorrida?: string | null;
 }
 
 const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
@@ -51,6 +55,10 @@ const AGUARDANDO_CORRIDA_INICIAL: AguardandoCorridaState = {
   origem: '',
   destino: '',
   preco: 0,
+  statusCorrida: 'Pendente',
+  motorista: null,
+  veiculo: null,
+  dataInicioCorrida: null,
 };
 
 export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
@@ -79,7 +87,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
   const token = localStorage.getItem('token');
   const pollingIntervalRef = useRef<number | null>(null);
-  const { success, error: showError, info, warning } = useToast();
+  const { error: showError, info, warning } = useToast();
 
   const clearPollingInterval = () => {
     if (pollingIntervalRef.current !== null) {
@@ -137,14 +145,19 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
         const data = await response.json();
 
-        if (data && data.idCorrida && data.statusCorrida === 'Pendente') {
+        if (data && data.idCorrida && ['Pendente', 'Aceito', 'Em andamento'].includes(data.statusCorrida)) {
           setAguardandoCorrida({
             ativo: true,
             id: data.idCorrida,
             origem: data.origemCorrida,
             destino: data.destinoCorrida,
             preco: data.preco,
+            statusCorrida: data.statusCorrida,
+            motorista: data.motorista,
+            veiculo: data.veiculo,
+            dataInicioCorrida: data.dataInicioCorrida,
           });
+          iniciarPollingCorrida(data.idCorrida);
         }
       } catch (error) {
         console.error('Erro ao verificar corrida pendente:', error);
@@ -168,10 +181,19 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
       const data = await response.json();
 
-      if (data.statusCorrida === 'Aceito' || data.statusCorrida === 'Em andamento') {
+      if (['Pendente', 'Aceito', 'Em andamento', 'Finalizada'].includes(data.statusCorrida)) {
+        setAguardandoCorrida((prev) => ({
+          ...prev,
+          ativo: true,
+          statusCorrida: data.statusCorrida,
+          motorista: data.motorista,
+          veiculo: data.veiculo,
+          dataInicioCorrida: data.dataInicioCorrida,
+        }));
+      }
+
+      if (data.statusCorrida === 'Finalizada') {
         clearPollingInterval();
-        resetAguardandoCorrida();
-        success(`Corrida aceita! O motorista ${data.motorista?.nome || 'esta'} a caminho.`);
       }
 
       if (data.statusCorrida === 'Cancelada') {
@@ -439,6 +461,10 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         origem: formData.origin,
         destino: formData.destination,
         preco: data.preco ?? estimatedPrice ?? 0,
+        statusCorrida: 'Pendente',
+        motorista: null,
+        veiculo: null,
+        dataInicioCorrida: null,
       });
 
       if (data.idCorrida) {
@@ -798,12 +824,20 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       </div>
 
       {aguardandoCorrida.ativo && aguardandoCorrida.id && (
-        <AguardandoMotorista
+        <PainelCorridaPassageiro
           corridaId={aguardandoCorrida.id}
           origem={aguardandoCorrida.origem}
           destino={aguardandoCorrida.destino}
           preco={aguardandoCorrida.preco}
+          statusCorrida={aguardandoCorrida.statusCorrida}
+          motorista={aguardandoCorrida.motorista}
+          veiculo={aguardandoCorrida.veiculo}
+          dataInicioCorrida={aguardandoCorrida.dataInicioCorrida}
           onCancelar={handleCancelarAguardando}
+          onFinalizarAvaliacao={() => {
+            clearPollingInterval();
+            resetAguardandoCorrida();
+          }}
         />
       )}
     </div>

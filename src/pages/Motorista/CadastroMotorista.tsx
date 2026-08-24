@@ -16,7 +16,7 @@ export function DriverRegistration() {
     celular: '',
     email: '',
     antecedentesCriminais: '',
-    especializacao: '',
+    especializacao: 'NENHUMA',
     senha: '',
   });
   const [error, setError] = useState<string | null>(null);
@@ -247,11 +247,10 @@ export function DriverRegistration() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
                 >
-                  <option value="">Selecione...</option>
-                  <option value="CADEIRANTE">Cadeirante</option>
-                  <option value="VISUAL">Deficiência Visual</option>
-                  <option value="AUDITIVA">Deficiência Auditiva</option>
-                  <option value="COGNITIVA">Deficiência Cognitiva</option>
+                  <option value="NENHUMA">Nenhuma</option>
+                  <option value="MOBILIDADE REDUZIDA">Mobilidade reduzida</option>
+                  <option value="LIBRAS">Libras</option>
+                  <option value="DEFICIÊNCIA VISUAL">Deficiência visual</option>
                 </select>
               </div>
               <div>

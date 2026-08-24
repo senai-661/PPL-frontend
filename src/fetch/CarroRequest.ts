@@ -1,5 +1,5 @@
 import { SERVER_CFG } from '../appConfig';
-import { VeiculoDTO } from '../interface/VeiculoDTO';
+import { VeiculoDTO } from '../dto/VeiculoDTO';
 
 class CarroRequests {
 

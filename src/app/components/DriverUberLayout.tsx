@@ -21,7 +21,7 @@ interface DriverUberLayoutProps {
 }
 
 interface RideNotification {
-  id: number;
+  idCorrida: number;
   passageiro: {
     nome: string;
     sobrenome: string;
@@ -68,14 +68,17 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const { success, error: showError } = useToast();
 
   // Buscar corridas pendentes
-  const fetchPendingRides = async () => {
-    if (!isOnline) return;
+  const fetchPendingRides = async (online = isOnline) => {
+    if (!online) return;
     
     try {
       const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
       if (response.ok) {
-        const data = await response.json();
+        const data: RideNotification[] = await response.json();
         setRideNotifications(data);
+      } else {
+        setRideNotifications([]);
+        console.error('Erro ao buscar corridas:', await response.text());
       }
     } catch (error) {
       console.error('Erro ao buscar corridas:', error);
@@ -114,7 +117,9 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
         setIsOnline(novoStatus);
         onToggleOnline?.(novoStatus);
         if (novoStatus) {
-          fetchPendingRides();
+          // O estado do React ainda não foi atualizado neste ponto; passa o
+          // novo valor para que a primeira busca não seja ignorada.
+          fetchPendingRides(true);
           fetchDailyStats();
         } else {
           setRideNotifications([]);
@@ -187,7 +192,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
             ]);
 
             return [
-              ride.id,
+              ride.idCorrida,
               {
                 origin: origin ? ([origin.lat, origin.lng] as LatLngTuple) : null,
                 destination: destination
@@ -224,7 +229,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       }
 
       success('Corrida aceita! Navegando para o passageiro...');
-      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
+      setRideNotifications(prev => prev.filter(ride => ride.idCorrida !== rideId));
       setSelectedRide(null);
       fetchDailyStats();
     } catch (err: any) {
@@ -235,27 +240,10 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   };
 
   // Recusar corrida (cancelar)
-  const handleRejectRide = async (rideId: number) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas/${rideId}/cancelar`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ motivoCancelamento: 'Motorista recusou a corrida' }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao recusar corrida');
-      }
-
-      setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
-      setSelectedRide(null);
-    } catch (err: any) {
-      showError(err.message || 'Erro ao recusar corrida');
-    } finally {
-      setLoading(false);
-    }
+  const handleRejectRide = (rideId: number) => {
+    // A recusa é local: a solicitação deve continuar disponível aos demais motoristas.
+    setRideNotifications(prev => prev.filter(ride => ride.idCorrida !== rideId));
+    setSelectedRide(null);
   };
 
   const getRideTypeColor = (necessidades: string[] | null) => {
@@ -281,21 +269,21 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   ];
 
   for (const ride of rideNotifications) {
-    const rideCoordinates = rideMapLookup[ride.id];
+    const rideCoordinates = rideMapLookup[ride.idCorrida];
 
     if (rideCoordinates?.origin) {
       mapPoints.push({
-        id: `ride-origin-${ride.id}`,
+        id: `ride-origin-${ride.idCorrida}`,
         label: `Coleta: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
         position: rideCoordinates.origin,
-        color: selectedRide === ride.id ? '#2563eb' : '#f59e0b',
+        color: selectedRide === ride.idCorrida ? '#2563eb' : '#f59e0b',
         description: ride.origemCorrida,
       });
     }
 
-    if (selectedRide === ride.id && rideCoordinates?.destination) {
+    if (selectedRide === ride.idCorrida && rideCoordinates?.destination) {
       mapPoints.push({
-        id: `ride-destination-${ride.id}`,
+        id: `ride-destination-${ride.idCorrida}`,
         label: `Destino: ${ride.passageiro.nome} ${ride.passageiro.sobrenome}`,
         position: rideCoordinates.destination,
         color: '#dc2626',
@@ -417,13 +405,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
             <div className="absolute top-6 right-6 max-w-md pointer-events-auto">
               {rideNotifications.slice(0, 3).map((ride, index) => (
                 <div
-                  key={ride.id}
+                  key={ride.idCorrida}
                   className={`bg-white rounded-lg shadow-2xl p-4 mb-4 transform transition-all cursor-pointer border-l-4 ${
                     getRideTypeColor(ride.passageiro.necessidades)
                   } ${
-                    selectedRide === ride.id ? 'ring-2 ring-blue-400' : ''
+                    selectedRide === ride.idCorrida ? 'ring-2 ring-blue-400' : ''
                   }`}
-                  onClick={() => setSelectedRide(selectedRide === ride.id ? null : ride.id)}
+                  onClick={() => setSelectedRide(selectedRide === ride.idCorrida ? null : ride.idCorrida)}
                   style={{
                     transform: `translateY(${index * 8}px)`,
                   }}
@@ -476,12 +464,12 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                     </div>
                   </div>
 
-                  {selectedRide === ride.id && (
+                  {selectedRide === ride.idCorrida && (
                     <div className="flex gap-2 pt-4 border-t border-gray-200">
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleAcceptRide(ride.id);
+                          handleAcceptRide(ride.idCorrida);
                         }}
                         disabled={loading}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
@@ -491,7 +479,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleRejectRide(ride.id);
+                          handleRejectRide(ride.idCorrida);
                         }}
                         disabled={loading}
                         className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition-colors disabled:opacity-50"
@@ -501,7 +489,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                     </div>
                   )}
 
-                  {selectedRide !== ride.id && (
+                  {selectedRide !== ride.idCorrida && (
                     <p className="text-xs text-gray-500 text-center pt-2">
                       Clique para detalhes
                     </p>

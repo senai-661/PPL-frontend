@@ -12,6 +12,7 @@ export function CarRegistration() {
   const [formData, setFormData] = useState({
     placa: '',
     tipoVeiculo: '',
+    marcaVeiculo: '',
     modeloVeiculo: '',
   });
 
@@ -42,11 +43,21 @@ export function CarRegistration() {
       return;
     }
 
+    if (!formData.marcaVeiculo) {
+      setError('Informe a marca do veículo');
+      setLoading(false);
+      return;
+    }
+
     if (!formData.modeloVeiculo) {
       setError('Informe o modelo do veículo');
       setLoading(false);
       return;
     }
+
+    const modeloCompleto = formData.marcaVeiculo
+      ? `${formData.marcaVeiculo.trim()} ${formData.modeloVeiculo.trim()}`
+      : formData.modeloVeiculo.trim();
 
     try {
       const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/cadastro/veiculos`, {
@@ -58,7 +69,7 @@ export function CarRegistration() {
         body: JSON.stringify({
           placa: formData.placa.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
           tipoVeiculo: formData.tipoVeiculo,
-          modeloVeiculo: formData.modeloVeiculo,
+          modeloVeiculo: modeloCompleto,
         }),
       });
 
@@ -124,6 +135,18 @@ export function CarRegistration() {
             </div>
 
             <div>
+              <label className="block text-gray-700 mb-2">Marca do Veículo *</label>
+              <input
+                type="text"
+                required
+                value={formData.marcaVeiculo}
+                onChange={(e) => setFormData({ ...formData, marcaVeiculo: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
+                placeholder="Ex: Fiat, Toyota, Renault"
+              />
+            </div>
+
+            <div>
               <label className="block text-gray-700 mb-2">Modelo do Veículo *</label>
               <input
                 type="text"
@@ -131,7 +154,7 @@ export function CarRegistration() {
                 value={formData.modeloVeiculo}
                 onChange={(e) => setFormData({ ...formData, modeloVeiculo: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                placeholder="Fiat Ducato 2023"
+                placeholder="Ex: Ducato 2023, Corolla, Kangoo"
               />
             </div>
 

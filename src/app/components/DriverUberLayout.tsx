@@ -15,6 +15,7 @@ import MapRequests from '../../fetch/MapRequest';
 import { SERVER_CFG } from '../../appConfig';
 import { MapComponent, type MapPoint } from './MapComponent';
 import { useToast } from '../../hooks/useToast';
+import { useNavigate } from 'react-router-dom';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;
@@ -48,6 +49,7 @@ type RideMapLookup = Record<
 const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 
 export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
   const [selectedRide, setSelectedRide] = useState<number | null>(null);
@@ -231,8 +233,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao aceitar corrida');
+        const errorData = await response.json();
+        if (errorData.semVeiculo || (errorData.mensagem && errorData.mensagem.toLowerCase().includes('veículo'))) {
+          showError('Você precisa cadastrar um veículo antes de aceitar corridas.');
+          navigate('/motorista/cadastro-carro');
+          return;
+        }
+        throw new Error(errorData.mensagem || 'Erro ao aceitar corrida');
       }
 
       success('Corrida aceita! Navegando para o passageiro...');

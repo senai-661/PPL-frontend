@@ -6,7 +6,7 @@ import { useToast } from '../../hooks/useToast';
 
 export function CarRegistration() {
   const navigate = useNavigate();
-  const { success, error: showError } = useToast();
+  const { success } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -56,7 +56,7 @@ export function CarRegistration() {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          placa: formData.placa.toUpperCase(),
+          placa: formData.placa.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
           tipoVeiculo: formData.tipoVeiculo,
           modeloVeiculo: formData.modeloVeiculo,
         }),

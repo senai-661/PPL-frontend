@@ -35,6 +35,8 @@ interface RideNotification {
   statusCorrida: string;
 }
 
+type ActiveRide = RideNotification;
+
 type RideMapLookup = Record<
   number,
   {
@@ -53,6 +55,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const [rideMapLookup, setRideMapLookup] = useState<RideMapLookup>({});
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [rideNotifications, setRideNotifications] = useState<RideNotification[]>([]);
+  const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     ganhosDia: 0,
@@ -149,6 +152,10 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     }
   }, [isOnline]);
 
+  useEffect(() => {
+    void fetchActiveRide();
+  }, []);
+
   // Geolocalização do motorista
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -229,8 +236,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       }
 
       success('Corrida aceita! Navegando para o passageiro...');
+      const ride = rideNotifications.find((item) => item.idCorrida === rideId);
+      if (ride) {
+        setActiveRide({ ...ride, statusCorrida: 'Aceito' });
+      }
       setRideNotifications(prev => prev.filter(ride => ride.idCorrida !== rideId));
       setSelectedRide(null);
+      setIsOnline(false);
       fetchDailyStats();
     } catch (err: any) {
       showError(err.message || 'Erro ao aceitar corrida');
@@ -244,6 +256,70 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     // A recusa é local: a solicitação deve continuar disponível aos demais motoristas.
     setRideNotifications(prev => prev.filter(ride => ride.idCorrida !== rideId));
     setSelectedRide(null);
+  };
+
+  const handleStartRide = async () => {
+    if (!activeRide) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${SERVER_CFG.SERVER_URL}/api/corridas/${activeRide.idCorrida}/iniciar`,
+        { method: 'PATCH', headers },
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.mensagem || 'Erro ao iniciar corrida');
+      }
+
+      setActiveRide((ride) => ride ? { ...ride, statusCorrida: 'Em andamento' } : null);
+      success('Corrida iniciada. Boa viagem!');
+    } catch (err: any) {
+      showError(err.message || 'Erro ao iniciar corrida');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFinishRide = async () => {
+    if (!activeRide) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${SERVER_CFG.SERVER_URL}/api/corridas/${activeRide.idCorrida}/finalizar`,
+        { method: 'PATCH', headers },
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.mensagem || 'Erro ao finalizar corrida');
+      }
+
+      setActiveRide(null);
+      setIsOnline(true);
+      fetchPendingRides(true);
+      fetchDailyStats();
+      success('Corrida finalizada com sucesso!');
+    } catch (err: any) {
+      showError(err.message || 'Erro ao finalizar corrida');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchActiveRide = async () => {
+    try {
+      const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/corrida-atual`, { headers });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (data?.idCorrida) {
+        setActiveRide(data);
+        setIsOnline(false);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar corrida atual:', error);
+    }
   };
 
   const getRideTypeColor = (necessidades: string[] | null) => {
@@ -350,6 +426,26 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 </div>
               )}
             </div>
+
+            {activeRide && (
+              <div className="p-6 border-b border-gray-200 space-y-3">
+                <p className="text-xs text-gray-600 font-semibold">CORRIDA ATUAL</p>
+                <p className="font-bold text-gray-800">
+                  {activeRide.passageiro.nome} {activeRide.passageiro.sobrenome}
+                </p>
+                <p className="text-sm text-gray-600">{activeRide.origemCorrida}</p>
+                <p className="text-sm text-gray-600">Destino: {activeRide.destinoCorrida}</p>
+                {activeRide.statusCorrida === 'Aceito' ? (
+                  <button onClick={handleStartRide} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded disabled:opacity-50">
+                    Iniciar corrida
+                  </button>
+                ) : (
+                  <button onClick={handleFinishRide} disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded disabled:opacity-50">
+                    Finalizar corrida
+                  </button>
+                )}
+              </div>
+            )}
 
             {isOnline && (
               <div className="p-6 border-b border-gray-200 space-y-3">
@@ -506,7 +602,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
           </div>
         )}
 
-        {!isOnline && (
+        {!isOnline && !activeRide && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20">
             <div className="text-center text-white">
               <Navigation2 className="size-20 mx-auto mb-4 opacity-75" />

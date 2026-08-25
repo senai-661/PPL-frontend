@@ -2,15 +2,15 @@ import { DollarSign, Loader2, MapPin, Navigation, X } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
-import { SERVER_CFG } from '../../appConfig';
-import MapRequests, { type RouteData } from '../../fetch/MapRequest';
-import { useToast } from '../../hooks/useToast';
-import { PainelCorridaPassageiro } from './PainelCorridaPassageiro';
+import { SERVER_CFG } from '@/appConfig';
+import MapRequests, { type RouteData } from '@/fetch/MapRequest';
+import { useToast } from '@/hooks/useToast';
+import { PainelCorridaPassageiro } from '@/Components/Elementos/PainelCorridaPassageiro';
 import {
   AddressAutocomplete,
   type AutocompleteAddress,
-} from '../../Viagem/AddressAutocomplete/AddressAutocomplete';
-import { MapComponent, type MapPoint } from '../../Viagem/MapComponent/MapComponent';
+} from '@/Components/Viagem/AddressAutocomplete/AddressAutocomplete';
+import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/MapComponent';
 
 interface UberLikeLayoutProps {
   userType: 'passenger' | 'driver';

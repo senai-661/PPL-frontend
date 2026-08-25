@@ -11,10 +11,10 @@ import {
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useState } from 'react';
 
-import MapRequests from '../../fetch/MapRequest';
-import { SERVER_CFG } from '../../appConfig';
-import { MapComponent, type MapPoint } from './MapComponent';
-import { useToast } from '../../hooks/useToast';
+import MapRequests from '@/fetch/MapRequest';
+import { SERVER_CFG } from '@/appConfig';
+import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/MapComponent';
+import { useToast } from '@/hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 
 interface DriverUberLayoutProps {
@@ -88,10 +88,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     } catch (error) {
       console.error('Erro ao buscar corridas:', error);
     }
-  } catch (error) {
-    console.error('Erro ao buscar corridas:', error);
-  }
-};
+  };
 
   // Buscar stats do dia
   const fetchDailyStats = async () => {
@@ -262,18 +259,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     } finally {
       setLoading(false);
     }
-
-    alert(`Corrida aceita! Navegando para o passageiro...`);
-    setRideNotifications(prev => prev.filter(ride => ride.id !== rideId));
-    setSelectedRide(null);
-    fetchDailyStats();
-  } catch (err: any) {
-    console.log('[FRONTEND] Catch error:', err);
-    alert(err.message || 'Erro ao aceitar corrida');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   // Recusar corrida (cancelar)
   const handleRejectRide = (rideId: number) => {
     // A recusa é local: a solicitação deve continuar disponível aos demais motoristas.

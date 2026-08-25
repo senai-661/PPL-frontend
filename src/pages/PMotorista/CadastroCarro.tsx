@@ -6,7 +6,7 @@ import { useToast } from '../../hooks/useToast';
 
 export function CarRegistration() {
   const navigate = useNavigate();
-  const { success, error: showError } = useToast();
+  const { success } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({

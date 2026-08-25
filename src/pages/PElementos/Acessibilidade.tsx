@@ -1,6 +1,6 @@
 import { Accessibility as AccessibilityIcon, Ear, Eye, Heart, Brain, Users2 } from 'lucide-react';
 import { ImageWithFallback } from '../../Components/Elementos/figma/ImagemComFallback';
-import celularImg from '../../assets/celularOpenLine.png';
+import celularImg from '@src/assets/celularOpenLine.png';
 export function Accessibility() {
   return (
     <div className="flex flex-col">

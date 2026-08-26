@@ -28,7 +28,7 @@ export const APP_ROUTES = {
  */
 export const SERVER_CFG = {
     // endereço do servidor da API
-    SERVER_URL: 'http://localhost:1285',
+    SERVER_URL: 'https://ppl-backend-uska.onrender.com',
 
     // endpoints de PASSAGEIRO
     ENDPOINT_LISTAR_PASSAGEIRO: '/api/passageiros',

@@ -58,7 +58,7 @@ class MotoristaRequests {
   async consultarMotorista(idMotorista: number): Promise<MotoristaDTO | null> {
     try {
       const respostaAPI = await fetch(
-        `${this.serverURL}${this.routeListaMotoristas}?idMotorista=${idMotorista}`,
+        `${this.serverURL}/api/motoristas/${idMotorista}`,
         {
           headers: this.getAuthHeader(),
         },
@@ -103,9 +103,9 @@ class MotoristaRequests {
   async removerMotorista(idMotorista: number): Promise<boolean> {
     try {
       const respostaAPI = await fetch(
-        `${this.serverURL}${this.routeRemoveMotorista}?idMotorista=${idMotorista}`,
+        `${this.serverURL}/api/admin/motoristas/${idMotorista}`,
         {
-          method: 'PUT',
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
             ...this.getAuthHeader(),
@@ -118,17 +118,17 @@ class MotoristaRequests {
       }
       return true;
     } catch (error) {
-      console.error(`Erro ao fazer solicitação. ${error}`);
+      console.error(`Erro ao excluir motorista: ${error}`);
       return false;
     }
   }
 
-  async enviarFormularioAtualizacaoMotorista(formMotorista: MotoristaDTO): Promise<boolean> {
+  async enviarFormularioAtualizacaoMotorista(formMotorista: Partial<MotoristaDTO>): Promise<boolean> {
     try {
       const respostaAPI = await fetch(
-        `${this.serverURL}${this.routeAtualizaMotorista}?idMotorista=${formMotorista.idMotorista}`,
+        `${this.serverURL}/api/motorista/perfil`,
         {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             ...this.getAuthHeader(),
@@ -142,10 +142,11 @@ class MotoristaRequests {
       }
       return true;
     } catch (error) {
-      console.error(`Erro ao enviar requisição. ${error}`);
+      console.error(`Erro ao enviar requisição: ${error}`);
       return false;
     }
   }
+
 
   async atualizarMotoristaPorAdmin(idMotorista: number, dados: Partial<MotoristaDTO>): Promise<boolean> {
     try {

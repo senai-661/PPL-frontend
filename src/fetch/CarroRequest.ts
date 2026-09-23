@@ -57,7 +57,7 @@ class CarroRequests {
 
     async consultarCarro(idVeiculo: number): Promise<VeiculoDTO | null> {
         try {
-            const respostaAPI = await fetch(`${this.serverURL}${this.routeListaCarro}?idVeiculo=${idVeiculo}`, {
+            const respostaAPI = await fetch(`${this.serverURL}/api/veiculos/${idVeiculo}`, {
                 headers: this.getAuthHeader()
             });
 
@@ -69,6 +69,24 @@ class CarroRequests {
             }
         } catch (error) {
             console.error(`Erro ao fazer a consulta de Veículo: ${error}`);
+            return null;
+        }
+    }
+
+    async obterCarroDoMotorista(): Promise<VeiculoDTO | null> {
+        try {
+            const respostaAPI = await fetch(`${this.serverURL}/api/motorista/veiculo`, {
+                headers: this.getAuthHeader()
+            });
+
+            if (respostaAPI.ok) {
+                const veiculo: any = await respostaAPI.json();
+                return this.mapVeiculo(veiculo);
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.error(`Erro ao obter veículo do motorista: ${error}`);
             return null;
         }
     }
@@ -94,8 +112,8 @@ class CarroRequests {
 
     async removerCarro(idVeiculo: number): Promise<boolean> {
         try {
-            const respostaAPI = await fetch(`${this.serverURL}${this.routeRemoveCarro}?idVeiculo=${idVeiculo}`, {
-                method: 'PUT',
+            const respostaAPI = await fetch(`${this.serverURL}/api/veiculos/${idVeiculo}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                     ...this.getAuthHeader()
@@ -105,15 +123,15 @@ class CarroRequests {
             if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição à API.');
             return true;
         } catch (error) {
-            console.error(`Erro ao fazer solicitação. ${error}`);
+            console.error(`Erro ao excluir veículo: ${error}`);
             return false;
         }
     }
 
-    async enviarFormularioAtualizacaoCarro(formCarro: VeiculoDTO): Promise<boolean> {
+    async enviarFormularioAtualizacaoCarro(formCarro: Partial<VeiculoDTO> & { idVeiculo: number }): Promise<boolean> {
         try {
-            const respostaAPI = await fetch(`${this.serverURL}${this.routeAtualizaCarro}?idVeiculo=${formCarro.idVeiculo}`, {
-                method: 'PUT',
+            const respostaAPI = await fetch(`${this.serverURL}/api/veiculos/${formCarro.idVeiculo}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     ...this.getAuthHeader()
@@ -124,10 +142,10 @@ class CarroRequests {
             if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição com o servidor.');
             return true;
         } catch (error) {
-            console.error(`Erro ao enviar requisição. ${error}`);
+            console.error(`Erro ao atualizar veículo: ${error}`);
             return false;
         }
     }
 }
 
-export default new CarroRequests();
+export default new CarroRequests();

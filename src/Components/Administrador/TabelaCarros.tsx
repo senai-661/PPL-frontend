@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Car, Loader2, RefreshCw, Search } from 'lucide-react';
 import CarroRequest from '../../fetch/CarroRequest';
@@ -10,6 +10,14 @@ const TabelaCarros: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [editandoCarro, setEditandoCarro] = useState<VeiculoDTO | null>(null);
+  const [excluindoCarro, setExcluindoCarro] = useState<VeiculoDTO | null>(null);
+  const [acaoLoading, setAcaoLoading] = useState(false);
+  const [formEdit, setFormEdit] = useState({
+    placa: '',
+    modeloVeiculo: '',
+    tipoVeiculo: '',
+  });
 
   const fetchCarros = useCallback(async () => {
     setLoading(true);
@@ -22,6 +30,37 @@ const TabelaCarros: React.FC = () => {
     }
     setLoading(false);
   }, []);
+
+  const handleSalvarEdicao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editandoCarro?.idVeiculo) return;
+    setAcaoLoading(true);
+    const sucesso = await CarroRequest.enviarFormularioAtualizacaoCarro({
+      idVeiculo: editandoCarro.idVeiculo,
+      ...formEdit,
+    });
+    setAcaoLoading(false);
+    if (sucesso) {
+      setEditandoCarro(null);
+      fetchCarros();
+    } else {
+      alert('Erro ao atualizar veículo.');
+    }
+  };
+
+  const handleConfirmarExclusao = async () => {
+    if (!excluindoCarro?.idVeiculo) return;
+    setAcaoLoading(true);
+    const sucesso = await CarroRequest.removerCarro(excluindoCarro.idVeiculo);
+    setAcaoLoading(false);
+    if (sucesso) {
+      setExcluindoCarro(null);
+      fetchCarros();
+    } else {
+      alert('Erro ao excluir veículo.');
+    }
+  };
+
 
   useEffect(() => {
     fetchCarros();
@@ -141,14 +180,21 @@ const TabelaCarros: React.FC = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => window.alert(`Atualizar carro ${c.idVeiculo ?? '-'} ainda não implementado.`)}
+                          onClick={() => {
+                            setEditandoCarro(c);
+                            setFormEdit({
+                              placa: c.placa ?? '',
+                              modeloVeiculo: c.modeloVeiculo ?? '',
+                              tipoVeiculo: c.tipoVeiculo ?? 'Carro',
+                            });
+                          }}
                           className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
                         >
                           Atualizar
                         </button>
                         <button
                           type="button"
-                          onClick={() => window.alert(`Excluir carro ${c.idVeiculo ?? '-'} ainda não implementado.`)}
+                          onClick={() => setExcluindoCarro(c)}
                           className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
                         >
                           Excluir
@@ -162,9 +208,102 @@ const TabelaCarros: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Edição */}
+      {editandoCarro && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Atualizar Veículo #{editandoCarro.idVeiculo}
+            </h3>
+            <form onSubmit={handleSalvarEdicao} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Placa</label>
+                <input
+                  type="text"
+                  value={formEdit.placa}
+                  onChange={(e) => setFormEdit({ ...formEdit, placa: e.target.value.toUpperCase() })}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Modelo do Veículo</label>
+                <input
+                  type="text"
+                  value={formEdit.modeloVeiculo}
+                  onChange={(e) => setFormEdit({ ...formEdit, modeloVeiculo: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Tipo de Veículo</label>
+                <select
+                  value={formEdit.tipoVeiculo}
+                  onChange={(e) => setFormEdit({ ...formEdit, tipoVeiculo: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700"
+                >
+                  <option value="Carro">Carro</option>
+                  <option value="Carro Adaptado">Carro Adaptado</option>
+                  <option value="Van">Van</option>
+                  <option value="Moto">Moto</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditandoCarro(null)}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={acaoLoading}
+                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {acaoLoading ? 'Salvando...' : 'Salvar Alterações'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Exclusão */}
+      {excluindoCarro && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-red-600 mb-2">Excluir Veículo</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+              Tem certeza que deseja excluir o veículo placa <strong>{excluindoCarro.placa}</strong> ({excluindoCarro.modeloVeiculo})?
+              Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setExcluindoCarro(null)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={acaoLoading}
+                onClick={handleConfirmarExclusao}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {acaoLoading ? 'Excluindo...' : 'Sim, Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
 
 export default TabelaCarros;
+
 

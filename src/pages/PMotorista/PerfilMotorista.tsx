@@ -79,11 +79,17 @@ export function DriverProfile() {
         });
 
         // 2. Veículo do motorista
-        const resVeiculo = await fetch(`${SERVER_CFG.SERVER_URL}/api/veiculos`, { headers });
+        const resVeiculo = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/veiculo`, { headers });
         if (resVeiculo.ok) {
-          const listaVeiculos: VeiculoData[] = await resVeiculo.json();
-          if (listaVeiculos.length > 0) setVeiculo(listaVeiculos[0]);
+          const veiculoData = await resVeiculo.json();
+          setVeiculo({
+            idVeiculo: veiculoData.idVeiculo ?? veiculoData.id_veiculo,
+            placa: veiculoData.placa,
+            tipoVeiculo: veiculoData.tipoVeiculo ?? veiculoData.tipo_veiculo,
+            modeloVeiculo: veiculoData.modeloVeiculo ?? veiculoData.modelo_veiculo,
+          });
         }
+
 
         // 3. Resumo/relatório do motorista para stats
         const resRelatorio = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/relatorio`, { headers });

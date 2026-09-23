@@ -42,6 +42,9 @@ import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRo
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './Components/Elementos/ToastContainer';
 import PDetalhesPassageiro from './pages/PDetalhes/PDetalhesPassageiro/PDetalhesPassageiro';
+import HistoricoCorridas from './pages/PPassageiro/HistoricoCorridas';
+import NotificacoesPassageiro from './pages/PPassageiro/NotificacoesPassageiro';
+import CorridasAgendadasMotorista from './pages/PMotorista/CorridasAgendadasMotorista';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -106,7 +109,7 @@ function AppContent() {
           <Route path="/recursos-seguranca" element={<SafetyResources />} />
           <Route path="/seguranca" element={<Safety />} />
           <Route path="/sobre-nos" element={<About />} />
-          <Route path='/detalhes/passageiro/:id_passageiro' element={<PDetalhesPassageiro/>} />
+          <Route path="/detalhes/passageiro/:id_passageiro" element={<PDetalhesPassageiro />} />
 
           {/* Admin Pages */}
           <Route
@@ -119,11 +122,14 @@ function AppContent() {
           />
 
           {/* Passenger Pages */}
-          <Route path="/passageiro/cadastro" element={
-            <GuestRoute>
-              <PassengerRegistration />
-            </GuestRoute>
-          } />
+          <Route
+            path="/passageiro/cadastro"
+            element={(
+              <GuestRoute>
+                <PassengerRegistration />
+              </GuestRoute>
+            )}
+          />
 
           <Route
             path="/passageiro/painel"
@@ -143,19 +149,43 @@ function AppContent() {
             )}
           />
 
-          {/* Driver Pages */}
-          <Route path="/motorista/cadastro" element={
-            <GuestRoute>
-              <DriverRegistration />
-            </GuestRoute>
-          } />
+          <Route
+            path="/passageiro/historico"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <HistoricoCorridas />
+              </AuthProtectedRouteWithType>
+            )}
+          />
 
-          <Route path="/motorista/cadastro-carro" element={
-            <AuthProtectedRouteWithType allowedUserType="driver">
-              <CarRegistration />
-            </AuthProtectedRouteWithType>
-          } />
-          
+          <Route
+            path="/passageiro/notificacoes"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <NotificacoesPassageiro />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          {/* Driver Pages */}
+          <Route
+            path="/motorista/cadastro"
+            element={(
+              <GuestRoute>
+                <DriverRegistration />
+              </GuestRoute>
+            )}
+          />
+
+          <Route
+            path="/motorista/cadastro-carro"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <CarRegistration />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
           <Route path="/motorista/cadastro-dirigir" element={<DriveRegistration />} />
 
           <Route
@@ -172,6 +202,15 @@ function AppContent() {
             element={(
               <AuthProtectedRouteWithType allowedUserType="driver">
                 <DriverProfile />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/motorista/corridas-agendadas"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <CorridasAgendadasMotorista />
               </AuthProtectedRouteWithType>
             )}
           />

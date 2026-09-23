@@ -6,7 +6,7 @@ import { Divider } from "primereact/divider";
 import { Message } from "primereact/message";
 import { Chip } from "primereact/chip";
 import PassageiroRequest from "@/fetch/PassageiroRequest";
-import type { PassageiroDTO } from "@/interface/PassageiroDTO";
+import type { PassageiroDTO } from "@/dto/PassageiroDTO";
 import { useNavigate } from "react-router-dom";
 
 interface DetalhesPassageiroProps {
@@ -133,7 +133,7 @@ function DetalhesPassageiro({ id_passageiro }: DetalhesPassageiroProps): JSX.Ele
                                     <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">Necessidades Especiais</span>
                                     <div className="flex flex-wrap gap-2 mt-1">
                                         {passageiro.necessidades && passageiro.necessidades.length > 0 ? (
-                                            passageiro.necessidades.map((necessidade, index) => (
+                                            passageiro.necessidades.map((necessidade: string, index: number) => (
                                                 <Chip key={index} label={necessidade} className="bg-blue-100 text-blue-800" />
                                             ))
                                         ) : (

@@ -35,7 +35,7 @@ export function PassengerRegistration() {
     return regex.test(celular);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'celular') {
       setFormData({ ...formData, [name]: formatCelular(value) });
@@ -224,15 +224,18 @@ export function PassengerRegistration() {
 
             <div>
               <label className="block text-gray-700 mb-2">Necessidades Especiais (opcional)</label>
-              <textarea
+              <select
                 name="necessidades"
                 value={formData.necessidades}
                 onChange={handleChange}
-                rows={2}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a34a1]"
-                placeholder="Ex: Cadeirante, Deficiência visual, mobilidade reduzida, etc."
-              />
-              <small className="text-gray-500 text-xs">Isso ajuda os motoristas a se prepararem melhor para sua viagem</small>
+              >
+                <option value="">Nenhuma</option>
+                <option value="Cadeirante">Cadeirante</option>
+                <option value="Deficiência Auditiva">Deficiência auditiva</option>
+                <option value="Deficiência Visual">Deficiência visual</option>
+              </select>
+              <small className="text-gray-500 text-xs">Essa informação ajuda a encontrar um motorista preparado para o atendimento.</small>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Car, Loader2, MapPin, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Car, Loader2, ShieldCheck } from 'lucide-react';
 import CarroRequest from '../../../fetch/CarroRequest';
 import { VeiculoDTO } from '../../../dto/VeiculoDTO';
 
@@ -52,7 +52,7 @@ export function DetalhesCarro() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <ArrowLeft className="size-4" />
           Voltar
@@ -64,49 +64,49 @@ export function DetalhesCarro() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-600 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
           <Loader2 className="mx-auto mb-3 size-7 animate-spin text-[#1f5d9f]" />
           Carregando detalhes...
         </div>
       ) : erro ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm dark:border-red-600/30 dark:bg-slate-900 dark:text-red-200">
           <p>{erro}</p>
         </div>
       ) : carro ? (
         <div className="grid gap-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-start gap-4 mb-6">
-              <div className="rounded-2xl bg-blue-100 p-3 text-blue-700">
+              <div className="rounded-2xl bg-blue-100 p-3 text-blue-700 dark:bg-slate-800 dark:text-blue-200">
                 <Car className="size-6" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Detalhes completos do veículo cadastrado.</p>
-                <h2 className="text-2xl font-semibold text-slate-900">{carro.modeloVeiculo || 'Veículo desconhecido'}</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Detalhes completos do veículo cadastrado.</p>
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{carro.modeloVeiculo || 'Veículo desconhecido'}</h2>
               </div>
             </div>
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-sm text-slate-500">ID do veículo</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{carro.idVeiculo ?? '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">ID do veículo</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{carro.idVeiculo ?? '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Placa</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{carro.placa || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Placa</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{carro.placa || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Tipo</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{carro.tipoVeiculo || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Tipo</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{carro.tipoVeiculo || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">ID do motorista</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{carro.idMotorista ?? '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">ID do motorista</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{carro.idMotorista ?? '-'}</dd>
               </div>
             </dl>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-            <div className="flex items-center gap-3 text-slate-800">
-              <ShieldCheck className="size-5 text-slate-500" />
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-200">
+              <ShieldCheck className="size-5 text-slate-500 dark:text-slate-400" />
               <p className="text-sm">Use este painel para validar o cadastro completo do veículo.</p>
             </div>
           </div>

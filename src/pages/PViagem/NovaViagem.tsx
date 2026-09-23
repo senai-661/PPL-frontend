@@ -7,6 +7,8 @@ import {
 } from '../../Components/Viagem/AddressAutocomplete/AddressAutocomplete';
 import { useToast } from '../../hooks/useToast';
 
+import CorridaRequest from '../../fetch/CorridaRequest';
+
 interface TripFormData {
   origin: string;
   destination: string;
@@ -22,6 +24,8 @@ interface TripFormData {
 export function NewTrip() {
   const navigate = useNavigate();
   const { success } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [tripData, setTripData] = useState<TripFormData>({
     origin: '',
     destination: '',
@@ -50,14 +54,35 @@ export function NewTrip() {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Simulação de criação de viagem
-    success('Viagem solicitada com sucesso!');
-    navigate('/viagem/painel');
+    if (!tripData.origin || !tripData.destination) {
+      setErrorMsg('Origem e destino são obrigatórios.');
+      return;
+    }
+    setSubmitting(true);
+    setErrorMsg(null);
+    try {
+      await CorridaRequest.solicitarCorrida({
+        origemCorrida: tripData.origin,
+        destinoCorrida: tripData.destination,
+        latOrigem: tripData.originCoords.lat || -23.5505,
+        lngOrigem: tripData.originCoords.lon || -46.6333,
+        latDestino: tripData.destinationCoords.lat || -23.5605,
+        lngDestino: tripData.destinationCoords.lon || -46.6433,
+        tipoCorrida: 'Convencional',
+      });
+      success('Viagem solicitada com sucesso!');
+      navigate('/passageiro/painel');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Erro ao solicitar corrida.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
+
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-8">
@@ -66,7 +91,13 @@ export function NewTrip() {
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-md">
+          {errorMsg && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              {errorMsg}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
+
             <AddressAutocomplete
               label="Origem *"
               value={tripData.origin}

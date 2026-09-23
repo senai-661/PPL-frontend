@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Car, Loader2, MapPin, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Car, Loader2, ShieldCheck } from 'lucide-react';
 import CarroRequest from '../../../fetch/CarroRequest';
 import { VeiculoDTO } from '../../../dto/VeiculoDTO';
 

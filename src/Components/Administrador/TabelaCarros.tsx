@@ -10,6 +10,15 @@ const TabelaCarros: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editCarro, setEditCarro] = useState<VeiculoDTO | null>(null);
+  const [editForm, setEditForm] = useState({
+    idMotorista: '',
+    placa: '',
+    tipoVeiculo: '',
+    modeloVeiculo: '',
+  });
+  const [saving, setSaving] = useState(false);
 
   const fetchCarros = useCallback(async () => {
     setLoading(true);
@@ -22,6 +31,40 @@ const TabelaCarros: React.FC = () => {
     }
     setLoading(false);
   }, []);
+
+  const handleEditClick = (carro: VeiculoDTO) => {
+    setEditCarro(carro);
+    setEditForm({
+      idMotorista: carro.idMotorista?.toString() ?? '',
+      placa: carro.placa ?? '',
+      tipoVeiculo: carro.tipoVeiculo ?? '',
+      modeloVeiculo: carro.modeloVeiculo ?? '',
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!editCarro || !editCarro.idVeiculo) return;
+
+    setSaving(true);
+    const dadosEnvio: Partial<VeiculoDTO> = {
+      idMotorista: Number(editForm.idMotorista),
+      placa: editForm.placa,
+      tipoVeiculo: editForm.tipoVeiculo,
+      modeloVeiculo: editForm.modeloVeiculo,
+    };
+
+    const sucesso = await CarroRequest.atualizarCarroPorAdmin(editCarro.idVeiculo, dadosEnvio);
+    setSaving(false);
+
+    if (sucesso) {
+      setIsEditModalOpen(false);
+      fetchCarros();
+    } else {
+      window.alert('Erro ao atualizar o veículo.');
+    }
+  };
 
   useEffect(() => {
     fetchCarros();
@@ -141,14 +184,24 @@ const TabelaCarros: React.FC = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => window.alert(`Atualizar carro ${c.idVeiculo ?? '-'} ainda não implementado.`)}
+                          onClick={() => handleEditClick(c)}
                           className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
                         >
                           Atualizar
                         </button>
                         <button
                           type="button"
-                          onClick={() => window.alert(`Excluir carro ${c.idVeiculo ?? '-'} ainda não implementado.`)}
+                          onClick={async () => {
+                            const confirmado = window.confirm(`Deseja realmente excluir o veículo ${c.idVeiculo ?? '-'}?`);
+                            if (!confirmado || c.idVeiculo == null) return;
+
+                            const sucesso = await CarroRequest.removerCarroPorAdmin(c.idVeiculo);
+                            if (sucesso) {
+                              fetchCarros();
+                            } else {
+                              window.alert('Erro ao excluir o veículo.');
+                            }
+                          }}
                           className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
                         >
                           Excluir
@@ -162,6 +215,88 @@ const TabelaCarros: React.FC = () => {
           </div>
         )}
       </div>
+
+      {isEditModalOpen && editCarro && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+              <h3 className="text-xl font-semibold text-slate-800">Atualizar Veículo</h3>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSave} className="mt-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">ID Motorista</label>
+                  <input
+                    type="number"
+                    required
+                    value={editForm.idMotorista}
+                    onChange={(e) => setEditForm({ ...editForm, idMotorista: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f5d9f] focus:ring-2 focus:ring-[#1f5d9f]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Placa</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.placa}
+                    onChange={(e) => setEditForm({ ...editForm, placa: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f5d9f] focus:ring-2 focus:ring-[#1f5d9f]/20"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Tipo</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.tipoVeiculo}
+                    onChange={(e) => setEditForm({ ...editForm, tipoVeiculo: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f5d9f] focus:ring-2 focus:ring-[#1f5d9f]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">Modelo</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.modeloVeiculo}
+                    onChange={(e) => setEditForm({ ...editForm, modeloVeiculo: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#1f5d9f] focus:ring-2 focus:ring-[#1f5d9f]/20"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-gray-200 pt-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1f5d9f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17406f] disabled:bg-gray-400 transition"
+                >
+                  {saving && <Loader2 className="size-4 animate-spin" />}
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

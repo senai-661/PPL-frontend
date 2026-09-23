@@ -111,6 +111,24 @@ class PassageiroRequests {
         }
     }
 
+    async removerPassageiroPorAdmin(idPassageiro: number): Promise<boolean> {
+        try {
+            const respostaAPI = await fetch(`${this.serverURL}/api/admin/passageiros/${idPassageiro}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
+                }
+            });
+
+            if (!respostaAPI.ok) throw new Error('Erro ao excluir passageiro por admin.');
+            return true;
+        } catch (error) {
+            console.error(`Erro ao excluir passageiro por admin: ${error}`);
+            return false;
+        }
+    }
+
     async enviarFormularioAtualizacaoPassageiro(formPassageiro: PassageiroDTO): Promise<boolean> {
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeAtualizaPassageiro}?idPassageiro=${formPassageiro.idPassageiro}`, {

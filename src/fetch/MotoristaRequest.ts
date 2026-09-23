@@ -121,6 +121,26 @@ class MotoristaRequests {
     }
   }
 
+  async removerMotoristaPorAdmin(idMotorista: number): Promise<boolean> {
+    try {
+      const respostaAPI = await fetch(`${this.serverURL}/api/admin/motoristas/${idMotorista}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
+        },
+      });
+
+      if (!respostaAPI.ok) {
+        throw new Error('Erro ao excluir motorista por admin.');
+      }
+      return true;
+    } catch (error) {
+      console.error(`Erro ao excluir motorista por admin: ${error}`);
+      return false;
+    }
+  }
+
   async enviarFormularioAtualizacaoMotorista(formMotorista: MotoristaDTO): Promise<boolean> {
     try {
       const respostaAPI = await fetch(

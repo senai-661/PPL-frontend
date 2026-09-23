@@ -110,6 +110,24 @@ class CarroRequests {
         }
     }
 
+    async removerCarroPorAdmin(idVeiculo: number): Promise<boolean> {
+        try {
+            const respostaAPI = await fetch(`${this.serverURL}/api/admin/veiculos/${idVeiculo}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
+                }
+            });
+
+            if (!respostaAPI.ok) throw new Error('Erro ao excluir veículo por admin.');
+            return true;
+        } catch (error) {
+            console.error(`Erro ao excluir veículo por admin: ${error}`);
+            return false;
+        }
+    }
+
     async enviarFormularioAtualizacaoCarro(formCarro: VeiculoDTO): Promise<boolean> {
         try {
             const respostaAPI = await fetch(`${this.serverURL}${this.routeAtualizaCarro}?idVeiculo=${formCarro.idVeiculo}`, {
@@ -125,6 +143,25 @@ class CarroRequests {
             return true;
         } catch (error) {
             console.error(`Erro ao enviar requisição. ${error}`);
+            return false;
+        }
+    }
+
+    async atualizarCarroPorAdmin(idVeiculo: number, dados: Partial<VeiculoDTO>): Promise<boolean> {
+        try {
+            const respostaAPI = await fetch(`${this.serverURL}/api/admin/veiculos/${idVeiculo}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeader()
+                },
+                body: JSON.stringify(dados)
+            });
+
+            if (!respostaAPI.ok) throw new Error('Erro ao atualizar veículo por admin.');
+            return true;
+        } catch (error) {
+            console.error(`Erro ao atualizar veículo por admin: ${error}`);
             return false;
         }
     }

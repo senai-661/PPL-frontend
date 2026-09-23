@@ -4,6 +4,45 @@ import { AlertCircle, Loader2, RefreshCw, Search, UserRound } from 'lucide-react
 import MotoristaRequest from '../../fetch/MotoristaRequest';
 import { MotoristaDTO } from '../../dto/MotoristaDTO';
 
+const formatarCpf = (valor?: string | null): string => {
+  if (!valor) return '-';
+
+  const digits = valor.replace(/\D/g, '').slice(0, 11);
+  if (!digits) return '-';
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return digits.replace(/(\d{3})(\d+)/, '$1.$2');
+  if (digits.length <= 9) return digits.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+};
+
+const formatarTelefone = (valor?: string | null): string => {
+  if (!valor) return '-';
+
+  const digits = valor.replace(/\D/g, '').slice(0, 11);
+  if (!digits) return '-';
+
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return digits.replace(/(\d{2})(\d+)/, '($1) $2');
+  if (digits.length <= 10) return digits.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3');
+
+  return digits.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+};
+
+const formatarCnh = (valor?: string | null): string => {
+  if (!valor) return '-';
+
+  const digits = valor.replace(/\D/g, '').slice(0, 11);
+  if (!digits) return '-';
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return digits.replace(/(\d{3})(\d+)/, '$1.$2');
+  if (digits.length <= 9) return digits.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+};
+
 const TabelaMotoristas: React.FC = () => {
   const navigate = useNavigate();
   const [motoristas, setMotoristas] = useState<MotoristaDTO[]>([]);
@@ -137,10 +176,10 @@ const TabelaMotoristas: React.FC = () => {
                           {[nome, sobrenome].filter(Boolean).join(' ') || '-'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-700">{m.cpf || '-'}</td>
-                      <td className="px-4 py-3 text-gray-700">{m.cnh || '-'}</td>
+                      <td className="px-4 py-3 text-gray-700">{formatarCpf(m.cpf)}</td>
+                      <td className="px-4 py-3 text-gray-700">{formatarCnh(m.cnh)}</td>
                       <td className="px-4 py-3 text-gray-700">{m.email || '-'}</td>
-                      <td className="px-4 py-3 text-gray-700">{m.celular || '-'}</td>
+                      <td className="px-4 py-3 text-gray-700">{formatarTelefone(m.celular)}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2">
                           <button

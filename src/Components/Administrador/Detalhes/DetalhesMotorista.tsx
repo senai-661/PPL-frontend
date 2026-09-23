@@ -52,7 +52,7 @@ export function DetalhesMotorista() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <ArrowLeft className="size-4" />
           Voltar
@@ -64,62 +64,62 @@ export function DetalhesMotorista() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-600 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
           <Loader2 className="mx-auto mb-3 size-7 animate-spin text-[#7b5eb6]" />
           Carregando detalhes...
         </div>
       ) : erro ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm dark:border-red-600/30 dark:bg-slate-900 dark:text-red-200">
           <AlertCircle className="size-5 mb-3" />
           <p>{erro}</p>
         </div>
       ) : motorista ? (
         <div className="grid gap-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-start gap-4 mb-6">
-              <div className="rounded-2xl bg-violet-100 p-3 text-violet-700">
+              <div className="rounded-2xl bg-violet-100 p-3 text-violet-700 dark:bg-slate-800 dark:text-violet-200">
                 <UserRound className="size-6" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Dados completos do motorista cadastrado.</p>
-                <h2 className="text-2xl font-semibold text-slate-900">{motorista.nome} {motorista.sobrenome}</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Dados completos do motorista cadastrado.</p>
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{motorista.nome} {motorista.sobrenome}</h2>
               </div>
             </div>
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-sm text-slate-500">ID do motorista</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{motorista.idMotorista ?? '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">ID do motorista</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{motorista.idMotorista ?? '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">CPF</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{motorista.cpf || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">CPF</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{motorista.cpf || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">CNH</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{motorista.cnh || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">CNH</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{motorista.cnh || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Email</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{motorista.email || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Email</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{motorista.email || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Celular</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{motorista.celular || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Celular</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{motorista.celular || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Especialização</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{motorista.especializacao || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Especialização</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{motorista.especializacao || '-'}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-sm text-slate-500">Antecedentes criminosos</dt>
-                <dd className="mt-1 rounded-2xl bg-slate-50 p-4 text-slate-800">{motorista.antecedentesCriminais || 'Nenhum registro informado.'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Antecedentes criminosos</dt>
+                <dd className="mt-1 rounded-2xl bg-slate-50 p-4 text-slate-800 dark:bg-slate-800 dark:text-slate-200">{motorista.antecedentesCriminais || 'Nenhum registro informado.'}</dd>
               </div>
             </dl>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-            <div className="flex items-center gap-3 text-slate-800">
-              <ShieldCheck className="size-5 text-slate-500" />
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-200">
+              <ShieldCheck className="size-5 text-slate-500 dark:text-slate-400" />
               <p className="text-sm">Verifique os dados antes de aprovar alterações ou bloqueios.</p>
             </div>
           </div>

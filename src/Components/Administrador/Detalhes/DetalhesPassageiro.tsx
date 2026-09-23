@@ -52,7 +52,7 @@ export function DetalhesPassageiro() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <ArrowLeft className="size-4" />
           Voltar
@@ -64,57 +64,57 @@ export function DetalhesPassageiro() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-600 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
           <Loader2 className="mx-auto mb-3 size-7 animate-spin text-[#1f6c6a]" />
           Carregando detalhes...
         </div>
       ) : erro ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm dark:border-red-600/30 dark:bg-slate-900 dark:text-red-200">
           <p>{erro}</p>
         </div>
       ) : passageiro ? (
         <div className="grid gap-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-start gap-4 mb-6">
-              <div className="rounded-2xl bg-teal-100 p-3 text-teal-700">
+              <div className="rounded-2xl bg-teal-100 p-3 text-teal-700 dark:bg-slate-800 dark:text-teal-200">
                 <Users className="size-6" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Dados completos do passageiro cadastrado.</p>
-                <h2 className="text-2xl font-semibold text-slate-900">{passageiro.nome} {passageiro.sobrenome}</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Dados completos do passageiro cadastrado.</p>
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{passageiro.nome} {passageiro.sobrenome}</h2>
               </div>
             </div>
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-sm text-slate-500">ID do passageiro</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{passageiro.idPassageiro ?? '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">ID do passageiro</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{passageiro.idPassageiro ?? '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">CPF</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{passageiro.cpf || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">CPF</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{passageiro.cpf || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Email</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{passageiro.email || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Email</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{passageiro.email || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Celular</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{passageiro.celular || '-'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Celular</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{passageiro.celular || '-'}</dd>
               </div>
               <div>
-                <dt className="text-sm text-slate-500">Data de nascimento</dt>
-                <dd className="mt-1 text-lg font-medium text-slate-900">{new Date(passageiro.dataNascimento).toLocaleDateString()}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Data de nascimento</dt>
+                <dd className="mt-1 text-lg font-medium text-slate-900 dark:text-slate-100">{new Date(passageiro.dataNascimento).toLocaleDateString()}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-sm text-slate-500">Necessidades</dt>
-                <dd className="mt-1 rounded-2xl bg-slate-50 p-4 text-slate-800">{passageiro.necessidades?.length ? passageiro.necessidades.join(', ') : 'Nenhuma necessidade registrada.'}</dd>
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Necessidades</dt>
+                <dd className="mt-1 rounded-2xl bg-slate-50 p-4 text-slate-800 dark:bg-slate-800 dark:text-slate-200">{passageiro.necessidades?.length ? passageiro.necessidades.join(', ') : 'Nenhuma necessidade registrada.'}</dd>
               </div>
             </dl>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-            <div className="flex items-center gap-3 text-slate-800">
-              <ShieldCheck className="size-5 text-slate-500" />
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-200">
+              <ShieldCheck className="size-5 text-slate-500 dark:text-slate-400" />
               <p className="text-sm">Use esta visão para validar o perfil do passageiro antes de ajustes administrativos.</p>
             </div>
           </div>

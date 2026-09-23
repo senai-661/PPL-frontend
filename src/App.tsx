@@ -3,6 +3,8 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-route
 import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodape/Rodape';
 import { Home } from './Components/Inicio/Inicio';
+
+// Importacoes temporarias das paginas antigas (serao migradas gradualmente)
 import { About } from './pages/PElementos/Sobre';
 import { Services } from './pages/PElementos/Servicos';
 import { Accessibility } from './pages/PElementos/Acessibilidade';
@@ -39,13 +41,10 @@ import { NewTrip } from './pages/PViagem/NovaViagem';
 import { GuestRoute } from './Components/Autenticacao/ProtectedRoute/ProtectedRoute';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './Components/Elementos/ToastContainer';
-<<<<<<< HEAD
+import PDetalhesPassageiro from './pages/PDetalhes/PDetalhesPassageiro/PDetalhesPassageiro';
 import HistoricoCorridas from './pages/PPassageiro/HistoricoCorridas';
 import NotificacoesPassageiro from './pages/PPassageiro/NotificacoesPassageiro';
 import CorridasAgendadasMotorista from './pages/PMotorista/CorridasAgendadasMotorista';
-=======
-import PDetalhesPassageiro from './pages/PDetalhes/PDetalhesPassageiro/PDetalhesPassageiro';
->>>>>>> f8315fb7bb56b3828f5840432f2bf4e0862be902
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -85,9 +84,9 @@ function AppContent() {
   return (
     <div className="app-shell min-h-screen flex flex-col">
       {!isAdminRoute && <Header />}
-
       <main className={`app-main flex-1 ${isLoginRoute ? 'login-main' : ''}`.trim()}>
         <Routes>
+          {/* General Pages */}
           <Route path="/" element={<Home />} />
           <Route path="/sobre" element={<About />} />
           <Route path="/servicos" element={<Services />} />
@@ -110,34 +109,119 @@ function AppContent() {
           <Route path="/recursos-seguranca" element={<SafetyResources />} />
           <Route path="/seguranca" element={<Safety />} />
           <Route path="/sobre-nos" element={<About />} />
-          <Route path='/detalhes/passageiro/:id_passageiro' element={<PDetalhesPassageiro/>} />
+          <Route path="/detalhes/passageiro/:id_passageiro" element={<PDetalhesPassageiro />} />
 
-          {/* Admin */}
-          <Route path="/administrador/*" element={<AuthProtectedRouteWithType allowedUserType="admin"><PAdministrador /></AuthProtectedRouteWithType>} />
+          {/* Admin Pages */}
+          <Route
+            path="/administrador/*"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="admin">
+                <PAdministrador />
+              </AuthProtectedRouteWithType>
+            )}
+          />
 
-          {/* Passenger */}
-          <Route path="/passageiro/cadastro" element={<GuestRoute><PassengerRegistration /></GuestRoute>} />
-          <Route path="/passageiro/painel" element={<AuthProtectedRouteWithType allowedUserType="passenger"><PassengerDashboard /></AuthProtectedRouteWithType>} />
-          <Route path="/passageiro/perfil" element={<AuthProtectedRouteWithType allowedUserType="passenger"><PassengerProfile /></AuthProtectedRouteWithType>} />
-          <Route path="/passageiro/historico" element={<AuthProtectedRouteWithType allowedUserType="passenger"><HistoricoCorridas /></AuthProtectedRouteWithType>} />
-          <Route path="/passageiro/notificacoes" element={<AuthProtectedRouteWithType allowedUserType="passenger"><NotificacoesPassageiro /></AuthProtectedRouteWithType>} />
+          {/* Passenger Pages */}
+          <Route
+            path="/passageiro/cadastro"
+            element={(
+              <GuestRoute>
+                <PassengerRegistration />
+              </GuestRoute>
+            )}
+          />
 
-          {/* Driver */}
-          <Route path="/motorista/cadastro" element={<GuestRoute><DriverRegistration /></GuestRoute>} />
-          <Route path="/motorista/cadastro-carro" element={<AuthProtectedRouteWithType allowedUserType="driver"><CarRegistration /></AuthProtectedRouteWithType>} />
+          <Route
+            path="/passageiro/painel"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <PassengerDashboard />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/passageiro/perfil"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <PassengerProfile />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/passageiro/historico"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <HistoricoCorridas />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/passageiro/notificacoes"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <NotificacoesPassageiro />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          {/* Driver Pages */}
+          <Route
+            path="/motorista/cadastro"
+            element={(
+              <GuestRoute>
+                <DriverRegistration />
+              </GuestRoute>
+            )}
+          />
+
+          <Route
+            path="/motorista/cadastro-carro"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <CarRegistration />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
           <Route path="/motorista/cadastro-dirigir" element={<DriveRegistration />} />
-          <Route path="/motorista/painel" element={<AuthProtectedRouteWithType allowedUserType="driver"><DriverDashboard /></AuthProtectedRouteWithType>} />
-          <Route path="/motorista/perfil" element={<AuthProtectedRouteWithType allowedUserType="driver"><DriverProfile /></AuthProtectedRouteWithType>} />
-          <Route path="/motorista/corridas-agendadas" element={<AuthProtectedRouteWithType allowedUserType="driver"><CorridasAgendadasMotorista /></AuthProtectedRouteWithType>} />
 
-          {/* Trips */}
+          <Route
+            path="/motorista/painel"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <DriverDashboard />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/motorista/perfil"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <DriverProfile />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/motorista/corridas-agendadas"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <CorridasAgendadasMotorista />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          {/* Trip Pages */}
           <Route path="/viagem/avaliacao" element={<TripRating />} />
           <Route path="/viagem/painel" element={<TripDashboard />} />
           <Route path="/viagem/lista" element={<TripList />} />
           <Route path="/viagem/nova" element={<NewTrip />} />
         </Routes>
       </main>
-
       {!isAdminRoute && <Footer />}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>

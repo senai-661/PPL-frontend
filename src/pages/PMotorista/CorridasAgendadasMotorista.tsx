@@ -84,10 +84,11 @@ const CorridasAgendadasMotorista: React.FC = () => {
     localStorage.setItem('openline_agendamentos', JSON.stringify(novos));
   };
 
-  const notificarPassageiro = (corridaId: number, message: string) => {
+  const notificarPassageiro = (corridaId: number, status: string, message: string) => {
     const notificacao = {
       id: Date.now(),
       corridaId: corridaId,
+      status,
       message: message,
       read: false,
       createdAt: new Date().toISOString(),
@@ -121,7 +122,7 @@ const CorridasAgendadasMotorista: React.FC = () => {
         } : ag
       );
       salvarAgendamentos(novos);
-      notificarPassageiro(confirmModal.id, '✅ Sua corrida foi aceita! O motorista está a caminho.');
+      notificarPassageiro(confirmModal.id, 'aceito', '✅ Sua corrida foi aceita! O motorista está a caminho.');
       showToast('✨ Corrida aceita com sucesso! O passageiro foi notificado.', 'success');
     }
     setConfirmModal({ isOpen: false, id: null, action: null });
@@ -133,7 +134,7 @@ const CorridasAgendadasMotorista: React.FC = () => {
         ag.id === confirmModal.id ? { ...ag, status: 'recusado' } : ag
       );
       salvarAgendamentos(novos);
-      notificarPassageiro(confirmModal.id, '❌ Sua corrida foi recusada. Por favor, tente novamente.');
+      notificarPassageiro(confirmModal.id, 'recusado', '❌ Sua corrida foi recusada. Por favor, tente novamente.');
       showToast('⚠️ Corrida recusada. O passageiro será notificado.', 'warning');
     }
     setConfirmModal({ isOpen: false, id: null, action: null });
@@ -145,7 +146,7 @@ const CorridasAgendadasMotorista: React.FC = () => {
         ag.id === confirmModal.id ? { ...ag, status: 'concluido' } : ag
       );
       salvarAgendamentos(novos);
-      notificarPassageiro(confirmModal.id, '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
+      notificarPassageiro(confirmModal.id, 'concluido', '✅ Sua viagem foi concluída! Obrigado por usar OpenLine.');
       showToast('🏁 Viagem concluída! Pagamento será processado em até 24h.', 'success');
     }
     setConfirmModal({ isOpen: false, id: null, action: null });

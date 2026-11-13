@@ -398,18 +398,31 @@
 /* Mobile Menu Button */
 .menu-button {
   display: block;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   color: white;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 0.65rem;
   cursor: pointer;
-  padding: 0.5rem;
-  transition: background-color 0.22s ease, transform 0.22s ease;
+  padding: 0.45rem 0.65rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  transition: background-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .menu-button:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.7);
+}
+
+.menu-button:focus-visible,
+.account-menu-trigger:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.95);
+  outline-offset: 3px;
 }
 
 @media (min-width: 768px) {
@@ -485,6 +498,214 @@
   animation: cta-hover-pop 0.42s ease;
 }
 
+.account-menu {
+  position: relative;
+  z-index: 80;
+}
+
+.account-menu-trigger {
+  display: inline-flex;
+  min-width: 2.9rem;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-menu-trigger:hover,
+.account-menu-trigger[aria-expanded='true'] {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.23);
+  box-shadow: 0 12px 26px -16px rgba(0, 0, 0, 0.75);
+}
+
+.account-menu-panel {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  width: min(21rem, calc(100vw - 2rem));
+  padding: 0.55rem;
+  overflow: hidden;
+  border: 1px solid rgba(226, 218, 244, 0.95);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.98);
+  color: #1e1b2e;
+  box-shadow: 0 24px 60px -24px rgba(24, 16, 49, 0.42);
+  backdrop-filter: blur(18px);
+  animation: account-menu-enter 160ms ease both;
+}
+
+.dark .account-menu-panel {
+  border-color: rgba(71, 85, 105, 0.85);
+  background: rgba(15, 23, 42, 0.98);
+  color: #f1f5f9;
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+}
+
+.account-menu-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0.75rem 0.9rem;
+}
+
+.account-menu-avatar {
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #e8defa;
+  border-radius: 0.9rem;
+  background: linear-gradient(145deg, #f3edff, #fff);
+  color: #5a34a1;
+}
+
+.dark .account-menu-avatar {
+  border-color: rgba(167, 139, 250, 0.24);
+  background: linear-gradient(145deg, rgba(91, 63, 145, 0.48), rgba(30, 41, 59, 0.9));
+  color: #d8c8ff;
+}
+
+.account-menu-user {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.account-menu-user strong,
+.account-menu-user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu-user strong {
+  color: #211b32;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.account-menu-user span {
+  color: #777188;
+  font-size: 0.76rem;
+}
+
+.dark .account-menu-user strong {
+  color: #f8fafc;
+}
+
+.dark .account-menu-user span {
+  color: #a7b2c4;
+}
+
+.account-menu-divider {
+  height: 1px;
+  margin: 0.35rem 0.55rem;
+  background: #eeeaf5;
+}
+
+.dark .account-menu-divider {
+  background: rgba(71, 85, 105, 0.7);
+}
+
+.account-menu-item,
+.account-menu-logout {
+  display: flex;
+  width: 100%;
+  min-height: 2.7rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: #423b52;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  text-decoration: none;
+  transition: color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.account-menu-item svg {
+  flex: 0 0 auto;
+  color: #7454ad;
+}
+
+.account-menu-item:hover,
+.account-menu-item:focus-visible {
+  background: #f5f1fc;
+  color: #4a2c86;
+  outline: none;
+}
+
+.dark .account-menu-item {
+  color: #d6deea;
+}
+
+.dark .account-menu-item svg {
+  color: #c4b5fd;
+}
+
+.dark .account-menu-item:hover,
+.dark .account-menu-item:focus-visible {
+  background: rgba(124, 92, 178, 0.2);
+  color: #fff;
+}
+
+.account-menu-logout {
+  margin-top: 0.1rem;
+  color: #b42332;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: rgba(220, 38, 38, 0.65);
+  text-underline-offset: 0.22rem;
+}
+
+.account-menu-logout svg {
+  color: #dc2626;
+}
+
+.account-menu-logout:hover,
+.account-menu-logout:focus-visible {
+  background: #fff1f2;
+  color: #991b1b;
+  outline: none;
+}
+
+.dark .account-menu-logout {
+  color: #fca5a5;
+  text-decoration-color: rgba(248, 113, 113, 0.8);
+}
+
+.dark .account-menu-logout:hover,
+.dark .account-menu-logout:focus-visible {
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecaca;
+}
+
+@keyframes account-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.3rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes logo-float {
   0%,
   100% {
@@ -520,7 +741,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .logo-icon,
-  .nav-mobile {
+  .nav-mobile,
+  .account-menu-panel {
     animation: none;
   }
 

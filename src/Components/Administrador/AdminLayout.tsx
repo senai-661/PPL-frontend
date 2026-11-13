@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react';
-import { Car, Home, LogOut, ShieldCheck, User, Users } from 'lucide-react';
+import { Car, ShieldCheck, User, Users } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggleButton } from '../../Components/Elementos/ThemeToggleButton';
+import { HeaderAccountMenu } from '../Cabecalho/HeaderAccountMenu';
 
 type FooterLink = {
   to: string;
@@ -41,6 +42,7 @@ export function AdminLayout() {
     localStorage.removeItem('token');
     localStorage.removeItem('userType');
     localStorage.removeItem('user');
+    localStorage.removeItem('userEmail');
     navigate('/login');
   }, [navigate]);
 
@@ -61,23 +63,13 @@ export function AdminLayout() {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <NavLink
-                to="/"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20"
-              >
-                <Home className="size-4" aria-hidden="true" />
-                Página inicial
-              </NavLink>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20"
-              >
-                <LogOut className="size-4" aria-hidden="true" />
-                Sair
-              </button>
-
+              <HeaderAccountMenu
+                displayName="Administrador OpenLine"
+                displayEmail={localStorage.getItem('userEmail') ?? undefined}
+                homePath="/administrador/painel"
+                userType="admin"
+                onLogout={handleLogout}
+              />
               <ThemeToggleButton className="shrink-0" />
             </div>
           </div>

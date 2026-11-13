@@ -9,6 +9,7 @@ import { About } from './pages/PElementos/Sobre';
 import { Services } from './pages/PElementos/Servicos';
 import { Accessibility } from './pages/PElementos/Acessibilidade';
 import { Contact } from './pages/PElementos/Contato';
+import { PrivacyData } from './pages/PElementos/PrivacidadeDados';
 import { Airports } from './pages/PElementos/aeroportos';
 import { Help } from './pages/PElementos/ajuda';
 import { Careers } from './pages/PElementos/carreiras';
@@ -107,6 +108,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/openline-van" element={<Van />} />
           <Route path="/recursos-seguranca" element={<SafetyResources />} />
+          <Route path="/privacidade-dados" element={<PrivacyData />} />
           <Route path="/seguranca" element={<Safety />} />
           <Route path="/sobre-nos" element={<About />} />
           <Route path="/detalhes/passageiro/:id_passageiro" element={<PDetalhesPassageiro />} />

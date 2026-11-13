@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Accessibility as AccessibilityIcon, LogOut, Menu, UserCircle2, X } from 'lucide-react';
+import { Accessibility as AccessibilityIcon } from 'lucide-react';
 import { ThemeToggleButton } from '../Elementos/ThemeToggleButton';
+import { HeaderAccountMenu } from './HeaderAccountMenu';
 import { SERVER_CFG } from '../../appConfig';
 import './Cabecalho.css';
 
@@ -169,54 +170,40 @@ export function Header() {
           <div className="header-actions">
             <ThemeToggleButton className="header-theme-toggle" />
 
-            <div className="cta-desktop">
-              {isAuthenticated ? (
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="cta-button flex items-center gap-1 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
-                >
-                  <LogOut className="size-3" />
-                  Sair
-                </button>
-              ) : (
+            {!isAuthenticated && (
+              <div className="cta-desktop">
                 <Link to="/login" className="cta-button">
                   Entrar
-                </Link>
-              )}
-            </div>
-
-            {isAuthenticated && profilePath && (
-              <div className="profile-menu">
-                <Link
-                  to={profilePath}
-                  className="profile-button"
-                  aria-label="Abrir perfil da conta"
-                >
-                  <UserCircle2 className="size-6" />
-                </Link>
-
-                <Link to={profilePath} className="profile-card">
-                  <span className="profile-card-label">CONTA OPENLINE</span>
-                  <strong className="profile-card-name">{displayName}</strong>
-                  <span className="profile-card-email">{displayEmail}</span>
                 </Link>
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen((current) => !current)}
-              className="menu-button"
-              aria-label="Menu"
-              aria-expanded={isMenuOpen}
-            >
-              {isMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
-            </button>
+            {isAuthenticated && userType && (
+              <HeaderAccountMenu
+                displayName={displayName}
+                displayEmail={displayEmail}
+                homePath={logoPath}
+                profilePath={profilePath}
+                userType={userType}
+                onLogout={handleLogout}
+              />
+            )}
+
+            {!isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen((current) => !current)}
+                className="menu-button"
+                aria-label={isMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+                aria-expanded={isMenuOpen}
+              >
+                <span aria-hidden="true">III</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {isMenuOpen && (
+        {isMenuOpen && !isAuthenticated && (
           <nav className="nav-mobile" aria-label="Navegacao mobile">
             {navLinks.map((link) => (
               <Link
@@ -229,31 +216,9 @@ export function Header() {
               </Link>
             ))}
 
-            {isAuthenticated ? (
-              <>
-                {profilePath && (
-                  <Link
-                    to={profilePath}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="nav-mobile-link nav-mobile-button"
-                  >
-                    Minha conta
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="cta-mobile flex items-center justify-center gap-2 bg-red-600 px-3 py-1.5 text-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
-                >
-                  <LogOut className="size-3" />
-                  Sair
-                </button>
-              </>
-            ) : (
-              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="cta-mobile">
-                Entrar
-              </Link>
-            )}
+            <Link to="/login" onClick={() => setIsMenuOpen(false)} className="cta-mobile">
+              Entrar
+            </Link>
           </nav>
         )}
       </div>

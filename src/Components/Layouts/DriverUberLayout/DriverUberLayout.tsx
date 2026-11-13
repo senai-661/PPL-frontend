@@ -16,6 +16,7 @@ import { SERVER_CFG } from '@/appConfig';
 import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/MapComponent';
 import { useToast } from '@/hooks/useToast';
 import { useNavigate } from 'react-router-dom';
+import { getDashboardText, loadDashboardPreferences } from '@/utils/dashboardPreferences';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;
@@ -51,6 +52,8 @@ const DEFAULT_CENTER: LatLngTuple = [-23.55052, -46.633308];
 export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [dashboardPreferences] = useState(loadDashboardPreferences);
+  const panelText = getDashboardText(dashboardPreferences.language);
   const [isOnline, setIsOnline] = useState(false);
   const [selectedRide, setSelectedRide] = useState<number | null>(null);
   const [driverPosition, setDriverPosition] = useState<LatLngTuple>(DEFAULT_CENTER);
@@ -70,7 +73,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   };
-  const { error: showError } = useToast();
+  const { error: showError, success } = useToast();
 
   // Buscar corridas pendentes
   const fetchPendingRides = async (online = isOnline) => {
@@ -343,13 +346,14 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const mapPoints: MapPoint[] = [
     {
       id: 'driver-position',
-      label: isOnline ? 'Sua localização' : 'Posição estimada',
+      label: isOnline ? panelText.driverLocation : panelText.estimatedPosition,
       position: driverPosition,
       color: isOnline ? '#16a34a' : '#64748b',
       description: isOnline
-        ? 'Sua posição atual está sendo compartilhada.'
-        : 'Ative o modo online para compartilhar sua localização.',
+        ? panelText.locationShared
+        : panelText.locationNotShared,
       radius: 10,
+      isLocation: true,
     },
   ];
 
@@ -404,7 +408,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
         {isExpanded && (
           <>
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Modo Motorista</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">{panelText.driverTitle}</h3>
 
               <button
                 onClick={handleToggleOnline}
@@ -416,13 +420,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 } disabled:opacity-50`}
               >
                 {togglingOnline && <Loader2 className="size-5 animate-spin" />}
-                {togglingOnline ? (isOnline ? 'Ficando Offline...' : 'Ficando Online...') : (isOnline ? 'Online' : 'Offline')}
+                {togglingOnline ? (isOnline ? panelText.goingOffline : panelText.goingOnline) : (isOnline ? panelText.online : panelText.offline)}
               </button>
 
               {isOnline && (
                 <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-sm text-green-800">
-                    Você está disponível para receber solicitações.
+                    {panelText.available}
                   </p>
                 </div>
               )}
@@ -430,7 +434,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
               {!isOnline && (
                 <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    Clique no botão acima para ativar o modo online.
+                    {panelText.activateOnline}
                   </p>
                 </div>
               )}
@@ -438,19 +442,19 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
 
             {activeRide && (
               <div className="p-6 border-b border-gray-200 space-y-3">
-                <p className="text-xs text-gray-600 font-semibold">CORRIDA ATUAL</p>
+                <p className="text-xs text-gray-600 font-semibold">{panelText.currentRide}</p>
                 <p className="font-bold text-gray-800">
                   {activeRide.passageiro.nome} {activeRide.passageiro.sobrenome}
                 </p>
                 <p className="text-sm text-gray-600">{activeRide.origemCorrida}</p>
-                <p className="text-sm text-gray-600">Destino: {activeRide.destinoCorrida}</p>
+                <p className="text-sm text-gray-600">{panelText.destinationPrefix} {activeRide.destinoCorrida}</p>
                 {activeRide.statusCorrida === 'Aceito' ? (
                   <button onClick={handleStartRide} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded disabled:opacity-50">
-                    Iniciar corrida
+                    {panelText.startRide}
                   </button>
                 ) : (
                   <button onClick={handleFinishRide} disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded disabled:opacity-50">
-                    Finalizar corrida
+                    {panelText.finishRide}
                   </button>
                 )}
               </div>
@@ -458,13 +462,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
 
             {isOnline && (
               <div className="p-6 border-b border-gray-200 space-y-3">
-                <p className="text-xs text-gray-600 font-semibold mb-3">HOJE</p>
+                <p className="text-xs text-gray-600 font-semibold mb-3">{panelText.today}</p>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Ganhos:</span>
+                  <span className="text-gray-700">{panelText.earnings}</span>
                   <span className="font-bold text-green-600 text-lg">{formatarMoeda(stats.ganhosDia)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Viagens:</span>
+                  <span className="text-gray-700">{panelText.trips}</span>
                   <span className="font-bold text-[#5a34a1] text-lg">{stats.viagensDia}</span>
                 </div>
               </div>
@@ -475,7 +479,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
               <div className="space-y-2">
                 <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left">
                   <Phone className="size-5 text-blue-600" />
-                  <span className="text-sm font-semibold">Suporte 24/7</span>
+                  <span className="text-sm font-semibold">{panelText.support}</span>
                 </button>
               </div>
             </div>
@@ -485,7 +489,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 <div>
                   <Search className="size-12 mx-auto text-gray-300 mb-3" />
                   <p className="text-gray-600 text-sm">
-                    Aguardando solicitações próximas...
+                    {panelText.awaitingRides}
                   </p>
                 </div>
               </div>
@@ -501,8 +505,11 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
           points={mapPoints}
           route={selectedRideRoute}
           loading={isMapLoading}
-          emptyTitle="Mapa do motorista"
-          emptySubtitle="Sua localização e as próximas corridas aparecerão aqui."
+          emptyTitle={panelText.mapDriverTitle}
+          emptySubtitle={panelText.mapDriverSubtitle}
+          mapStyle={dashboardPreferences.mapStyle}
+          locationIcon={dashboardPreferences.locationIcon}
+          language={dashboardPreferences.language}
         />
 
         {isOnline && rideNotifications.length > 0 && (
@@ -527,13 +534,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                         {ride.passageiro.nome} {ride.passageiro.sobrenome}
                       </p>
                       {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 && (
-                        <span className="text-xs text-amber-600">🦽 Necessidades especiais</span>
+                        <span className="text-xs text-amber-600">🦽 {panelText.specialNeeds}</span>
                       )}
                     </div>
                     <span
                       className={`px-3 py-1 rounded-full text-white text-xs font-bold ${getRideTypeColor(ride.passageiro.necessidades)}`}
                     >
-                      {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 ? 'ADAPTADO' : 'CONVENCIONAL'}
+                      {ride.passageiro.necessidades && ride.passageiro.necessidades.length > 0 ? panelText.adapted : panelText.conventionalRide.toUpperCase()}
                     </span>
                   </div>
 

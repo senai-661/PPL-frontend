@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Loader2, MapPin, Car, Clock, Star, ThumbsUp, CheckCircle } from 'lucide-react';
+import { Loader2, MapPin, Car, Clock, Star, ThumbsUp, CheckCircle, Volume2 } from 'lucide-react';
 import { SERVER_CFG } from '../../appConfig';
 import { useToast } from '../../hooks/useToast';
+import { loadAccessibilityPreferences, speakAccessibilityText } from '../../utils/accessibilityPreferences';
 
 interface MotoristaInfo {
   id?: number;
@@ -43,6 +44,7 @@ export function PainelCorridaPassageiro({
 }: PainelCorridaPassageiroProps) {
   const { success, error: showError } = useToast();
   const token = localStorage.getItem('token');
+  const accessibilityPreferences = loadAccessibilityPreferences();
 
   // Estado para cronômetro de tempo decorrido
   const [tempoDecorrido, setTempoDecorrido] = useState<string>('00:00');
@@ -136,6 +138,20 @@ export function PainelCorridaPassageiro({
   const nomeMotorista = motorista
     ? `${motorista.nome || ''} ${motorista.sobrenome || ''}`.trim()
     : 'Motorista OpenLine';
+
+  const ouvirInformacoesDaCorrida = () => {
+    const informacoes = [
+      `Status da corrida: ${statusCorrida}.`,
+      `Origem: ${origem}.`,
+      `Destino: ${destino}.`,
+      motorista ? `Motorista: ${nomeMotorista}.` : '',
+      veiculo?.modelo ? `Veículo: ${veiculo.modelo}.` : '',
+      veiculo?.placa ? `Placa: ${veiculo.placa}.` : '',
+      statusCorrida === 'Em andamento' ? `Tempo de viagem: ${tempoDecorrido}.` : '',
+      `Valor: ${formatarMoeda(preco)}.`,
+    ].filter(Boolean).join(' ');
+    speakAccessibilityText(informacoes);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -315,6 +331,16 @@ export function PainelCorridaPassageiro({
               </div>
             </div>
           </div>
+        )}
+
+        {accessibilityPreferences.audioDescriptions && (
+          <button
+            type="button"
+            onClick={ouvirInformacoesDaCorrida}
+            className="mb-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-800 transition hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 dark:border-violet-400/40 dark:text-violet-200 dark:hover:bg-violet-400/10"
+          >
+            <Volume2 className="size-4" aria-hidden="true" /> Ouvir informações da corrida
+          </button>
         )}
 
         {/* BOTÃO DE CANCELAR (apenas quando Pendente ou Aceito) */}

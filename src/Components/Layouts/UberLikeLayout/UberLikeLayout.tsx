@@ -133,10 +133,31 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
+  const scheduleTriggerRef = useRef<HTMLButtonElement>(null);
+  const scheduleDateRef = useRef<HTMLSelectElement>(null);
 
   const token = localStorage.getItem('token');
   const pollingIntervalRef = useRef<number | null>(null);
   const { error: showError, info, success, warning } = useToast();
+
+  useEffect(() => {
+    if (!showScheduleModal) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusTimer = window.setTimeout(() => scheduleDateRef.current?.focus(), 0);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowScheduleModal(false);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      scheduleTriggerRef.current?.focus();
+    };
+  }, [showScheduleModal]);
 
   // Função para obter o preço atual baseado no tipo de serviço
   const getPrecoAtual = (): number => {
@@ -878,6 +899,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                     <button
                       type="button"
                       onClick={handleAgendarClick}
+                      ref={scheduleTriggerRef}
                       className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg flex items-center justify-center gap-2"
                     >
                       📅 {panelText.schedule}
@@ -1043,101 +1065,112 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
       {/* Modal de Agendamento */}
       {showScheduleModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000]">
-          <div className="bg-white rounded-3xl max-w-md w-full mx-4 overflow-hidden shadow-2xl">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-5">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 p-2 rounded-full">
-                  <span className="text-2xl">📅</span>
-                </div>
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto bg-slate-950/75 p-3 backdrop-blur-md sm:p-5"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setShowScheduleModal(false);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="schedule-dialog-title"
+            aria-describedby="schedule-dialog-description"
+            className="my-auto w-full max-w-md overflow-hidden rounded-[1.65rem] border border-white/10 bg-white shadow-[0_32px_100px_rgba(2,6,23,0.5)] dark:border-slate-700 dark:bg-slate-900"
+          >
+            <header className="relative overflow-hidden bg-gradient-to-r from-fuchsia-600 via-violet-600 to-indigo-600 px-5 py-5 text-white sm:px-6">
+              <div className="pointer-events-none absolute -right-7 -top-12 size-36 rounded-full border-[22px] border-white/10" />
+              <div className="relative flex items-center gap-3.5">
+                <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/15 shadow-inner">
+                  <span className="text-2xl" aria-hidden="true">🗓️</span>
+                </span>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Agendar Viagem</h3>
-                  <p className="text-purple-100 text-sm">Escolha quando você quer viajar</p>
+                  <h2 id="schedule-dialog-title" className="text-xl font-bold tracking-tight sm:text-2xl">Agendar viagem</h2>
+                  <p id="schedule-dialog-description" className="mt-0.5 text-sm text-white/85">Escolha quando você quer viajar</p>
                 </div>
               </div>
-            </div>
+            </header>
 
-            <div className="p-6">
-              <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-4 mb-6 border border-gray-100">
-                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-dashed border-gray-200">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <span className="text-xl">🚗</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-500">Sua viagem</p>
-                    <p className="text-sm font-semibold text-gray-800 truncate max-w-[200px]">
-                      {formData.origin || '📍 Origem'} → {formData.destination || '🏁 Destino'}
+            <div className="max-h-[calc(100dvh-9rem)] space-y-5 overflow-y-auto p-4 sm:p-5">
+              <section aria-label="Resumo da viagem" className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 dark:border-slate-700 dark:from-slate-800 dark:to-slate-800/70">
+                <div className="flex items-center gap-3 border-b border-dashed border-slate-200 pb-3 dark:border-slate-600">
+                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-xl dark:bg-violet-400/15" aria-hidden="true">🚗</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Sua viagem</p>
+                    <p className="mt-0.5 line-clamp-2 text-sm font-semibold leading-5 text-slate-800 dark:text-slate-100">
+                      {formData.origin || '📍 Origem'} <span className="text-violet-500">→</span> {formData.destination || '🏁 Destino'}
                     </p>
                   </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-1">Preço estimado</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {getPrecoFormatado()}
-                  </p>
+                <div className="pt-3 text-center">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Preço estimado</p>
+                  <p className="mt-0.5 text-2xl font-extrabold tracking-tight text-violet-700 dark:text-violet-300">{getPrecoFormatado()}</p>
+                </div>
+              </section>
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="schedule-date" className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    <span aria-hidden="true">📅</span> Data da viagem
+                  </label>
+                  <select
+                    ref={scheduleDateRef}
+                    id="schedule-date"
+                    value={scheduleDate}
+                    onChange={(event) => setScheduleDate(event.target.value)}
+                    className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-500/15 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-violet-400"
+                  >
+                    <option value="">Selecione uma data</option>
+                    {getAvailableDates().map((date) => <option key={date.value} value={date.value}>{date.label}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="schedule-time" className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    <span aria-hidden="true">⏰</span> Horário da viagem
+                  </label>
+                  <select
+                    id="schedule-time"
+                    value={scheduleTime}
+                    onChange={(event) => setScheduleTime(event.target.value)}
+                    className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-500/15 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-violet-400"
+                  >
+                    <option value="">Selecione um horário</option>
+                    {getAvailableTimes().map((time) => <option key={time} value={time}>{time}</option>)}
+                  </select>
                 </div>
               </div>
 
-              <div className="mb-5">
-                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <span className="text-lg">📅</span> Data da viagem
-                </label>
-                <select
-                  value={scheduleDate}
-                  onChange={(e) => setScheduleDate(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors bg-white text-gray-700"
-                >
-                  <option value="">Selecione uma data</option>
-                  {getAvailableDates().map((date) => (
-                    <option key={date.value} value={date.value}>{date.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <span className="text-lg">⏰</span> Horário da viagem
-                </label>
-                <select
-                  value={scheduleTime}
-                  onChange={(e) => setScheduleTime(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors bg-white text-gray-700"
-                >
-                  <option value="">Selecione um horário</option>
-                  {getAvailableTimes().map((time) => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="bg-amber-50 rounded-xl p-4 mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">ℹ️</span>
-                  <p className="text-sm font-semibold text-amber-800">Sobre o agendamento</p>
+              <aside className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-400/25 dark:bg-amber-400/10" aria-label="Informações sobre o agendamento">
+                <div className="mb-2.5 flex items-center gap-2">
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-400/15 dark:text-amber-200" aria-hidden="true">ℹ</span>
+                  <p className="text-sm font-bold text-amber-950 dark:text-amber-100">Sobre o agendamento</p>
                 </div>
-                <ul className="text-xs text-amber-700 space-y-2">
-                  <li className="flex items-center gap-2">✓ Agende com até 30 dias de antecedência</li>
-                  <li className="flex items-center gap-2">✓ Tempo de espera extra incluído</li>
-                  <li className="flex items-center gap-2">✓ Cancele sem custo com até 60 minutos de antecedência</li>
+                <ul className="space-y-1.5 text-xs leading-5 text-amber-900 dark:text-amber-100/90">
+                  <li>✓ Agende com até 30 dias de antecedência</li>
+                  <li>✓ Tempo extra para embarque incluído</li>
+                  <li>✓ Cancelamento sem custo com até 60 minutos de antecedência</li>
                 </ul>
-              </div>
+              </aside>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
                 <button
+                  type="button"
                   onClick={() => setShowScheduleModal(false)}
-                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                  className="min-h-12 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:focus-visible:ring-offset-slate-900"
                 >
                   Cancelar
                 </button>
                 <button
+                  type="button"
                   onClick={confirmarAgendamento}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-medium hover:from-purple-700 hover:to-indigo-700 transition-all"
+                  className="min-h-12 flex-1 rounded-xl bg-gradient-to-r from-fuchsia-600 to-violet-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-violet-900/20 transition hover:from-fuchsia-700 hover:to-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   Confirmar
                 </button>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       )}
     </div>

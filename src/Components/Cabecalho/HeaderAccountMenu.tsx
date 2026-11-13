@@ -1,5 +1,6 @@
 import {
   Bell,
+  Accessibility,
   CalendarDays,
   Database,
   History,
@@ -57,6 +58,7 @@ export function HeaderAccountMenu({
   }, [isOpen]);
 
   const accountLinks = [
+    { label: 'Acessibilidade', to: '/configuracoes-acessibilidade', icon: Accessibility },
     ...(profilePath ? [{ label: 'Dados pessoais', to: profilePath, icon: UserRound }] : []),
     ...(userType !== 'admin'
       ? [{ label: 'Configurações do painel', to: `/${userType === 'driver' ? 'motorista' : 'passageiro'}/configuracoes-painel`, icon: SlidersHorizontal }]

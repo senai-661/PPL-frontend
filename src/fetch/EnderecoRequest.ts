@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.PROD ? "https://ppl-backend-uska.onrender.com" : "")
+).replace(/\/$/, "");
 const ENDERECO_SUGESTOES_PATH = "/api/autocomplete/enderecos";
 
 export interface EnderecoSugestaoResponse {

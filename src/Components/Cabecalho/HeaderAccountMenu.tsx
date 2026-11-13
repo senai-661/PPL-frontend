@@ -5,6 +5,7 @@ import {
   History,
   House,
   LogOut,
+  Menu,
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
@@ -77,7 +78,7 @@ export function HeaderAccountMenu({
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
       >
-        <span aria-hidden="true">III</span>
+        <Menu className="account-menu-trigger-icon" aria-hidden="true" />
       </button>
 
       {isOpen && (

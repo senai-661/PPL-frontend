@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Accessibility as AccessibilityIcon } from 'lucide-react';
+import { Accessibility as AccessibilityIcon, Menu } from 'lucide-react';
 import { ThemeToggleButton } from '../Elementos/ThemeToggleButton';
 import { HeaderAccountMenu } from './HeaderAccountMenu';
 import { SERVER_CFG } from '../../appConfig';
@@ -197,7 +197,7 @@ export function Header() {
                 aria-label={isMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
                 aria-expanded={isMenuOpen}
               >
-                <span aria-hidden="true">III</span>
+                <Menu className="menu-button-icon" aria-hidden="true" />
               </button>
             )}
           </div>

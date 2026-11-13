@@ -398,25 +398,20 @@
 /* Mobile Menu Button */
 .menu-button {
   display: block;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
   color: white;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 0.65rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0.5rem;
   cursor: pointer;
-  padding: 0.45rem 0.65rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  transition: background-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  padding: 0.35rem;
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
 .menu-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.7);
+  opacity: 0.78;
+  transform: scale(1.05);
 }
 
 .menu-button:focus-visible,
@@ -505,27 +500,31 @@
 
 .account-menu-trigger {
   display: inline-flex;
-  min-width: 2.9rem;
-  min-height: 2.9rem;
+  width: 2.9rem;
+  height: 2.9rem;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.13);
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
   color: #fff;
   cursor: pointer;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .account-menu-trigger:hover,
 .account-menu-trigger[aria-expanded='true'] {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.23);
-  box-shadow: 0 12px 26px -16px rgba(0, 0, 0, 0.75);
+  transform: scale(1.06);
+  opacity: 0.8;
+}
+
+.account-menu-trigger-icon,
+.menu-button-icon {
+  width: 1.9rem;
+  height: 1.9rem;
+  stroke-width: 2.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .account-menu-panel {

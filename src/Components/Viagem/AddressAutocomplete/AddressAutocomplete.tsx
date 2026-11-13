@@ -65,7 +65,7 @@ function renderHighlightedText(text: string, query: string) {
 
   return parts.map((part, index) => (
     <Fragment key={`${part}-${index}`}>
-      {part.toLowerCase() === searchTerm.toLowerCase() ? <mark className="rounded bg-[#ede7fb] px-0.5 font-semibold text-[#5a34a1]">{part}</mark> : part}
+      {part.toLowerCase() === searchTerm.toLowerCase() ? <mark className="rounded bg-[#ede7fb] px-0.5 font-semibold text-[#5a34a1] dark:bg-violet-400/20 dark:text-violet-200">{part}</mark> : part}
     </Fragment>
   ));
 }
@@ -220,7 +220,7 @@ export function AddressAutocomplete({
       className={`${className ?? ''} ${showSuggestions ? 'relative z-50 isolate' : 'relative'}`}
     >
       {label && (
-        <label className="mb-2 block text-sm font-semibold text-gray-700">
+        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-200">
           {label}
         </label>
       )}
@@ -252,12 +252,12 @@ export function AddressAutocomplete({
             aria-autocomplete="list"
             aria-controls={suggestionsId}
             className={`
-              w-full rounded-2xl border bg-white py-3.5 pl-11 pr-11 text-sm text-gray-900
+              w-full rounded-2xl border bg-white py-3.5 pl-11 pr-11 text-sm text-gray-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400
               shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-0
-              ${disabled ? 'cursor-not-allowed bg-gray-100 text-gray-500' : ''}
+              ${disabled ? 'cursor-not-allowed bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-500' : ''}
               ${error
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-200 focus:border-[#5a34a1] focus:ring-[#5a34a1]/30'
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-500/60'
+                : 'border-gray-200 focus:border-[#5a34a1] focus:ring-[#5a34a1]/30 dark:focus:border-violet-400 dark:focus:ring-violet-400/30'
               }
             `}
           />
@@ -269,7 +269,7 @@ export function AddressAutocomplete({
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-gray-400 transition-colors hover:text-gray-600"
+                className="text-gray-400 transition-colors hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-200"
                 aria-label="Limpar endereco"
               >
                 <X className="h-5 w-5" />
@@ -279,20 +279,20 @@ export function AddressAutocomplete({
         </div>
 
         {showSuggestions && (
-          <div className="absolute left-0 right-0 top-full z-50 mt-3 overflow-hidden rounded-3xl border border-[#e6ddf7] bg-white/95 backdrop-blur-md pointer-events-auto shadow-[0_24px_60px_rgba(90,52,161,0.16)] ring-1 ring-[#5a34a1]/10">
-            <div className="border-b border-[#ede7fb] bg-gradient-to-r from-[#f6f1ff] via-white to-[#f9f7ff] px-4 py-2.5 text-xs font-medium uppercase tracking-[0.18em] text-[#7b65aa]">
+          <div className="pointer-events-auto absolute left-0 right-0 top-full z-50 mt-3 overflow-hidden rounded-3xl border border-[#e6ddf7] bg-white/95 shadow-[0_24px_60px_rgba(90,52,161,0.16)] ring-1 ring-[#5a34a1]/10 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/5">
+            <div className="border-b border-[#ede7fb] bg-gradient-to-r from-[#f6f1ff] via-white to-[#f9f7ff] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#7b65aa] dark:border-slate-700 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:text-violet-200">
               Sugestoes de endereco
             </div>
 
             {loading && suggestions.length === 0 && (
-                <div className="flex items-center gap-2 px-4 py-4 text-sm text-[#7b65aa]">
-                  <LoaderCircle className="h-4 w-4 animate-spin text-[#5a34a1]" />
+                <div className="flex items-center gap-2 px-4 py-4 text-sm text-[#7b65aa] dark:text-slate-300">
+                  <LoaderCircle className="h-4 w-4 animate-spin text-[#5a34a1] dark:text-violet-300" />
                   Buscando enderecos...
                 </div>
               )}
 
             {!loading && suggestions.length === 0 && value.trim().length >= 2 && (
-              <div className="px-4 py-4 text-sm text-[#7b65aa]">
+              <div className="px-4 py-4 text-sm text-[#7b65aa] dark:text-slate-300">
                 Nenhuma sugestao encontrada para "{value.trim()}"
               </div>
             )}
@@ -315,22 +315,24 @@ export function AddressAutocomplete({
                       aria-selected={activeIndex === index}
                       className={`
                         relative flex cursor-pointer items-start gap-3 border-b border-[#f1ebfc] px-4 py-3.5
-                        transition-colors last:border-b-0 pointer-events-auto
-                        ${activeIndex === index ? 'bg-[#f3edff]' : 'bg-white hover:bg-[#faf7ff]'}
+                        transition-colors last:border-b-0 pointer-events-auto dark:border-slate-700/80
+                        ${activeIndex === index
+                          ? 'bg-[#f3edff] dark:bg-violet-400/15'
+                          : 'bg-white hover:bg-[#faf7ff] dark:bg-slate-900 dark:hover:bg-slate-800'}
                       `}
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={() => handleSelectSuggestion(suggestion)}
                       onMouseEnter={() => setActiveIndex(index)}
                     >
-                      <div className="mt-0.5 rounded-full bg-[#f3edff] p-2 text-[#6e55a5]">
+                      <div className="mt-0.5 rounded-full bg-[#f3edff] p-2 text-[#6e55a5] dark:bg-slate-800 dark:text-violet-300">
                         <SuggestionIcon className="h-4 w-4" />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-gray-900">
+                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
                           {renderHighlightedText(suggestion.titulo || suggestion.display_name, value)}
                         </p>
-                        <p className="mt-0.5 truncate text-sm text-[#7b65aa]">
+                        <p className="mt-0.5 truncate text-sm text-[#7b65aa] dark:text-slate-400">
                           {renderHighlightedText(secondaryText || suggestion.display_name, value)}
                         </p>
                       </div>

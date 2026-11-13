@@ -14,6 +14,10 @@ import {
 import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/MapComponent';
 import { loadRideShortcuts } from '@/utils/rideShortcuts';
 import { getDashboardText, loadDashboardPreferences } from '@/utils/dashboardPreferences';
+import {
+  loadAccessibilityPreferences,
+  speakAccessibilityText,
+} from '@/utils/accessibilityPreferences';
 
 interface UberLikeLayoutProps {
   userType: 'passenger' | 'driver';
@@ -103,6 +107,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [rideShortcuts] = useState(loadRideShortcuts);
   const [dashboardPreferences] = useState(loadDashboardPreferences);
   const panelText = getDashboardText(dashboardPreferences.language);
+  const accessibilityPreferences = loadAccessibilityPreferences();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<RideRequestData>({
     origin: '',
@@ -173,11 +178,17 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const handleOriginSelect = (address: AutocompleteAddress) => {
     setSelectedOriginAddress(address);
     setOriginPosition(toLatLngTuple(address.lat, address.lon));
+    if (accessibilityPreferences.audioDescriptions) {
+      speakAccessibilityText(`Origem selecionada: ${address.display_name}`, dashboardPreferences.language);
+    }
   };
 
   const handleDestinationSelect = (address: AutocompleteAddress) => {
     setSelectedDestinationAddress(address);
     setDestinationPosition(toLatLngTuple(address.lat, address.lon));
+    if (accessibilityPreferences.audioDescriptions) {
+      speakAccessibilityText(`Destino selecionado: ${address.display_name}`, dashboardPreferences.language);
+    }
   };
 
   useEffect(() => {
@@ -269,6 +280,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
   const handleCancelarAguardando = async () => {
     const corridaId = aguardandoCorrida.id;
+
+    if (accessibilityPreferences.confirmationBeforeCancel &&
+      !window.confirm('Deseja mesmo cancelar a solicitação desta corrida?')) {
+      return;
+    }
+
     clearPollingInterval();
 
     if (!corridaId) {
@@ -335,6 +352,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       time: scheduleTime,
       price: precoFinal,
       service: servicoNome,
+      observations: [
+        formData.notes,
+        accessibilityPreferences.boardingAssistance
+          ? 'Passageiro precisa de auxílio no embarque e desembarque.'
+          : '',
+        accessibilityPreferences.accessibleVehicleRequest
+          ? 'Passageiro solicita veículo acessível/adaptado.'
+          : '',
+      ].filter(Boolean).join('\n'),
       status: 'agendado',
       createdAt: new Date().toISOString(),
     };
@@ -510,6 +536,13 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
         if (isMounted) {
           setRouteData(route);
+          if (route && accessibilityPreferences.voiceRouteSummary) {
+            const duration = MapRequests.formatDuration(route.duration);
+            speakAccessibilityText(
+              `Trajeto para ${formData.destination}. Tempo estimado: ${duration}.`,
+              dashboardPreferences.language,
+            );
+          }
         }
       } catch (error) {
         if (isMounted) {
@@ -570,7 +603,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           lngDestino: destinationPosition[1],
           tipoCorrida: formData.rideType ?? 'Convencional',
           numPassageiros: formData.passengers ?? 1,
-          observacoes: formData.notes ?? null,
+          observacoes: [
+            formData.notes,
+            accessibilityPreferences.boardingAssistance
+              ? 'Passageiro precisa de auxílio no embarque e desembarque.'
+              : '',
+            accessibilityPreferences.accessibleVehicleRequest
+              ? 'Passageiro solicita veículo acessível/adaptado.'
+              : '',
+          ].filter(Boolean).join('\n') || null,
         }),
       });
 
@@ -761,7 +802,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
                 {userType === 'passenger' && (
                   <>
-                    <div>
+                    <div className="a11y-optional-ride-setting">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         {panelText.rideType}
                       </label>
@@ -781,7 +822,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                       </select>
                     </div>
 
-                    <div>
+                    <div className="a11y-optional-ride-setting">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         {panelText.passengers}
                       </label>
@@ -803,7 +844,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                       </select>
                     </div>
 
-                    <div>
+                    <div className="a11y-optional-ride-setting">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         {panelText.notes}
                       </label>
@@ -843,6 +884,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                     </button>
                   )}
                 </div>
+
+                {(accessibilityPreferences.boardingAssistance || accessibilityPreferences.accessibleVehicleRequest) && (
+                  <p className="rounded-xl border border-violet-200 bg-violet-50 px-3 py-2.5 text-xs leading-5 text-violet-900 dark:border-violet-400/25 dark:bg-violet-400/10 dark:text-violet-200" role="status">
+                    As preferências de acessibilidade selecionadas serão incluídas nas observações para o motorista. A correspondência com veículo adaptado ainda não é automática.
+                  </p>
+                )}
               </form>
 
               {userType === 'passenger' && (

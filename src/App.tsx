@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Header } from './Components/Cabecalho/Cabecalho';
 import { Footer } from './Components/Rodape/Rodape';
 import { Home } from './Components/Inicio/Inicio';
@@ -10,6 +11,7 @@ import { Services } from './pages/PElementos/Servicos';
 import { Accessibility } from './pages/PElementos/Acessibilidade';
 import { Contact } from './pages/PElementos/Contato';
 import { PrivacyData } from './pages/PElementos/PrivacidadeDados';
+import { AccessibilitySettings } from './pages/PElementos/ConfiguracoesAcessibilidade';
 import { Airports } from './pages/PElementos/aeroportos';
 import { Help } from './pages/PElementos/ajuda';
 import { Careers } from './pages/PElementos/carreiras';
@@ -48,6 +50,7 @@ import PDetalhesPassageiro from './pages/PDetalhes/PDetalhesPassageiro/PDetalhes
 import HistoricoCorridas from './pages/PPassageiro/HistoricoCorridas';
 import NotificacoesPassageiro from './pages/PPassageiro/NotificacoesPassageiro';
 import CorridasAgendadasMotorista from './pages/PMotorista/CorridasAgendadasMotorista';
+import { applyAccessibilityPreferences, loadAccessibilityPreferences } from './utils/accessibilityPreferences';
 
 type AuthenticatedUserType = 'passenger' | 'driver' | 'admin';
 
@@ -84,6 +87,10 @@ function AppContent() {
   const isLoginRoute = location.pathname === '/login';
   const { toasts, removeToast } = useToast();
 
+  useEffect(() => {
+    applyAccessibilityPreferences(loadAccessibilityPreferences());
+  }, []);
+
   return (
     <div className="app-shell min-h-screen flex flex-col">
       {!isAdminRoute && <Header />}
@@ -111,6 +118,7 @@ function AppContent() {
           <Route path="/openline-van" element={<Van />} />
           <Route path="/recursos-seguranca" element={<SafetyResources />} />
           <Route path="/privacidade-dados" element={<PrivacyData />} />
+          <Route path="/configuracoes-acessibilidade" element={<AccessibilitySettings />} />
           <Route path="/seguranca" element={<Safety />} />
           <Route path="/sobre-nos" element={<About />} />
           <Route path="/detalhes/passageiro/:id_passageiro" element={<PDetalhesPassageiro />} />

@@ -7,6 +7,7 @@ import {
   LogOut,
   MapPinned,
   Menu,
+  SlidersHorizontal,
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
@@ -57,6 +58,9 @@ export function HeaderAccountMenu({
 
   const accountLinks = [
     ...(profilePath ? [{ label: 'Dados pessoais', to: profilePath, icon: UserRound }] : []),
+    ...(userType !== 'admin'
+      ? [{ label: 'Configurações do painel', to: `/${userType === 'driver' ? 'motorista' : 'passageiro'}/configuracoes-painel`, icon: SlidersHorizontal }]
+      : []),
     ...(userType === 'passenger'
       ? [
           { label: 'Escolher atalhos', to: '/passageiro/atalhos', icon: MapPinned },

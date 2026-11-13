@@ -5,6 +5,7 @@ import {
   History,
   House,
   LogOut,
+  MapPinned,
   Menu,
   ShieldCheck,
   UserRound,
@@ -58,6 +59,7 @@ export function HeaderAccountMenu({
     ...(profilePath ? [{ label: 'Dados pessoais', to: profilePath, icon: UserRound }] : []),
     ...(userType === 'passenger'
       ? [
+          { label: 'Escolher atalhos', to: '/passageiro/atalhos', icon: MapPinned },
           { label: 'Histórico de viagens', to: '/passageiro/historico', icon: History },
           { label: 'Notificações', to: '/passageiro/notificacoes', icon: Bell },
         ]

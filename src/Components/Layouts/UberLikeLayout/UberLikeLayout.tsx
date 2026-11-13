@@ -1,6 +1,7 @@
 import { DollarSign, Loader2, MapPin, Navigation, X } from 'lucide-react';
 import type { LatLngTuple } from 'leaflet';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 
 import { SERVER_CFG } from '@/appConfig';
 import MapRequests, { type RouteData } from '@/fetch/MapRequest';
@@ -11,6 +12,7 @@ import {
   type AutocompleteAddress,
 } from '@/Components/Viagem/AddressAutocomplete/AddressAutocomplete';
 import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/MapComponent';
+import { loadRideShortcuts } from '@/utils/rideShortcuts';
 
 interface UberLikeLayoutProps {
   userType: 'passenger' | 'driver';
@@ -97,6 +99,7 @@ const calcularPrecoPorCoordenadas = (origin: LatLngTuple | null, destination: La
 
 export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [rideShortcuts] = useState(loadRideShortcuts);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<RideRequestData>({
     origin: '',
@@ -125,7 +128,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
   const token = localStorage.getItem('token');
   const pollingIntervalRef = useRef<number | null>(null);
-  const { error: showError, info, warning } = useToast();
+  const { error: showError, info, success, warning } = useToast();
 
   // Função para obter o preço atual baseado no tipo de serviço
   const getPrecoAtual = (): number => {
@@ -579,7 +582,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
         id: data.idCorrida ?? null,
         origem: formData.origin,
         destino: formData.destination,
-        preco: data.preco ?? estimatedPrice ?? 0,
+        preco: data.preco ?? getPrecoAtual(),
         statusCorrida: 'Pendente',
         motorista: null,
         veiculo: null,
@@ -635,6 +638,23 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     setSelectedDestinationAddress(selectedOriginAddress);
     setOriginPosition(destinationPosition);
     setDestinationPosition(originPosition);
+  };
+
+  const applyRideShortcut = (shortcut: (typeof rideShortcuts)[number]) => {
+    setRouteData(null);
+    setEstimatedTime(null);
+    setEstimatedDistance(null);
+
+    if (shortcut.target === 'origin') {
+      setFormData((current) => ({ ...current, origin: shortcut.address }));
+      setSelectedOriginAddress(null);
+      setOriginPosition(null);
+      return;
+    }
+
+    setFormData((current) => ({ ...current, destination: shortcut.address }));
+    setSelectedDestinationAddress(null);
+    setDestinationPosition(null);
   };
 
   const mapPoints: MapPoint[] = [];
@@ -821,47 +841,45 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                 </div>
               </form>
 
-              <div className="pt-4 border-t border-gray-200">
-                <p className="text-xs text-gray-600 font-semibold mb-3">ATALHOS</p>
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((current) => ({
-                        ...current,
-                        origin: 'Av. Paulista, 1000, Sao Paulo',
-                      }))
-                    }
-                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
-                  >
-                    <MapPin className="size-5 text-gray-400" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-700">Av. Paulista</p>
-                      <p className="text-xs text-gray-500 truncate">
-                        Av. Paulista, 1000 - Bela Vista, SP
-                      </p>
+              {userType === 'passenger' && (
+                <div className="border-t border-gray-200 pt-4 dark:border-slate-700">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">ATALHOS</p>
+                    <Link
+                      to="/passageiro/atalhos"
+                      className="text-xs font-semibold text-[#5a34a1] hover:underline dark:text-violet-300"
+                    >
+                      Editar
+                    </Link>
+                  </div>
+                  {rideShortcuts.length > 0 ? (
+                    <div className="space-y-2">
+                      {rideShortcuts.map((shortcut) => (
+                        <button
+                          key={shortcut.id}
+                          type="button"
+                          onClick={() => applyRideShortcut(shortcut)}
+                          className="flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
+                        >
+                          <MapPin className="size-5 shrink-0 text-gray-400 dark:text-slate-500" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-gray-700 dark:text-slate-200">
+                              {shortcut.label}
+                            </span>
+                            <span className="mt-0.5 block truncate text-xs text-gray-500 dark:text-slate-400">
+                              {shortcut.address} · {shortcut.target === 'origin' ? 'Origem' : 'Destino'}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
                     </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((current) => ({
-                        ...current,
-                        destination: 'Shopping Ibirapuera, Sao Paulo',
-                      }))
-                    }
-                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
-                  >
-                    <MapPin className="size-5 text-gray-400" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-700">Shopping Ibirapuera</p>
-                      <p className="text-xs text-gray-500 truncate">
-                        Av. Ibirapuera, 3103 - SP
-                      </p>
-                    </div>
-                  </button>
+                  ) : (
+                    <p className="rounded-lg bg-gray-50 px-3 py-4 text-sm text-gray-500 dark:bg-slate-800/70 dark:text-slate-400">
+                      Nenhum atalho salvo. Use “Editar” para escolher seus endereços rápidos.
+                    </p>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           </>
         )}

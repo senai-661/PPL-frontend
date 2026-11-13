@@ -35,6 +35,7 @@ import { DriverProfile } from './pages/PMotorista/PerfilMotorista';
 import { PassengerRegistration } from './pages/PPassageiro/CadastroPassageiro';
 import { PassengerDashboard } from './pages/PPassageiro/PainelPassageiro';
 import { PassengerProfile } from './pages/PPassageiro/PerfilPassageiro';
+import { PassengerShortcuts } from './pages/PPassageiro/AtalhosPassageiro';
 import { TripRating } from './pages/PViagem/AvaliacaoViagem';
 import { TripDashboard } from './pages/PViagem/PainelViagem';
 import { TripList } from './pages/PViagem/ListaViagens';
@@ -147,6 +148,15 @@ function AppContent() {
             element={(
               <AuthProtectedRouteWithType allowedUserType="passenger">
                 <PassengerProfile />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/passageiro/atalhos"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <PassengerShortcuts />
               </AuthProtectedRouteWithType>
             )}
           />

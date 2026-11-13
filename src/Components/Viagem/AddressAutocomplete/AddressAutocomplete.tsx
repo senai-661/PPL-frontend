@@ -1,4 +1,4 @@
-import { Building2, Clock3, LoaderCircle, MapPin, Search, X } from 'lucide-react';
+import { Building2, Clock3, LoaderCircle, MapPin, Mic, Search, X } from 'lucide-react';
 import { Fragment, useEffect, useId, useRef, useState } from 'react';
 
 import {
@@ -6,6 +6,27 @@ import {
   type EnderecoSugestaoResponse,
 } from '../../../fetch/EnderecoRequest';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { loadAccessibilityPreferences } from '../../../utils/accessibilityPreferences';
+import { loadDashboardPreferences } from '../../../utils/dashboardPreferences';
+
+interface SpeechRecognitionResultLike extends ArrayLike<{ transcript: string }> {}
+
+interface SpeechRecognitionEventLike {
+  results: ArrayLike<SpeechRecognitionResultLike>;
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
 export interface AutocompleteAddress extends EnderecoSugestaoResponse {}
 
@@ -89,10 +110,18 @@ export function AddressAutocomplete({
   const [activeIndex, setActiveIndex] = useState(-1);
   const debouncedValue = useDebounce(value, 300);
   const suggestionsId = useId();
+  const inputId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const speechRecognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const requestCounterRef = useRef(0);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const voiceCommandsEnabled = loadAccessibilityPreferences().voiceCommands;
+  const speechLocale = loadDashboardPreferences().language;
+
+  useEffect(() => () => speechRecognitionRef.current?.stop(), []);
 
   useEffect(() => {
     const termo = debouncedValue.trim();
@@ -208,6 +237,48 @@ export function AddressAutocomplete({
     inputRef.current?.focus();
   };
 
+  const handleVoiceInput = () => {
+    const speechWindow = window as Window & {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    };
+    const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      setVoiceError('Ditado por voz indisponível neste navegador. Você pode digitar o endereço.');
+      return;
+    }
+
+    if (isListening) {
+      speechRecognitionRef.current?.stop();
+      return;
+    }
+
+    const recognition = new Recognition();
+    setVoiceError(null);
+    recognition.lang = speechLocale;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript?.trim();
+      if (transcript) {
+        onChange(transcript);
+        setShowSuggestions(transcript.length >= 2);
+        inputRef.current?.focus();
+      }
+    };
+    recognition.onerror = (event) => {
+      setVoiceError(event.error === 'not-allowed'
+        ? 'Permita o acesso ao microfone para usar o ditado por voz.'
+        : 'Não foi possível reconhecer a fala. Tente novamente ou digite o endereço.');
+      setIsListening(false);
+    };
+    recognition.onend = () => setIsListening(false);
+    speechRecognitionRef.current = recognition;
+    setIsListening(true);
+    recognition.start();
+  };
+
   const handleFocus = () => {
     if (value.trim().length >= 2) {
       setShowSuggestions(true);
@@ -220,7 +291,7 @@ export function AddressAutocomplete({
       className={`${className ?? ''} ${showSuggestions ? 'relative z-50 isolate' : 'relative'}`}
     >
       {label && (
-        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-200">
+        <label htmlFor={inputId} className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-200">
           {label}
         </label>
       )}
@@ -232,6 +303,7 @@ export function AddressAutocomplete({
           />
 
           <input
+            id={inputId}
             ref={inputRef}
             type="text"
             value={value}
@@ -251,8 +323,9 @@ export function AddressAutocomplete({
             aria-expanded={showSuggestions}
             aria-autocomplete="list"
             aria-controls={suggestionsId}
+            aria-describedby={error ? `${inputId}-error` : undefined}
             className={`
-              w-full rounded-2xl border bg-white py-3.5 pl-11 pr-11 text-sm text-gray-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400
+              w-full rounded-2xl border bg-white py-3.5 pl-11 pr-20 text-sm text-gray-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400
               shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-0
               ${disabled ? 'cursor-not-allowed bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-500' : ''}
               ${error
@@ -262,21 +335,37 @@ export function AddressAutocomplete({
             `}
           />
 
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+            {voiceCommandsEnabled && (
+              <button
+                type="button"
+                onClick={handleVoiceInput}
+                disabled={disabled || loading}
+                className={`inline-flex size-8 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${isListening ? 'bg-red-100 text-red-600 dark:bg-red-400/15 dark:text-red-300' : 'text-slate-400 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-violet-400/10 dark:hover:text-violet-300'}`}
+                aria-label={isListening ? 'Parar ditado por voz' : `Ditado por voz: ${label ?? placeholder}`}
+                aria-pressed={isListening}
+                title={isListening ? 'Ouvindo… clique para parar' : 'Preencher endereço por voz'}
+              >
+                {isListening ? <span className="size-2.5 animate-pulse rounded-full bg-current" /> : <Mic className="size-4" aria-hidden="true" />}
+              </button>
+            )}
             {loading ? (
               <LoaderCircle className="h-5 w-5 animate-spin text-gray-400" />
             ) : value ? (
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-gray-400 transition-colors hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-200"
-                aria-label="Limpar endereco"
+                className="inline-flex size-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-slate-100 hover:text-gray-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                aria-label="Limpar endereço"
               >
                 <X className="h-5 w-5" />
               </button>
             ) : null}
           </div>
         </div>
+
+        {isListening && <span className="sr-only" role="status" aria-live="polite">Ouvindo endereço. Fale agora.</span>}
+        {voiceError && <p className="mt-1 text-xs text-amber-700 dark:text-amber-300" role="status">{voiceError}</p>}
 
         {showSuggestions && (
           <div className="pointer-events-auto absolute left-0 right-0 top-full z-50 mt-3 overflow-hidden rounded-3xl border border-[#e6ddf7] bg-white/95 shadow-[0_24px_60px_rgba(90,52,161,0.16)] ring-1 ring-[#5a34a1]/10 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/5">
@@ -345,7 +434,7 @@ export function AddressAutocomplete({
         )}
       </div>
 
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p id={`${inputId}-error`} className="mt-1 text-sm text-red-600" role="alert">{error}</p>}
     </div>
   );
 }

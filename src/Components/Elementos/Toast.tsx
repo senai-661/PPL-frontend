@@ -1,5 +1,6 @@
 import { CheckCircle, XCircle, Info, AlertCircle, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { notifyWithAccessibilitySignals } from '../../utils/accessibilityPreferences';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -34,6 +35,13 @@ const textColors = {
 export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
   console.log('Toast RENDERIZADO:', { message, type });
   const [isVisible, setIsVisible] = useState(true);
+  const accessibilitySignalPlayed = useRef(false);
+
+  useEffect(() => {
+    if (accessibilitySignalPlayed.current) return;
+    accessibilitySignalPlayed.current = true;
+    notifyWithAccessibilitySignals();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {

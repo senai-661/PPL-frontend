@@ -13,6 +13,7 @@ import {
 } from '@/Components/Viagem/AddressAutocomplete/AddressAutocomplete';
 import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/MapComponent';
 import { loadRideShortcuts } from '@/utils/rideShortcuts';
+import { getDashboardText, loadDashboardPreferences } from '@/utils/dashboardPreferences';
 
 interface UberLikeLayoutProps {
   userType: 'passenger' | 'driver';
@@ -100,6 +101,8 @@ const calcularPrecoPorCoordenadas = (origin: LatLngTuple | null, destination: La
 export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [rideShortcuts] = useState(loadRideShortcuts);
+  const [dashboardPreferences] = useState(loadDashboardPreferences);
+  const panelText = getDashboardText(dashboardPreferences.language);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<RideRequestData>({
     origin: '',
@@ -662,17 +665,18 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   if (originPosition) {
     mapPoints.push({
       id: 'origin',
-      label: 'Origem',
+      label: panelText.origin,
       position: originPosition,
       color: '#16a34a',
       description: formData.origin,
+      isLocation: true,
     });
   }
 
   if (destinationPosition) {
     mapPoints.push({
       id: 'destination',
-      label: 'Destino',
+      label: panelText.destination,
       position: destinationPosition,
       color: '#dc2626',
       description: formData.destination,
@@ -704,25 +708,25 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
             <div className="flex-1 p-6 space-y-6">
               <div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                  {userType === 'passenger' ? 'Solicitar Viagem' : 'Disponivel para Viagens'}
+                  {userType === 'passenger' ? panelText.passengerTitle : 'Disponível para viagens'}
                 </h3>
                 <p className="text-gray-600 text-sm">
                   {userType === 'passenger'
-                    ? 'Para onde voce quer ir?'
-                    : 'Sua localizacao atual esta sendo compartilhada'}
+                    ? panelText.passengerSubtitle
+                    : panelText.locationShared}
                 </p>
               </div>
 
               <form onSubmit={handleRequestRide} className="space-y-4">
                 <div className="relative">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Origem
+                    {panelText.origin}
                   </label>
                   <AddressAutocomplete
                     value={formData.origin}
                     onChange={handleOriginChange}
                     onSelect={handleOriginSelect}
-                    placeholder="Digite sua rua, avenida ou bairro"
+                    placeholder={panelText.originPlaceholder}
                     iconColor="text-green-600"
                     maxSuggestions={6}
                     required
@@ -734,7 +738,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                     type="button"
                     onClick={swapLocations}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    title="Trocar origem e destino"
+                    title={panelText.swap}
                   >
                     <Navigation className="size-5 text-gray-600 rotate-90" />
                   </button>
@@ -742,13 +746,13 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Destino
+                    {panelText.destination}
                   </label>
                   <AddressAutocomplete
                     value={formData.destination}
                     onChange={handleDestinationChange}
                     onSelect={handleDestinationSelect}
-                    placeholder="Para onde voce quer ir?"
+                    placeholder={panelText.destinationPlaceholder}
                     iconColor="text-red-600"
                     maxSuggestions={6}
                     required
@@ -759,7 +763,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                   <>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Tipo de Corrida
+                        {panelText.rideType}
                       </label>
                       <select
                         value={formData.rideType}
@@ -771,15 +775,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                         }
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors"
                       >
-                        <option value="Convencional">Convencional</option>
-                        <option value="Premium">Premium</option>
-                        <option value="EconoComigo">EconoComigo</option>
+                        <option value="Convencional">{panelText.conventionalRide}</option>
+                        <option value="Premium">{panelText.premiumRide}</option>
+                        <option value="EconoComigo">{panelText.ecoRide}</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Numero de Passageiros
+                        {panelText.passengers}
                       </label>
                       <select
                         value={formData.passengers}
@@ -793,7 +797,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                       >
                         {[1, 2, 3, 4, 5, 6].map((num) => (
                           <option key={num} value={num}>
-                            {num} {num === 1 ? 'Passageiro' : 'Passageiros'}
+                            {num} {num === 1 ? panelText.passenger : panelText.passengersPlural}
                           </option>
                         ))}
                       </select>
@@ -801,14 +805,14 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Observacoes (opcional)
+                        {panelText.notes}
                       </label>
                       <textarea
                         value={formData.notes}
                         onChange={(e) =>
                           setFormData((current) => ({ ...current, notes: e.target.value }))
                         }
-                        placeholder="Ex: Tenho muitas malas, precisamos de carro grande..."
+                        placeholder={panelText.notesPlaceholder}
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#5a34a1] transition-colors resize-none h-20"
                       />
                     </div>
@@ -823,10 +827,10 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                   >
                     {loading && <Loader2 className="size-5 animate-spin" />}
                     {loading
-                      ? 'Solicitando...'
+                      ? panelText.scheduling
                       : userType === 'passenger'
-                        ? 'Solicitar Viagem'
-                        : 'Ativar Modo Online'}
+                        ? panelText.requestRide
+                        : panelText.activateDriverMode}
                   </button>
                   
                   {userType === 'passenger' && (
@@ -835,7 +839,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                       onClick={handleAgendarClick}
                       className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg flex items-center justify-center gap-2"
                     >
-                      📅 Agendar
+                      📅 {panelText.schedule}
                     </button>
                   )}
                 </div>
@@ -844,12 +848,12 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
               {userType === 'passenger' && (
                 <div className="border-t border-gray-200 pt-4 dark:border-slate-700">
                   <div className="mb-3 flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">ATALHOS</p>
+                    <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">{panelText.shortcuts}</p>
                     <Link
                       to="/passageiro/atalhos"
                       className="text-xs font-semibold text-[#5a34a1] hover:underline dark:text-violet-300"
                     >
-                      Editar
+                      {panelText.edit}
                     </Link>
                   </div>
                   {rideShortcuts.length > 0 ? (
@@ -867,7 +871,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                               {shortcut.label}
                             </span>
                             <span className="mt-0.5 block truncate text-xs text-gray-500 dark:text-slate-400">
-                              {shortcut.address} · {shortcut.target === 'origin' ? 'Origem' : 'Destino'}
+                              {shortcut.address} · {shortcut.target === 'origin' ? panelText.origin : panelText.destination}
                             </span>
                           </span>
                         </button>
@@ -875,7 +879,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                     </div>
                   ) : (
                     <p className="rounded-lg bg-gray-50 px-3 py-4 text-sm text-gray-500 dark:bg-slate-800/70 dark:text-slate-400">
-                      Nenhum atalho salvo. Use “Editar” para escolher seus endereços rápidos.
+                      {panelText.noShortcuts}
                     </p>
                   )}
                 </div>
@@ -892,12 +896,15 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
           points={mapPoints}
           route={tripRoute}
           loading={isMapLoading}
-          emptyTitle="Mapa da viagem"
+          emptyTitle={userType === 'passenger' ? panelText.mapPassengerTitle : panelText.mapDriverTitle}
           emptySubtitle={
             userType === 'passenger'
-              ? 'Digite origem e destino para visualizar o trajeto no mapa.'
-              : 'Sua area de atuacao aparecera aqui quando houver localizacao.'
+              ? panelText.mapPassengerSubtitle
+              : panelText.mapDriverSubtitle
           }
+          mapStyle={dashboardPreferences.mapStyle}
+          locationIcon={dashboardPreferences.locationIcon}
+          language={dashboardPreferences.language}
         />
 
         {userType === 'passenger' && formData.destination && (

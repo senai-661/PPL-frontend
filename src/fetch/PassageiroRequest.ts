@@ -58,7 +58,7 @@ class PassageiroRequests {
 
     async consultarPassageiro(idPassageiro: number): Promise<PassageiroDTO | null> {
         try {
-            const respostaAPI = await fetch(`${this.serverURL}${this.routeListaPassageiros}?idPassageiro=${idPassageiro}`, {
+            const respostaAPI = await fetch(`${this.serverURL}/api/passageiros/${idPassageiro}`, {
                 headers: this.getAuthHeader()
             });
 
@@ -95,8 +95,8 @@ class PassageiroRequests {
 
     async removerPassageiro(idPassageiro: number): Promise<boolean> {
         try {
-            const respostaAPI = await fetch(`${this.serverURL}${this.routeRemovePassageiro}?idPassageiro=${idPassageiro}`, {
-                method: 'PUT',
+            const respostaAPI = await fetch(`${this.serverURL}/api/admin/passageiros/${idPassageiro}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                     ...this.getAuthHeader()
@@ -106,15 +106,15 @@ class PassageiroRequests {
             if (!respostaAPI.ok) throw new Error('Erro ao fazer requisição à API.');
             return true;
         } catch (error) {
-            console.error(`Erro ao fazer solicitação. ${error}`);
+            console.error(`Erro ao excluir passageiro: ${error}`);
             return false;
         }
     }
 
-    async enviarFormularioAtualizacaoPassageiro(formPassageiro: PassageiroDTO): Promise<boolean> {
+    async enviarFormularioAtualizacaoPassageiro(formPassageiro: Partial<PassageiroDTO>): Promise<boolean> {
         try {
-            const respostaAPI = await fetch(`${this.serverURL}${this.routeAtualizaPassageiro}?idPassageiro=${formPassageiro.idPassageiro}`, {
-                method: 'PUT',
+            const respostaAPI = await fetch(`${this.serverURL}/api/passageiro/perfil`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     ...this.getAuthHeader()
@@ -151,17 +151,16 @@ class PassageiroRequests {
 
     async obterPassageiroPorId(idPassageiro: number): Promise<PassageiroDTO | undefined> {
         try {
-            const token = localStorage.getItem('token');
-           const respostaAPI = await fetch(`${this.serverURL}${this.routeListaPassageiros}?idPassageiro=${idPassageiro}`, {
+            const respostaAPI = await fetch(`${this.serverURL}/api/passageiros/${idPassageiro}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-access-token': `${token}`
+                    ...this.getAuthHeader()
                 }
             });
 
             if (respostaAPI.ok) {
-                const passageiro: PassageiroDTO = await respostaAPI.json();
-                return passageiro;
+                const passageiro: any = await respostaAPI.json();
+                return this.mapPassageiro(passageiro);
             } else {
                 throw new Error("Não foi possível buscar o passageiro.");
             }
@@ -171,5 +170,6 @@ class PassageiroRequests {
         }
     }
 }
+
 
 export default new PassageiroRequests();

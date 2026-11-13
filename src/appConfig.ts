@@ -34,19 +34,27 @@ export const SERVER_CFG = {
     ENDPOINT_LISTAR_PASSAGEIRO: '/api/passageiros',
     ENDPOINT_CADASTRAR_PASSAGEIRO: '/api/registrar',  // ✅ rota unificada
     ENDPOINT_ATUALIZAR_PASSAGEIRO: '/api/passageiro/perfil',
-    ENDPOINT_REMOVER_PASSAGEIRO: '/api/passageiro/delete',
+    ENDPOINT_REMOVER_PASSAGEIRO: '/api/admin/passageiros',
 
     // endpoints de MOTORISTA
     ENDPOINT_LISTAR_MOTORISTA: '/api/motoristas',
     ENDPOINT_CADASTRAR_MOTORISTA: '/api/registrar',   // ✅ rota unificada
     ENDPOINT_ATUALIZAR_MOTORISTA: '/api/motorista/perfil',
-    ENDPOINT_REMOVER_MOTORISTA: '/api/motorista/delete',
+    ENDPOINT_REMOVER_MOTORISTA: '/api/admin/motoristas',
 
     // endpoints de CARRO
     ENDPOINT_LISTAR_CARRO: '/api/veiculos',
     ENDPOINT_CADASTRAR_CARRO: '/api/cadastro/veiculos',
-    ENDPOINT_ATUALIZAR_CARRO: '/api/carro/update',
-    ENDPOINT_REMOVER_CARRO: '/api/carro/delete',
+    ENDPOINT_ATUALIZAR_CARRO: '/api/veiculos',
+    ENDPOINT_REMOVER_CARRO: '/api/veiculos',
+    ENDPOINT_CARRO_MOTORISTA: '/api/motorista/veiculo',
+
+    // endpoints de AVALIACAO
+    ENDPOINT_LISTAR_AVALIACAO: '/api/avaliacoes',
+    ENDPOINT_CADASTRAR_AVALIACAO: '/api/avaliacoes',
+    ENDPOINT_ATUALIZAR_AVALIACAO: '/api/avaliacoes',
+    ENDPOINT_REMOVER_AVALIACAO: '/api/avaliacoes',
+    ENDPOINT_MINHAS_AVALIACOES: '/api/avaliacoes/minhas',
 
     // endpoint de login
     ENDPOINT_AUTH_LOGIN: '/api/login',

@@ -70,7 +70,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   };
-  const { success, error: showError } = useToast();
+  const { error: showError } = useToast();
 
   // Buscar corridas pendentes
   const fetchPendingRides = async (online = isOnline) => {

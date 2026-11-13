@@ -1,22 +1,26 @@
-﻿import { Star, ThumbsUp, MessageSquare } from 'lucide-react';
+import { Star, ThumbsUp, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../../hooks/useToast';
+import AvaliacaoRequest from '../../fetch/AvaliacaoRequest';
 
 export function TripRating() {
   const navigate = useNavigate();
-  const { success } = useToast();
+  const location = useLocation();
+  const { success, error } = useToast();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
+  const stateData = location.state as any;
   const trip = {
-    id: '1234',
-    driver: 'João Silva',
-    date: 'Hoje, 10:30',
-    from: 'Av. Paulista, 1000',
-    to: 'Shopping Center',
-    value: 'R$ 25,00',
+    id: stateData?.idCorrida ?? 1,
+    driver: stateData?.motoristaNome ?? stateData?.passageiro?.nome ?? 'Motorista',
+    date: stateData?.dataCorrida ? new Date(stateData.dataCorrida).toLocaleDateString('pt-BR') : 'Recente',
+    from: stateData?.origemCorrida ?? 'Origem',
+    to: stateData?.destinoCorrida ?? 'Destino',
+    value: stateData?.preco ? `R$ ${Number(stateData.preco).toFixed(2).replace('.', ',')}` : 'R$ 25,00',
   };
 
   const tags = [
@@ -36,11 +40,33 @@ export function TripRating() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    success('Avaliação enviada com sucesso!');
-    navigate('/passageiro/painel');
+    if (rating === 0) {
+      error('Por favor, selecione uma nota de 1 a 5 estrelas.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const fullComment = [
+        comment.trim(),
+        selectedTags.length > 0 ? `(${selectedTags.join(', ')})` : ''
+      ].filter(Boolean).join(' ');
+
+      await AvaliacaoRequest.criarAvaliacao({
+        idCorrida: Number(trip.id),
+        nota: rating,
+        comentario: fullComment || undefined,
+      });
+      success('Avaliação enviada com sucesso!');
+      navigate('/passageiro/painel');
+    } catch (err: any) {
+      error(err.message || 'Erro ao enviar avaliação.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

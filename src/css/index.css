@@ -111,6 +111,96 @@ a {
   filter: sepia(0.18) hue-rotate(18deg) saturate(0.9) brightness(1.03);
 }
 
+/* Preferências de acessibilidade escolhidas pelo usuário. */
+html.a11y-large-text {
+  font-size: 112.5%;
+}
+
+html.a11y-high-contrast {
+  --ink-strong: #050505;
+  --ink-muted: #252525;
+}
+
+html.dark.a11y-high-contrast {
+  --ink-strong: #ffffff;
+  --ink-muted: #f1f5f9;
+}
+
+html.a11y-high-contrast body {
+  text-rendering: geometricPrecision;
+}
+
+html.a11y-high-contrast a:not(.logo),
+html.a11y-high-contrast button,
+html.a11y-high-contrast input,
+html.a11y-high-contrast select,
+html.a11y-high-contrast textarea {
+  outline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
+
+html.a11y-high-contrast :focus-visible {
+  outline: 3px solid #005fcc !important;
+  outline-offset: 3px !important;
+}
+
+html.dark.a11y-high-contrast :focus-visible {
+  outline-color: #ffdf00 !important;
+}
+
+html.a11y-visual-alerts [role='alert'] {
+  border-width: 3px !important;
+  box-shadow: 0 0 0 3px #111827, 0 10px 24px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.a11y-large-targets button,
+html.a11y-large-targets a,
+html.a11y-large-targets input:not([type='checkbox']):not([type='radio']),
+html.a11y-large-targets select,
+html.a11y-large-targets textarea {
+  min-height: 44px;
+}
+
+html.a11y-large-targets input[type='checkbox'],
+html.a11y-large-targets input[type='radio'] {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+html.a11y-visible-focus :focus-visible {
+  outline: 3px solid #5a34a1 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 2px #fff !important;
+}
+
+html.dark.a11y-visible-focus :focus-visible {
+  outline-color: #c4b5fd !important;
+  box-shadow: 0 0 0 2px #0f172a !important;
+}
+
+html.a11y-reading-comfort body {
+  line-height: 1.85;
+  letter-spacing: 0.015em;
+}
+
+html.a11y-reading-comfort main p,
+html.a11y-reading-comfort main li {
+  max-width: 72ch;
+}
+
+html.a11y-simplified-interface .a11y-optional-ride-setting {
+  display: none !important;
+}
+
+html.a11y-reduced-motion *,
+html.a11y-reduced-motion *::before,
+html.a11y-reduced-motion *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
 .app-main.login-main {
   background:
     radial-gradient(circle at 10% -8%, rgba(124, 81, 201, 0.16), transparent 38%),

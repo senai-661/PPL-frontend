@@ -36,6 +36,7 @@ import { PassengerRegistration } from './pages/PPassageiro/CadastroPassageiro';
 import { PassengerDashboard } from './pages/PPassageiro/PainelPassageiro';
 import { PassengerProfile } from './pages/PPassageiro/PerfilPassageiro';
 import { PassengerShortcuts } from './pages/PPassageiro/AtalhosPassageiro';
+import { PanelSettings } from './pages/PPassageiro/ConfiguracoesPainel';
 import { TripRating } from './pages/PViagem/AvaliacaoViagem';
 import { TripDashboard } from './pages/PViagem/PainelViagem';
 import { TripList } from './pages/PViagem/ListaViagens';
@@ -162,6 +163,15 @@ function AppContent() {
           />
 
           <Route
+            path="/passageiro/configuracoes-painel"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="passenger">
+                <PanelSettings userType="passenger" />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
             path="/passageiro/historico"
             element={(
               <AuthProtectedRouteWithType allowedUserType="passenger">
@@ -205,6 +215,15 @@ function AppContent() {
             element={(
               <AuthProtectedRouteWithType allowedUserType="driver">
                 <DriverDashboard />
+              </AuthProtectedRouteWithType>
+            )}
+          />
+
+          <Route
+            path="/motorista/configuracoes-painel"
+            element={(
+              <AuthProtectedRouteWithType allowedUserType="driver">
+                <PanelSettings userType="driver" />
               </AuthProtectedRouteWithType>
             )}
           />

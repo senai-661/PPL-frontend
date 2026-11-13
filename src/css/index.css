@@ -83,6 +83,34 @@ a {
   position: relative;
 }
 
+.openline-dark-map-tiles .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.88) saturate(0.78);
+}
+
+.openline-light-map-tiles .leaflet-tile {
+  filter: grayscale(0.72) brightness(1.08) contrast(0.92) saturate(0.55);
+}
+
+.openline-humanitarian-map-tiles .leaflet-tile {
+  filter: sepia(0.16) saturate(1.12) hue-rotate(-6deg) contrast(1.02);
+}
+
+.openline-contrast-map-tiles .leaflet-tile {
+  filter: contrast(1.38) saturate(1.15) brightness(1.02);
+}
+
+.openline-grayscale-map-tiles .leaflet-tile {
+  filter: grayscale(1) contrast(1.08);
+}
+
+.openline-warm-map-tiles .leaflet-tile {
+  filter: sepia(0.34) saturate(0.86) brightness(1.04);
+}
+
+.openline-nature-map-tiles .leaflet-tile {
+  filter: sepia(0.18) hue-rotate(18deg) saturate(0.9) brightness(1.03);
+}
+
 .app-main.login-main {
   background:
     radial-gradient(circle at 10% -8%, rgba(124, 81, 201, 0.16), transparent 38%),

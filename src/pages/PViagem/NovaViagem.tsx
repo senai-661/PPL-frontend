@@ -5,6 +5,7 @@ import {
   AddressAutocomplete,
   type AutocompleteAddress,
 } from '../../Components/Viagem/AddressAutocomplete/AddressAutocomplete';
+import { CurrentLocationButton, type CurrentPickupLocation } from '../../Components/Viagem/CurrentLocationButton/CurrentLocationButton';
 import { useToast } from '../../hooks/useToast';
 
 import CorridaRequest from '../../fetch/CorridaRequest';
@@ -46,6 +47,14 @@ export function NewTrip() {
     }));
   };
 
+  const handleUseCurrentLocation = ({ lat, lng, label }: CurrentPickupLocation) => {
+    setTripData((currentData) => ({
+      ...currentData,
+      origin: label,
+      originCoords: { lat, lon: lng },
+    }));
+  };
+
   const handleDestinationSelect = (address: AutocompleteAddress) => {
     setTripData((currentData) => ({
       ...currentData,
@@ -60,16 +69,25 @@ export function NewTrip() {
       setErrorMsg('Origem e destino são obrigatórios.');
       return;
     }
+    if (
+      tripData.originCoords.lat === null ||
+      tripData.originCoords.lon === null ||
+      tripData.destinationCoords.lat === null ||
+      tripData.destinationCoords.lon === null
+    ) {
+      setErrorMsg('Use o GPS ou selecione uma sugestão de endereço para definir os pontos da viagem.');
+      return;
+    }
     setSubmitting(true);
     setErrorMsg(null);
     try {
       await CorridaRequest.solicitarCorrida({
         origemCorrida: tripData.origin,
         destinoCorrida: tripData.destination,
-        latOrigem: tripData.originCoords.lat || -23.5505,
-        lngOrigem: tripData.originCoords.lon || -46.6333,
-        latDestino: tripData.destinationCoords.lat || -23.5605,
-        lngDestino: tripData.destinationCoords.lon || -46.6433,
+        latOrigem: tripData.originCoords.lat,
+        lngOrigem: tripData.originCoords.lon,
+        latDestino: tripData.destinationCoords.lat,
+        lngDestino: tripData.destinationCoords.lon,
         tipoCorrida: 'Convencional',
       });
       success('Viagem solicitada com sucesso!');
@@ -101,12 +119,13 @@ export function NewTrip() {
             <AddressAutocomplete
               label="Origem *"
               value={tripData.origin}
-              onChange={(value) => setTripData({ ...tripData, origin: value })}
+              onChange={(value) => setTripData((current) => ({ ...current, origin: value, originCoords: { lat: null, lon: null } }))}
               onSelect={handleOriginSelect}
               placeholder="Endereço de origem ou use localização atual"
               iconColor="text-green-600"
               required
             />
+            <CurrentLocationButton onLocation={handleUseCurrentLocation} />
 
             <AddressAutocomplete
               label="Destino *"
@@ -217,9 +236,10 @@ export function NewTrip() {
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-[#5a34a1] text-white py-3 rounded-lg transition-colors"
+                disabled={submitting}
+                className="flex-1 bg-[#5a34a1] text-white py-3 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {tripData.scheduleDate ? 'Agendar Viagem' : 'Solicitar Agora'}
+                {submitting ? 'Enviando…' : tripData.scheduleDate ? 'Agendar Viagem' : 'Solicitar Agora'}
               </button>
             </div>
           </form>

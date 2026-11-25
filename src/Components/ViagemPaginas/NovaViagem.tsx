@@ -5,6 +5,7 @@ import {
   AddressAutocomplete,
   type AutocompleteAddress,
 } from '../../Components/Viagem/AddressAutocomplete/AddressAutocomplete';
+import { CurrentLocationButton, type CurrentPickupLocation } from '../../Components/Viagem/CurrentLocationButton/CurrentLocationButton';
 import { useToast } from '../../hooks/useToast';
 
 interface TripFormData {
@@ -42,6 +43,14 @@ export function NewTrip() {
     }));
   };
 
+  const handleUseCurrentLocation = ({ lat, lng, label }: CurrentPickupLocation) => {
+    setTripData((currentData) => ({
+      ...currentData,
+      origin: label,
+      originCoords: { lat, lon: lng },
+    }));
+  };
+
   const handleDestinationSelect = (address: AutocompleteAddress) => {
     setTripData((currentData) => ({
       ...currentData,
@@ -70,12 +79,13 @@ export function NewTrip() {
             <AddressAutocomplete
               label="Origem *"
               value={tripData.origin}
-              onChange={(value) => setTripData({ ...tripData, origin: value })}
+              onChange={(value) => setTripData((current) => ({ ...current, origin: value, originCoords: { lat: null, lon: null } }))}
               onSelect={handleOriginSelect}
               placeholder="Endereço de origem ou use localização atual"
               iconColor="text-green-600"
               required
             />
+            <CurrentLocationButton onLocation={handleUseCurrentLocation} />
 
             <AddressAutocomplete
               label="Destino *"

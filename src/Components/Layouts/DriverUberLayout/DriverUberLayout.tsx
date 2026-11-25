@@ -17,6 +17,7 @@ import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/Ma
 import { useToast } from '@/hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardText, loadDashboardPreferences } from '@/utils/dashboardPreferences';
+import { getCurrentDeviceLocation } from '@/utils/deviceLocation';
 
 interface DriverUberLayoutProps {
   onToggleOnline?: (isOnline: boolean) => void;
@@ -56,7 +57,8 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const panelText = getDashboardText(dashboardPreferences.language);
   const [isOnline, setIsOnline] = useState(false);
   const [selectedRide, setSelectedRide] = useState<number | null>(null);
-  const [driverPosition, setDriverPosition] = useState<LatLngTuple>(DEFAULT_CENTER);
+  const [driverPosition, setDriverPosition] = useState<LatLngTuple | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [rideMapLookup, setRideMapLookup] = useState<RideMapLookup>({});
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [rideNotifications, setRideNotifications] = useState<RideNotification[]>([]);
@@ -113,6 +115,20 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const handleToggleOnline = async () => {
     setTogglingOnline(true);
     const novoStatus = !isOnline;
+
+    if (novoStatus) {
+      setLocationError(null);
+      try {
+        const location = await getCurrentDeviceLocation();
+        setDriverPosition([location.lat, location.lng]);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Ative a localização do dispositivo para ficar online.';
+        setLocationError(message);
+        showError(message);
+        setTogglingOnline(false);
+        return;
+      }
+    }
     
     try {
       const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/disponibilidade`, {
@@ -133,9 +149,13 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
           setRideNotifications([]);
           setRideMapLookup({});
         }
+      } else {
+        const errorData = await response.json().catch(() => null);
+        showError(errorData?.mensagem || 'Não foi possível alterar sua disponibilidade.');
       }
     } catch (error) {
       console.error('Erro ao alterar disponibilidade:', error);
+      showError('Não foi possível conectar ao servidor. Tente novamente.');
     } finally {
       setTogglingOnline(false);
     }
@@ -163,24 +183,30 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
 
   // Geolocalização do motorista
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!isOnline || !navigator.geolocation) return;
 
     const watchId = navigator.geolocation.watchPosition(
       ({ coords }) => {
         setDriverPosition([coords.latitude, coords.longitude]);
+        setLocationError(null);
       },
-      () => {
-        setDriverPosition(DEFAULT_CENTER);
+      (error) => {
+        const messages: Record<number, string> = {
+          1: 'A permissão de localização foi revogada. Reative-a para compartilhar sua posição.',
+          2: 'O dispositivo não conseguiu atualizar sua localização.',
+          3: 'A atualização da localização demorou demais.',
+        };
+        setLocationError(messages[error.code] ?? 'Não foi possível atualizar sua localização.');
       },
       {
         enableHighAccuracy: true,
-        maximumAge: 15000,
-        timeout: 10000,
+        maximumAge: 5000,
+        timeout: 20000,
       },
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  }, [isOnline]);
 
   // Geocodificar endereços das corridas
   useEffect(() => {
@@ -343,7 +369,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  const mapPoints: MapPoint[] = [
+  const mapPoints: MapPoint[] = driverPosition ? [
     {
       id: 'driver-position',
       label: isOnline ? panelText.driverLocation : panelText.estimatedPosition,
@@ -355,7 +381,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
       radius: 10,
       isLocation: true,
     },
-  ];
+  ] : [];
 
   for (const ride of rideNotifications) {
     const rideCoordinates = rideMapLookup[ride.idCorrida];
@@ -384,9 +410,9 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const selectedRideCoordinates = selectedRide ? rideMapLookup[selectedRide] : undefined;
   const selectedRideRoute =
     selectedRideCoordinates?.origin && selectedRideCoordinates.destination
-      ? [driverPosition, selectedRideCoordinates.origin, selectedRideCoordinates.destination]
+      ? [driverPosition ?? selectedRideCoordinates.origin, selectedRideCoordinates.origin, selectedRideCoordinates.destination]
       : undefined;
-  const mapCenter = selectedRideCoordinates?.origin ?? driverPosition;
+  const mapCenter = selectedRideCoordinates?.origin ?? driverPosition ?? DEFAULT_CENTER;
 
   return (
     <div className="min-h-screen flex bg-gray-100 overflow-hidden">
@@ -422,6 +448,12 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
                 {togglingOnline && <Loader2 className="size-5 animate-spin" />}
                 {togglingOnline ? (isOnline ? panelText.goingOffline : panelText.goingOnline) : (isOnline ? panelText.online : panelText.offline)}
               </button>
+
+              {locationError && (
+                <p className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+                  {locationError}
+                </p>
+              )}
 
               {isOnline && (
                 <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">

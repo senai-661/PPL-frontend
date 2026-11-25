@@ -11,6 +11,7 @@ import {
   AddressAutocomplete,
   type AutocompleteAddress,
 } from '@/Components/Viagem/AddressAutocomplete/AddressAutocomplete';
+import { CurrentLocationButton, type CurrentPickupLocation } from '@/Components/Viagem/CurrentLocationButton/CurrentLocationButton';
 import { MapComponent, type MapPoint } from '@/Components/Viagem/MapComponent/MapComponent';
 import { loadRideShortcuts } from '@/utils/rideShortcuts';
 import { getDashboardText, loadDashboardPreferences } from '@/utils/dashboardPreferences';
@@ -123,6 +124,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   const [isRouteLoading, setIsRouteLoading] = useState(false);
   const [selectedOriginAddress, setSelectedOriginAddress] = useState<AutocompleteAddress | null>(null);
   const [selectedDestinationAddress, setSelectedDestinationAddress] = useState<AutocompleteAddress | null>(null);
+  const [originSource, setOriginSource] = useState<'device' | 'manual'>('manual');
   const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
   const [estimatedDistance, setEstimatedDistance] = useState<string | null>(null);
   const [aguardandoCorrida, setAguardandoCorrida] = useState<AguardandoCorridaState>(
@@ -181,6 +183,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   };
 
   const handleOriginChange = (value: string) => {
+    setOriginSource('manual');
     setFormData((current) => ({ ...current, origin: value }));
 
     if (selectedOriginAddress?.display_name !== value) {
@@ -197,11 +200,28 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
   };
 
   const handleOriginSelect = (address: AutocompleteAddress) => {
+    setOriginSource('manual');
     setSelectedOriginAddress(address);
     setOriginPosition(toLatLngTuple(address.lat, address.lon));
     if (accessibilityPreferences.audioDescriptions) {
       speakAccessibilityText(`Origem selecionada: ${address.display_name}`, dashboardPreferences.language);
     }
+  };
+
+  const handleUseCurrentLocation = ({ lat, lng, label }: CurrentPickupLocation) => {
+    const selectedAddress: AutocompleteAddress = {
+      display_name: label,
+      titulo: label,
+      subtitulo: 'Localização atual do dispositivo',
+      categoria: 'location',
+      lat,
+      lon: lng,
+    };
+
+    setOriginSource('device');
+    setSelectedOriginAddress(selectedAddress);
+    setOriginPosition(toLatLngTuple(lat, lng));
+    setFormData((current) => ({ ...current, origin: label }));
   };
 
   const handleDestinationSelect = (address: AutocompleteAddress) => {
@@ -675,6 +695,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
       setDestinationPosition(null);
       setSelectedOriginAddress(null);
       setSelectedDestinationAddress(null);
+      setOriginSource('manual');
       setRouteData(null);
       setEstimatedTime(null);
       setEstimatedDistance(null);
@@ -703,6 +724,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     setSelectedDestinationAddress(selectedOriginAddress);
     setOriginPosition(destinationPosition);
     setDestinationPosition(originPosition);
+    setOriginSource('manual');
   };
 
   const applyRideShortcut = (shortcut: (typeof rideShortcuts)[number]) => {
@@ -711,6 +733,7 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
     setEstimatedDistance(null);
 
     if (shortcut.target === 'origin') {
+      setOriginSource('manual');
       setFormData((current) => ({ ...current, origin: shortcut.address }));
       setSelectedOriginAddress(null);
       setOriginPosition(null);
@@ -793,6 +816,14 @@ export function UberLikeLayout({ userType, onRequestRide }: UberLikeLayoutProps)
                     maxSuggestions={6}
                     required
                   />
+                  {userType === 'passenger' && (
+                    <CurrentLocationButton onLocation={handleUseCurrentLocation} />
+                  )}
+                  {userType === 'passenger' && originSource === 'device' && (
+                    <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300" role="status">
+                      Ponto de embarque definido pelo GPS do dispositivo. Digite no campo para escolher outro local.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-center">

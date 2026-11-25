@@ -16,6 +16,23 @@ interface NominatimSearchResponse {
   display_name: string;
 }
 
+interface PhotonReverseResponse {
+  features: Array<{
+    properties: {
+      name?: string;
+      street?: string;
+      housenumber?: string;
+      district?: string;
+      locality?: string;
+      city?: string;
+      town?: string;
+      village?: string;
+      state?: string;
+      country?: string;
+    };
+  }>;
+}
+
 interface OSRMRouteResponse {
   routes: Array<{
     geometry: {
@@ -77,6 +94,42 @@ class MapRequests {
     } catch (error) {
       console.error('Falha ao geocodificar endereco:', error);
       this.cache.set(normalizedAddress, null);
+      return null;
+    }
+  }
+
+  async reverseGeocode(lat: number, lng: number): Promise<MapCoordinateDTO | null> {
+    try {
+      const reverseUrl = new URL('https://photon.komoot.io/reverse');
+      reverseUrl.searchParams.set('lat', String(lat));
+      reverseUrl.searchParams.set('lon', String(lng));
+
+      const response = await fetch(reverseUrl.toString(), {
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ao identificar o endereço da localização: ${response.status}`);
+      }
+
+      const data = (await response.json()) as PhotonReverseResponse;
+      const properties = data.features[0]?.properties;
+      if (!properties) return null;
+
+      const street = [properties.street ?? properties.name, properties.housenumber]
+        .filter(Boolean)
+        .join(', ');
+      const label = [
+        street || properties.name,
+        properties.district,
+        properties.locality ?? properties.city ?? properties.town ?? properties.village,
+        properties.state,
+        properties.country,
+      ].filter(Boolean).join(', ');
+
+      return label ? { lat, lng, label } : null;
+    } catch (error) {
+      console.error('Falha ao identificar endereço da localização atual:', error);
       return null;
     }
   }

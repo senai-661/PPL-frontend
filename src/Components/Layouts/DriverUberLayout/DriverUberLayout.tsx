@@ -62,6 +62,7 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   const [rideMapLookup, setRideMapLookup] = useState<RideMapLookup>({});
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [rideNotifications, setRideNotifications] = useState<RideNotification[]>([]);
+  const [rideFetchError, setRideFetchError] = useState<string | null>(null);
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
@@ -79,19 +80,25 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
 
   // Buscar corridas pendentes
   const fetchPendingRides = async (online = isOnline) => {
-    if (!online) return;
+    if (!online) {
+      setRideFetchError(null);
+      return;
+    }
     
     try {
       const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/corridas?status=Pendente`, { headers });
       if (response.ok) {
-        const data: RideNotification[] = await response.json();
-        setRideNotifications(data);
+        const data: unknown = await response.json();
+        setRideNotifications(Array.isArray(data) ? data as RideNotification[] : []);
+        setRideFetchError(null);
       } else {
-        setRideNotifications([]);
-        console.error('Erro ao buscar corridas:', await response.text());
+        const details = await response.text();
+        setRideFetchError(`Não foi possível consultar novas corridas (${response.status}).`);
+        console.error('Erro ao buscar corridas:', details);
       }
     } catch (error) {
       console.error('Erro ao buscar corridas:', error);
+      setRideFetchError('Sem conexão com o servidor para receber corridas. Tentando novamente…');
     }
   };
 
@@ -178,7 +185,32 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
   }, [isOnline]);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const restoreDriverAvailability = async () => {
+      try {
+        const response = await fetch(`${SERVER_CFG.SERVER_URL}/api/motorista/perfil`, { headers });
+        if (!response.ok) {
+          throw new Error('Não foi possível verificar sua disponibilidade. Entre novamente e tente de novo.');
+        }
+
+        const profile = await response.json();
+        if (isMounted && typeof profile.disponivel === 'boolean') {
+          setIsOnline(profile.disponivel);
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        const message = error instanceof Error ? error.message : 'Não foi possível restaurar seu status online.';
+        setLocationError(message);
+      }
+    };
+
+    void restoreDriverAvailability();
     void fetchActiveRide();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Geolocalização do motorista
@@ -519,10 +551,16 @@ export function DriverUberLayout({ onToggleOnline }: DriverUberLayoutProps) {
             {isOnline && rideNotifications.length === 0 && (
               <div className="flex-1 flex items-center justify-center p-6 text-center">
                 <div>
-                  <Search className="size-12 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-600 text-sm">
-                    {panelText.awaitingRides}
-                  </p>
+                  {rideFetchError ? (
+                    <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+                      {rideFetchError}
+                    </p>
+                  ) : (
+                    <>
+                      <Search className="size-12 mx-auto text-gray-300 mb-3" />
+                      <p className="text-gray-600 text-sm">{panelText.awaitingRides}</p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
